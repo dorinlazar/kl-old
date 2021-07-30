@@ -1,0 +1,9 @@
+BasedOnStyle: LLVM
+IndentWidth: 2
+TabWidth: 2
+PointerAlignment: Left
+SpaceBeforeRangeBasedForLoopColon: false
+ColumnLimit: 120
+AlwaysBreakTemplateDeclarations: Yes
+Standard: c++20
+SortIncludes: false
