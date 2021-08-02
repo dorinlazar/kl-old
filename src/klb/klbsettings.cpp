@@ -31,7 +31,18 @@ void CommandParameters::_updateFlags() {
   if (environment.getOpt("VERBOSE").has_value() || configurationFile.getOpt("VERBOSE").has_value()) {
     verbose = true;
   }
-  if (environment.getOpt("JOBS").has_value()) {
+
+  auto tmp = environment.getOpt("JOBS");
+  if (tmp.has_value()) {
+    nJobs = tmp->toInt();
+  } else {
+    tmp = configurationFile.getOpt("JOBS");
+    if (tmp.has_value()) {
+      nJobs = tmp->toInt();
+    }
+  }
+  if (nJobs.has_value() && (*nJobs > processorCount * 2)) {
+    nJobs = processorCount * 2;
   }
 }
 

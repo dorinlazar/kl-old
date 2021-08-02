@@ -119,6 +119,7 @@ public:
 
   std::string toString() const { return std::string((const char*)_memblock.get() + _start, size()); }
   std::string_view toView() const { return std::string_view(_memblock.get() + _start, (size_t)size()); }
+  int64_t toInt() const;
 
   bool contains(char c) const;
   Text skip(const Text& skippables) const;

@@ -393,3 +393,8 @@ void TextChain::consolidate() {
     _chain = new_chain;
   }
 }
+
+int64_t Text::toInt() const {
+  // TODO make this properly
+  return std::stoll(toString());
+}
