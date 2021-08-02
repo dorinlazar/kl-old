@@ -1,6 +1,7 @@
 #include "klbexecutor.h"
 #include "klbtoolchain.h"
 #include "klbsettings.h"
+#include <thread>
 
 enum class ExecStepType { Build, Link };
 
@@ -88,7 +89,10 @@ void ExecutionStrategy::link(const kl::Text& module) {
   impl->add(ExecStepType::Link, mod.get());
 }
 
-bool ExecutionStrategy::execute() { return impl->execute(); }
+bool ExecutionStrategy::execute() {
+  kl::log("Found", std::thread::hardware_concurrency(), "processors");
+  return impl->execute();
+}
 void ExecutionStrategy::createBuildFolders() {
   kl::Set<kl::Text> directories;
   for (const auto& step: impl->buildSteps) {

@@ -1,7 +1,6 @@
 #include "klbsettings.h"
 #include "kl/klfs.h"
-
-CommandParameters CMD;
+#include <thread>
 
 void CommandParameters::_updateFlags() {
   auto cxxfl = configurationFile.getOpt("CXXFLAGS"_t);
@@ -24,22 +23,19 @@ void CommandParameters::_updateFlags() {
     cxxFlags = cxxfl->splitByChar(' ');
   }
   if (cfl.has_value()) {
-    CMD.cFlags = cfl->splitByChar(' ');
+    cFlags = cfl->splitByChar(' ');
   }
   if (link.has_value()) {
-    CMD.linkFlags = link->splitByChar(' ');
+    linkFlags = link->splitByChar(' ');
+  }
+  if (environment.getOpt("VERBOSE").has_value() || configurationFile.getOpt("VERBOSE").has_value()) {
+    verbose = true;
+  }
+  if (environment.getOpt("JOBS").has_value()) {
   }
 }
 
-void CommandParameters::init(int argc, char** argv, char** envp) {
-  if (argc == 2 && kl::Text(argv[1]) == "-v"_t) {
-    CMD.verbose = true;
-  }
-
-  if (CMD.verbose) {
-    kl::log("klb v" VERSION_STRING " - KeyLocked Build tool ©2021 Dorin Lazăr");
-  }
-
+void CommandParameters::_updateSysEnv(char** envp) {
   while (*envp != nullptr) {
     kl::Text txt(*envp);
     auto pos = txt.pos('=');
@@ -51,6 +47,13 @@ void CommandParameters::init(int argc, char** argv, char** envp) {
     envp++;
   }
 
+  processorCount = std::thread::hardware_concurrency();
+  if (processorCount < 1) {
+    processorCount = 1;
+  }
+}
+
+void CommandParameters::_readDepotFile() {
   // simplified .depot.conf
   auto text = kl::readFile(".depot.conf");
   auto cfg = text.splitLines(kl::SplitEmpty::Discard);
@@ -61,8 +64,28 @@ void CommandParameters::init(int argc, char** argv, char** envp) {
     } else {
       configurationFile.add(txt, ""_t);
     }
-    envp++;
+  }
+}
+
+void CommandParameters::_processArguments(int argc, char** argv) {
+  for (int i = 1; i < argc; i++) {
+    arguments.add(argv[i]);
+  }
+  for (const auto& cmd: arguments) {
+    if (cmd == "-v"_t) {
+      verbose = true;
+    }
+  }
+}
+
+void CommandParameters::init(int argc, char** argv, char** envp) {
+  if (verbose) {
+    kl::log("klb v" VERSION_STRING " - KeyLocked Build tool ©2021 Dorin Lazăr");
   }
 
+  _readDepotFile();
+  _updateSysEnv(envp);
   _updateFlags();
 }
+
+CommandParameters CMD;
