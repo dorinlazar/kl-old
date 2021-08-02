@@ -22,7 +22,10 @@ struct ModuleCollection;
 
 struct Module {
   kl::Text name;
-  kl::List<ModuleItem> components;
+  std::optional<ModuleItem> header;
+  std::optional<ModuleItem> source;
+  std::optional<ModuleItem> object;
+  std::optional<ModuleItem> executable;
   bool hasMain;
   kl::Set<kl::Text> headerLocalIncludes;
   kl::Set<kl::Text> headerSysIncludes;
@@ -38,10 +41,10 @@ public:
   Module(ModuleCollection* container, const kl::Text& seed);
   void addFile(const kl::FileInfo& fi);
   void updateModuleInfo();
-  std::optional<ModuleItem> getHeader() const;
-  std::optional<ModuleItem> getSource() const;
-  std::optional<ModuleItem> getObject() const;
-  std::optional<ModuleItem> getExecutable() const;
+  std::optional<ModuleItem> getHeader() const { return header; }
+  std::optional<ModuleItem> getSource() const { return source; }
+  std::optional<ModuleItem> getObject() const { return object; }
+  std::optional<ModuleItem> getExecutable() const { return executable; }
   kl::Text getObjectPath() const;
   kl::Text getExecutablePath() const;
   bool requiresBuild() const;

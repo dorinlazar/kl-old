@@ -23,7 +23,7 @@ struct ExecutionStrategyImpl {
       mod->updateObjectTimestamp(kl::DateTime::now());
     } else {
       if (CMD.verbose) {
-        kl::log("Module:", mod->name, "doesn't require rebuild. Skipping");
+        kl::log("Module:", mod->name, "doesn't require rebuild. Skipping...");
       }
     }
     return true;
@@ -46,7 +46,7 @@ struct ExecutionStrategyImpl {
       }
     } else {
       if (CMD.verbose) {
-        kl::log("Module:", mod->name, "doesn't require relink. Skipping");
+        kl::log("Module:", mod->name, "doesn't require relink. Skipping...");
       }
     }
     return true;

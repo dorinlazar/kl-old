@@ -55,9 +55,20 @@ std::shared_ptr<Module> ModuleCollection::makeModule(const kl::FilePath& folder,
   return val;
 }
 
-Module::Module(ModuleCollection* parent, const kl::Text& seed) : name(seed), components(4), parent(parent) {}
+Module::Module(ModuleCollection* parent, const kl::Text& seed) : name(seed), parent(parent) {}
 
-void Module::addFile(const kl::FileInfo& fi) { components.add(fi); }
+void Module::addFile(const kl::FileInfo& fi) {
+  ModuleItem mi(fi);
+  if (mi.type == ModuleItemType::Header) {
+    header = mi;
+  } else if (mi.type == ModuleItemType::Code) {
+    source = mi;
+  } else if (mi.type == ModuleItemType::Object) {
+    object = mi;
+  } else if (mi.type == ModuleItemType::Executable) {
+    executable = mi;
+  }
+}
 
 void ModuleItem::_updateModuleType() {
   if (extension.startsWith("h")) {
@@ -99,48 +110,22 @@ void Module::updateModuleInfo() {
 }
 
 void Module::_updateComponentPaths() {
-  for (auto& v: components) {
-    v.relPath = kl::FilePath(name).replace_extension(v.path.extension());
-    v.path = v.relPath.replace_base_folder(
-        (v.type == ModuleItemType::Object || v.type == ModuleItemType::Executable) ? CMD.buildFolder : CMD.sourceFolder,
-        0);
+  if (source.has_value()) {
+    source->relPath = kl::FilePath(name).replace_extension(source->path.extension());
+    source->path = source->relPath.replace_base_folder(CMD.sourceFolder, 0);
   }
-}
-
-std::optional<ModuleItem> Module::getHeader() const {
-  for (const auto& item: components) {
-    if (item.type == ModuleItemType::Header) {
-      return item;
-    }
+  if (header.has_value()) {
+    header->relPath = kl::FilePath(name).replace_extension(header->path.extension());
+    header->path = header->relPath.replace_base_folder(CMD.sourceFolder, 0);
   }
-  return {};
-}
-
-std::optional<ModuleItem> Module::getSource() const {
-  for (const auto& item: components) {
-    if (item.type == ModuleItemType::Code) {
-      return item;
-    }
+  if (object.has_value()) {
+    object->relPath = kl::FilePath(name).replace_extension(object->path.extension());
+    object->path = object->relPath.replace_base_folder(CMD.buildFolder, 0);
   }
-  return {};
-}
-
-std::optional<ModuleItem> Module::getObject() const {
-  for (const auto& item: components) {
-    if (item.type == ModuleItemType::Object) {
-      return item;
-    }
+  if (executable.has_value()) {
+    executable->relPath = kl::FilePath(name).replace_extension(executable->path.extension());
+    executable->path = executable->relPath.replace_base_folder(CMD.buildFolder, 0);
   }
-  return {};
-}
-
-std::optional<ModuleItem> Module::getExecutable() const {
-  for (const auto& item: components) {
-    if (item.type == ModuleItemType::Executable) {
-      return item;
-    }
-  }
-  return {};
 }
 
 struct IncludeInfo {
@@ -173,10 +158,14 @@ std::optional<IncludeInfo> readInclude(const kl::Text& input) {
 void Module::_scanHeader() {
   auto header = getHeader();
   if (!header.has_value()) {
-    kl::log("For module", name, "we have no header");
+    if (CMD.verbose) {
+      kl::log("For module", name, "we have no header");
+    }
     return;
   }
-  kl::log("For module", name, "header is", header->path);
+  if (CMD.verbose) {
+    kl::log("For module", name, "header is", header->path);
+  }
 
   auto lines = kl::readFile(header->path.fullPath()).splitLines();
   for (const auto& l: lines) {
@@ -212,10 +201,14 @@ void Module::_scanSource() {
   hasMain = false;
   auto source = getSource();
   if (!source.has_value()) {
-    kl::log("For module", name, "we have no source");
+    if (CMD.verbose) {
+      kl::log("For module", name, "we have no source");
+    }
     return;
   }
-  kl::log("For module", name, "source is", source->path);
+  if (CMD.verbose) {
+    kl::log("For module", name, "source is", source->path);
+  }
 
   auto lines = kl::readFile(source->path.fullPath()).splitLines();
   for (const auto& l: lines) {
@@ -245,7 +238,9 @@ kl::Text Module::_resolveHeader(const kl::Text& inc) {
     CHECK(mod != nullptr, "Unable to identify module for", inc, "required from", name);
   }
   auto text = kl::FilePath(mod->name).replace_extension(kl::FilePath(inc).extension()).fullPath();
-  kl::log("RESOLVE:", inc, "=>", text);
+  if (CMD.verbose) {
+    kl::log("RESOLVE:", inc, "=>", text);
+  }
   return text;
 }
 
@@ -285,7 +280,6 @@ void Module::_updateModuleDependencies() {
   for (const auto& inc: localIncludes) {
     auto mod = parent->getModule(""_t, inc);
     CHECK(mod != nullptr, "Unable to identify module for", inc, "required from", name);
-    kl::log("Dependencies from", inc);
     requiredModules.add(kl::FilePath(inc).replace_extension(""_t).fullPath());
     requiredModules.add(mod->resolvedLocalHeaderDeps.toList().transform<kl::Text>(
         [](const kl::Text& t) { return kl::FilePath(t).replace_extension(""_t).fullPath(); }));
@@ -299,36 +293,32 @@ void Module::_updateIncludeFolders() {
 }
 
 void Module::updateObjectTimestamp(kl::DateTime timestamp) {
-  auto obj = getObject();
-  if (obj.has_value()) {
-    obj->timestamp = timestamp;
+  if (object.has_value()) {
+    object->timestamp = timestamp;
     return;
   }
 
   kl::FilePath path(getObjectPath());
-
-  components.add(ModuleItem(path, timestamp));
+  object = ModuleItem(path, timestamp);
 }
 
 bool Module::requiresBuild() const {
-  auto src = getSource();
-  if (!src.has_value()) {
+  if (!source.has_value()) {
     return false;
   }
-  auto obj = getObject();
-  if (!obj.has_value()) {
+  if (!object.has_value()) {
     return true;
   }
 
-  kl::DateTime dt = obj->timestamp;
-  if (src->timestamp > dt) {
+  kl::DateTime dt = object->timestamp;
+  if (source->timestamp > dt) {
     return true;
   }
   for (const auto& mod: requiredModules) {
     auto hmod = parent->getModule(mod);
     CHECK(hmod != nullptr);
-    auto header = hmod->getHeader();
-    if (header.has_value() && header->timestamp > dt) {
+    auto hmodheader = hmod->getHeader();
+    if (hmodheader.has_value() && hmodheader->timestamp > dt) {
       return true;
     }
   }
@@ -336,25 +326,23 @@ bool Module::requiresBuild() const {
 }
 
 bool Module::requiresLink() const {
-  auto obj = getObject();
-  if (!obj.has_value()) {
+  if (!object.has_value()) {
+    FATAL("Asking to link a file that has no object file attached:", name);
     return false;
   }
-
-  auto exe = getExecutable();
-  if (!exe.has_value()) {
+  if (!executable.has_value()) {
     return true;
   }
 
-  kl::DateTime dt = exe->timestamp;
-  if (obj->timestamp > dt) {
+  kl::DateTime dt = executable->timestamp;
+  if (object->timestamp > dt) {
     return true;
   }
   for (const auto& mod: requiredModules) {
     auto hmod = parent->getModule(mod);
     CHECK(hmod != nullptr);
-    auto object = hmod->getObject();
-    if (object.has_value() && object->timestamp > dt) {
+    auto hmodobject = hmod->getObject();
+    if (hmodobject.has_value() && hmodobject->timestamp > dt) {
       return true;
     }
   }
@@ -362,17 +350,15 @@ bool Module::requiresLink() const {
 }
 
 kl::Text Module::getObjectPath() const {
-  auto o = getObject();
-  if (o.has_value()) {
-    return o->path.fullPath();
+  if (object.has_value()) {
+    return object->path.fullPath();
   }
   return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension("o"_t).fullPath();
 }
 
 kl::Text Module::getExecutablePath() const {
-  auto o = getExecutable();
-  if (o.has_value()) {
-    return o->path.fullPath();
+  if (executable.has_value()) {
+    return executable->path.fullPath();
   }
   return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension(""_t).fullPath();
 }

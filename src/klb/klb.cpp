@@ -12,9 +12,6 @@ int main(int argc, char** argv, char** envp) {
   fscache.addFolder(CMD.sourceFolder);
   fscache.addFolder(CMD.buildFolder);
   ModuleCollection mc(fscache);
-  for (const auto& [path, folder]: fscache.all) {
-    kl::log(folder);
-  }
 
   for (const auto& [name, mod]: mc.modules) {
     mod->updateModuleInfo();
@@ -32,7 +29,6 @@ int main(int argc, char** argv, char** envp) {
         return mod->requiredModules.toList();
       });
 
-      kl::log("Executable", name, "REQUIRE:", proc.result());
       mod->requiredModules = proc.result();
       requiredModules.add(proc.result());
     }
