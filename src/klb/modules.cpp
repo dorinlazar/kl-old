@@ -288,7 +288,7 @@ void Module::_updateModuleDependencies() {
 
 void Module::_updateIncludeFolders() {
   for (const auto& mod: requiredModules) {
-    includeFolders.add(kl::FilePath(mod).replace_base_folder(CMD.sourceFolder, 0).baseFolder());
+    includeFolders.add(kl::FilePath(mod).replace_base_folder(CMD.sourceFolder, 0).folderName());
   }
 }
 
