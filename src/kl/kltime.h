@@ -40,7 +40,7 @@ struct TimeTools {
 
 // Interface inspired after the C# Timespan
 struct TimeSpan {
-  int64_t         ticks;
+  int64_t ticks;
   static TimeSpan fromHours(int64_t h) { return {.ticks = h * 3600 * TimeTools::TICKS_PER_SECOND}; }
   static TimeSpan fromMinutes(int64_t m) { return {.ticks = m * 60 * TimeTools::TICKS_PER_SECOND}; }
   static TimeSpan fromSeconds(int64_t s) { return {.ticks = s * TimeTools::TICKS_PER_SECOND}; }
@@ -57,7 +57,7 @@ struct TimeSpan {
   int64_t days() const { return ticks / TimeTools::TICKS_PER_DAY; }
   int64_t milliseconds() const { return (ticks / (TimeTools::TICKS_PER_SECOND / 1000)) % 1000; }
 
-  auto     operator<=>(const TimeSpan&) const = default;
+  auto operator<=>(const TimeSpan&) const = default;
   TimeSpan operator-(const TimeSpan& ts) const { return {.ticks = ticks - ts.ticks}; }
   TimeSpan operator+(const TimeSpan& ts) const { return {.ticks = ticks + ts.ticks}; }
 };
@@ -87,16 +87,16 @@ private:
   const DateHelperStatic s_DateHelper;
 
 public:
-  int64_t   ticks() const { return _ticks; }
-  int32_t   days() const { return _ticks / TimeTools::TICKS_PER_DAY; }
+  int64_t ticks() const { return _ticks; }
+  int32_t days() const { return _ticks / TimeTools::TICKS_PER_DAY; }
   TimeOfDay timeOfDay() const {
     int64_t dayTicks = _ticks % TimeTools::TICKS_PER_DAY;
-    auto    sec = lldiv(dayTicks, TimeTools::TICKS_PER_SECOND);
-    auto    mn = div(sec.quot, 60);
-    auto    hr = div(mn.quot, 60);
+    auto sec = lldiv(dayTicks, TimeTools::TICKS_PER_SECOND);
+    auto mn = div(sec.quot, 60);
+    auto hr = div(mn.quot, 60);
     return {.hour = hr.quot, .min = hr.rem, .sec = mn.rem, .nanos = (int32_t)sec.rem * 100};
   }
-  Date                      date() const;
+  Date date() const;
   constexpr static DateTime fromTicks(int64_t ticks) {
     DateTime dt;
     dt._ticks = ticks < TimeTools::MIN_TICKS   ? TimeTools::MIN_TICKS
@@ -120,7 +120,7 @@ public:
     day--;
     // This isn't constexpr in C++20 :( auto years = std::div(year - 1, 400);
     ldiv_t years{.quot = year / 400, .rem = year % 400};
-    auto&  monthsizes = TimeTools::month_sizes(years.rem + 1);
+    auto& monthsizes = TimeTools::month_sizes(years.rem + 1);
     if (day >= monthsizes[month]) [[unlikely]] {
       _ticks = 0;
       return;

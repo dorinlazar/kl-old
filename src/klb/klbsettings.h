@@ -9,8 +9,12 @@ struct CommandParameters {
   kl::List<kl::Text> cFlags;
   kl::List<kl::Text> linkFlags;
   kl::Dict<kl::Text, kl::Text> environment;
+  kl::Dict<kl::Text, kl::Text> configurationFile;
 
   void init(int argc, char** argv, char** envp);
+
+private:
+  void _updateFlags();
 };
 
 extern CommandParameters CMD;

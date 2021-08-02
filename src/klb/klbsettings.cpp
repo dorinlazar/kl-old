@@ -1,19 +1,33 @@
 #include "klbsettings.h"
+#include "kl/klfs.h"
 
 CommandParameters CMD;
 
-void _updateFlags() {
-  auto cxxflags = CMD.environment.getOpt("CXXFLAGS"_t);
-  auto cflags = CMD.environment.getOpt("CFLAGS"_t);
-  auto linkflags = CMD.environment.getOpt("LDFLAGS"_t);
-  if (cxxflags.has_value()) {
-    CMD.cxxFlags = cxxflags->splitByChar(' ');
+void CommandParameters::_updateFlags() {
+  auto cxxfl = configurationFile.getOpt("CXXFLAGS"_t);
+  auto cfl = configurationFile.getOpt("CFLAGS"_t);
+  auto link = configurationFile.getOpt("LDFLAGS"_t);
+
+  if (!cxxfl.has_value()) {
+    cxxfl = environment.getOpt("CXXFLAGS"_t);
   }
-  if (cflags.has_value()) {
-    CMD.cFlags = cflags->splitByChar(' ');
+
+  if (!cfl.has_value()) {
+    cfl = environment.getOpt("CFLAGS"_t);
   }
-  if (linkflags.has_value()) {
-    CMD.linkFlags = linkflags->splitByChar(' ');
+
+  if (!link.has_value()) {
+    link = environment.getOpt("CXXFLAGS"_t);
+  }
+
+  if (cxxfl.has_value()) {
+    cxxFlags = cxxfl->splitByChar(' ');
+  }
+  if (cfl.has_value()) {
+    CMD.cFlags = cfl->splitByChar(' ');
+  }
+  if (link.has_value()) {
+    CMD.linkFlags = link->splitByChar(' ');
   }
 }
 
@@ -32,7 +46,20 @@ void CommandParameters::init(int argc, char** argv, char** envp) {
     if (pos.has_value()) {
       environment.add(txt.sublen(0, *pos), txt.subpos((*pos) + 1, txt.size()));
     } else {
-      environment[txt] = ""_t;
+      environment.add(txt, ""_t);
+    }
+    envp++;
+  }
+
+  // simplified .depot.conf
+  auto text = kl::readFile(".depot.conf");
+  auto cfg = text.splitLines(kl::SplitEmpty::Discard);
+  for (const auto& txt: cfg) {
+    auto pos = txt.pos('=');
+    if (pos.has_value()) {
+      configurationFile.add(txt.sublen(0, *pos), txt.subpos((*pos) + 1, txt.size()));
+    } else {
+      configurationFile.add(txt, ""_t);
     }
     envp++;
   }

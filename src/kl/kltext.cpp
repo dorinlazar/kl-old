@@ -238,14 +238,14 @@ std::tuple<Text, Text> Text::splitPos(int32_t where) const {
   return std::make_tuple(Text(*this, 0, where), Text(*this, where, maxn));
 }
 
-std::vector<Text> Text::splitLines(SplitEmpty onEmpty) const {
-  std::vector<Text> res;
+List<Text> Text::splitLines(SplitEmpty onEmpty) const {
+  List<Text> res;
   uint32_t last_start = _start;
   const char* ptr = _memblock.get();
   for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
     if (ptr[current_offset] == '\n') { // Time to build the next return item
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.push_back(Text::FromBuffer(_memblock, last_start, current_offset));
+        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
       }
       if ((current_offset < _end - 1) && (ptr[current_offset + 1] == '\r')) {
         current_offset++;
@@ -253,7 +253,7 @@ std::vector<Text> Text::splitLines(SplitEmpty onEmpty) const {
       last_start = current_offset + 1;
     } else if (ptr[current_offset] == '\r') {
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.push_back(Text::FromBuffer(_memblock, last_start, current_offset));
+        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
       }
       if ((current_offset < _end - 1) && (ptr[current_offset + 1] == '\n')) {
         current_offset++;
@@ -262,7 +262,7 @@ std::vector<Text> Text::splitLines(SplitEmpty onEmpty) const {
     }
   }
   if (_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.push_back(Text::FromBuffer(_memblock, last_start, _end));
+    res.add(Text::FromBuffer(_memblock, last_start, _end));
   }
   return res;
 }
@@ -285,15 +285,14 @@ List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
   return res;
 }
 
-std::vector<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
-  std::vector<Text> res;
-  if (t.size() >= size()) {
-    return (t == *this) ? (onEmpty == SplitEmpty::Keep ? std::vector<Text>({""_t}) : std::vector<Text>())
-                        : std::vector<Text>({*this});
-  }
+List<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
   if (t.size() == 0) {
     return {*this};
   }
+  if (t.size() >= size()) {
+    return (t == *this) ? (onEmpty == SplitEmpty::Keep ? List<Text>({""_t}) : List<Text>()) : List<Text>({*this});
+  }
+  List<Text> res;
   uint32_t last_start = _start;
   char c = t[0];
   const char* ptr = _memblock.get();
@@ -301,14 +300,14 @@ std::vector<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
     if (ptr[current_offset] == c &&
         std::memcmp(t.begin(), ptr + current_offset, t.size()) == 0) { // Time to build the next return item
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.push_back(Text::FromBuffer(_memblock, last_start, current_offset));
+        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
       }
       last_start = current_offset + t.size();
       current_offset += t.size() - 1;
     }
   }
   if (_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.push_back(Text::FromBuffer(_memblock, last_start, _end));
+    res.add(Text::FromBuffer(_memblock, last_start, _end));
   }
   return res;
 }

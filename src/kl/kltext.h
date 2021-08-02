@@ -153,9 +153,9 @@ public:
   std::optional<uint32_t> lastPos(char c) const;
 
   std::tuple<Text, Text> splitPos(int32_t where) const;
-  std::vector<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
+  List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
   List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
-  std::vector<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+  List<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
 
   std::optional<Text> expect(const Text& t) const { // returns a value that skips the starting text
     if (startsWith(t)) {
