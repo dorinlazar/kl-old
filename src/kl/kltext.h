@@ -17,9 +17,9 @@ enum class SplitEmpty { Keep, Discard };
 class Text {
   // the only place where we unconst this is in constructors. replace void with const char
   static std::shared_ptr<char> s_null_data;
-  std::shared_ptr<char>        _memblock = s_null_data;
-  uint32_t                     _start = 0;
-  uint32_t                     _end = 0;
+  std::shared_ptr<char> _memblock = s_null_data;
+  uint32_t _start = 0;
+  uint32_t _end = 0;
 
 public:
   Text() = default;
@@ -105,7 +105,7 @@ public:
     return *(_memblock.get() + _start + index);
   }
 
-  uint32_t    size() const { return _end - _start; }
+  uint32_t size() const { return _end - _start; }
   const char* begin() const { return _memblock.get() ? _memblock.get() + _start : nullptr; }
   const char* end() const { return _memblock.get() + _end; }
 
@@ -117,7 +117,7 @@ public:
   bool operator==(const char*) const;
   bool operator==(const std::string&) const;
 
-  std::string      toString() const { return std::string((const char*)_memblock.get() + _start, size()); }
+  std::string toString() const { return std::string((const char*)_memblock.get() + _start, size()); }
   std::string_view toView() const { return std::string_view(_memblock.get() + _start, (size_t)size()); }
 
   bool contains(char c) const;
@@ -153,9 +153,9 @@ public:
   std::optional<uint32_t> lastPos(char c) const;
 
   std::tuple<Text, Text> splitPos(int32_t where) const;
-  std::vector<Text>      splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
-  std::vector<Text>      splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
-  std::vector<Text>      splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+  std::vector<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
+  List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+  std::vector<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
 
   std::optional<Text> expect(const Text& t) const { // returns a value that skips the starting text
     if (startsWith(t)) {
@@ -187,7 +187,7 @@ public:
 };
 
 class TextChain {
-  uint32_t   _length = 0;
+  uint32_t _length = 0;
   List<Text> _chain;
 
   void _updateLength() {
@@ -238,7 +238,7 @@ public:
     _length = 0;
   }
 
-  void     consolidate();
+  void consolidate();
   kl::Text join(char splitchar = '\0');
 };
 

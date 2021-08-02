@@ -6,15 +6,8 @@
 
 using namespace kl;
 
-int main(int argc, char** argv) {
-  if (argc == 2 && kl::Text(argv[1]) == "-v"_t) {
-    CMD.verbose = true;
-  }
-
-  if (CMD.verbose) {
-    kl::log("klb v" VERSION_STRING " - KeyLocked Build tool ©2021 Dorin Lazăr");
-  }
-
+int main(int argc, char** argv, char** envp) {
+  CMD.init(argc, argv, envp);
   FSCache fscache;
   fscache.addFolder(CMD.sourceFolder);
   fscache.addFolder(CMD.buildFolder);

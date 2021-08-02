@@ -10,8 +10,6 @@ public:
 };
 
 class Gcc : public Toolchain {
-  kl::Text _cppStandard = "-std=c++20";
-  kl::Text _cStandard = "-std=c18";
   bool _staticBuild = true;
 
   kl::List<kl::Text> _cCompileBase;

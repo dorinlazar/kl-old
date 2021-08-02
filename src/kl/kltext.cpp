@@ -267,20 +267,20 @@ std::vector<Text> Text::splitLines(SplitEmpty onEmpty) const {
   return res;
 }
 
-std::vector<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
-  std::vector<Text> res;
+List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
+  List<Text> res;
   uint32_t last_start = _start;
   const char* ptr = _memblock.get();
   for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
     if (ptr[current_offset] == c) { // Time to build the next return item
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.push_back(Text::FromBuffer(_memblock, last_start, current_offset));
+        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
       }
       last_start = current_offset + 1;
     }
   }
   if (_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.push_back(Text::FromBuffer(_memblock, last_start, _end));
+    res.add(Text::FromBuffer(_memblock, last_start, _end));
   }
   return res;
 }

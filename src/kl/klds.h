@@ -6,6 +6,7 @@
 #include <exception>
 #include <stdexcept>
 #include <functional>
+#include <optional>
 
 namespace kl {
 
@@ -150,6 +151,14 @@ public:
     auto it = _map.find(key);
     if (it == _map.end()) {
       return default_value;
+    }
+    return it->second;
+  }
+
+  const std::optional<V> getOpt(const K& key) const {
+    auto it = _map.find(key);
+    if (it == _map.end()) {
+      return {};
     }
     return it->second;
   }

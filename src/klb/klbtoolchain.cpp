@@ -3,9 +3,12 @@
 #include "kl/klprocess.h"
 
 Gcc::Gcc() {
-  _cCompileBase.add({"gcc"_t, "-c"_t, _cStandard, "-o"_t});
-  _cppCompileBase.add({"g++"_t, "-c"_t, _cppStandard, "-o"_t});
-  _linkBase.add({"g++"_t, "-o"_t});
+  _cCompileBase.add({"gcc"_t, "-c"_t});
+  _cCompileBase.add(CMD.cFlags);
+  _cppCompileBase.add({"g++"_t, "-c"_t});
+  _cppCompileBase.add(CMD.cxxFlags);
+  _linkBase.add({"g++"_t});
+  _linkBase.add(CMD.linkFlags);
 }
 
 bool Gcc::build(const kl::Text& source, const kl::Text& destination, const kl::List<kl::Text>& include) {
@@ -13,6 +16,7 @@ bool Gcc::build(const kl::Text& source, const kl::Text& destination, const kl::L
     kl::log("Building", destination, "from", source);
   }
   kl::List<kl::Text> command = _cppCompileBase;
+  command.add("-o"_t);
   command.add(destination);
   command.add(source);
   command.add("-I"_t + CMD.sourceFolder);
@@ -28,6 +32,7 @@ bool Gcc::link(const kl::List<kl::Text>& objects, const kl::Text& executable, co
     kl::log("Linking", executable, "from", objects);
   }
   kl::List<kl::Text> command = _linkBase;
+  command.add("-o"_t);
   command.add(executable);
   command.add(objects);
 
