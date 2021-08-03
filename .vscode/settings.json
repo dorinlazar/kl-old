@@ -56,7 +56,10 @@
     "sstream": "cpp",
     "unordered_set": "cpp",
     "set": "cpp",
-    "variant": "cpp"
+    "variant": "cpp",
+    "semaphore": "cpp",
+    "stop_token": "cpp",
+    "thread": "cpp"
   },
   "C_Cpp.clang_format_path": "/usr/bin/clang-format",
   "C_Cpp.default.cppStandard": "c++20",

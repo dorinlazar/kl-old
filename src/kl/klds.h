@@ -89,6 +89,7 @@ public:
       _vec.erase(it, endit);
     }
   }
+  bool all(std::function<bool(const T&)> op) { return std::all_of(_vec.begin(), _vec.end(), op); }
 };
 
 template <typename T1, typename T2>

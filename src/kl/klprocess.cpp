@@ -119,7 +119,10 @@ void Process::kill(Signal s) { _handler->kill(s); }
 
 struct ExecutionMonitorNode {
   ExecutionNode* node;
-  std::unique_ptr<Process::Impl> process;
+  Process::Impl process;
+
+public:
+  ExecutionMonitorNode(ExecutionNode* n) : node(n), process(node->params) {}
 };
 
 ExecutionNode* ProcessHorde::addNode(const List<Text>& params, const List<ExecutionNode*>& deps) {
@@ -137,12 +140,41 @@ bool ProcessHorde::run(uint32_t nJobs) {
   if (nJobs < 1) {
     nJobs = 1;
   }
-  Dict<pid_t, ExecutionMonitorNode> monitor;
-  while (monitor.size() < nJobs && !_executionQueue.empty()) {
-    auto node = _executionQueue.pop();
-    auto monitorNode = ExecutionMonitorNode{.node = node, .process = std::make_unique<Process::Impl>(node->params)};
-    monitorNode.process->spawn();
-    monitor.add(monitorNode.process->pid(), std::move(monitorNode));
+  Dict<pid_t, std::shared_ptr<ExecutionMonitorNode>> monitor;
+  while (monitor.size() > 0 || !_executionQueue.empty()) {
+    while (monitor.size() < nJobs && !_executionQueue.empty()) {
+      auto node = _executionQueue.pop();
+      auto monitorNode = std::make_shared<ExecutionMonitorNode>(node);
+      monitorNode->process.spawn();
+      monitor.add(monitorNode->process.pid(), std::move(monitorNode));
+    }
+
+    int status = 0;
+    auto pid = waitpid(-1, &status, 0);
+    if (!monitor.has(pid)) {
+      continue;
+    }
+
+    auto monNode = monitor[pid];
+    monitor.remove(pid);
+    if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+      monNode->node->state = Process::State::Finished;
+
+      int i = 0;
+      while (i < _waitingQueue.size()) {
+        auto task = _waitingQueue[i];
+        if (task->dependencies.all([](const kl::ExecutionNode* n) { return n->state == Process::State::Finished; })) {
+          _waitingQueue.removeAt(i);
+          _executionQueue.push(task);
+        } else {
+          i++;
+        }
+      }
+    } else {
+      monNode->node->state = Process::State::Error;
+      return false;
+    }
   }
-  return false;
+
+  return true;
 }
