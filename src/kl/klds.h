@@ -38,7 +38,7 @@ public:
 
   size_t size() const { return _vec.size(); }
 
-  void add(T&& value) { _vec.emplace_back(value); }
+  void add(T&& value) { _vec.emplace_back(std::move(value)); }
   void add(const T& value) { _vec.push_back(value); }
   void add(const List<T>& other) {
     _vec.reserve(size() + other.size());
@@ -96,7 +96,7 @@ class Pair {
   std::pair<T1, T2> _pair;
 
 public:
-  Pair(T1&& t1, T2&& t2) { _pair = std::make_pair(t1, t2); }
+  Pair(T1&& t1, T2&& t2) { _pair = std::make_pair(std::move(t1), std::move(t2)); }
   Pair(T1 t1, T2 t2) { _pair = std::make_pair(t1, t2); }
   Pair(Pair&&) = default;
   Pair(const Pair&) = default;
@@ -115,7 +115,7 @@ class Queue {
 public:
   Queue() = default;
   void push(const T& elem) { _queue.push_back(elem); }
-  void push(T&& elem) { _queue.push_back(elem); }
+  void push(T&& elem) { _queue.emplace_back(std::move(elem)); }
   void push(const List<T>& elem) {
     for (const auto& item: elem) {
       _queue.push_back(item);
@@ -182,7 +182,7 @@ public:
     return it->second;
   }
 
-  void add(const K& key, V&& value) { _map.insert_or_assign(key, value); }
+  void add(const K& key, V&& value) { _map.insert_or_assign(key, std::move(value)); }
   void add(const K& key, const V& value) { _map.insert_or_assign(key, value); }
 
   void remove(const K& key) { _map.erase(key); }
@@ -226,7 +226,7 @@ public:
 
   size_t size() const { return _data.size(); }
 
-  void add(T&& value) { _data.insert(value); }
+  void add(T&& value) { _data.insert(std::move(value)); }
   void add(const T& value) { _data.insert(value); }
   void add(const List<T>& other) {
     for (const auto& t: other) {
