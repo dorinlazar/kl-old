@@ -37,9 +37,9 @@ void free_c_array(char** arr) {
 }
 
 struct Process::Impl {
-  pid_t  _pid = 0;
-  bool   _started = false;
-  char*  _exe;
+  pid_t _pid = 0;
+  bool _started = false;
+  char* _exe;
   char** _params;
 
 public:
@@ -68,7 +68,7 @@ public:
     if (_pid == 0) {
       return -1;
     }
-    int  status = 0;
+    int status = 0;
     auto pid = waitpid(_pid, &status, 0);
     if (pid == _pid && WIFEXITED(status)) {
       return WEXITSTATUS(status);
@@ -107,10 +107,42 @@ public:
     }
     return Process::State::Running;
   }
+
+  pid_t pid() const { return _pid; }
 };
 
 Process::Process(const List<Text>& params) { _handler = std::make_unique<Impl>(params); }
 Process::~Process() {}
 void Process::spawn() { _handler->spawn(); }
-int  Process::join() { return _handler->join(); }
+int Process::join() { return _handler->join(); }
 void Process::kill(Signal s) { _handler->kill(s); }
+
+struct ExecutionMonitorNode {
+  ExecutionNode* node;
+  std::unique_ptr<Process::Impl> process;
+};
+
+ExecutionNode* ProcessHorde::addNode(const List<Text>& params, const List<ExecutionNode*>& deps) {
+  _nodes.add(std::make_unique<ExecutionNode>(params, deps));
+  auto p = _nodes[_nodes.size() - 1].get();
+  if (deps.size() == 0) {
+    _executionQueue.push(p);
+  } else {
+    _waitingQueue.add(p);
+  }
+  return p;
+}
+
+bool ProcessHorde::run(uint32_t nJobs) {
+  if (nJobs < 1) {
+    nJobs = 1;
+  }
+  Dict<pid_t, ExecutionMonitorNode> monitor;
+  while (monitor.size() < nJobs && !_executionQueue.empty()) {
+    auto node = _executionQueue.pop();
+    auto monitorNode = ExecutionMonitorNode{.node = node, .process = std::make_unique<Process::Impl>(node->params)};
+    monitorNode.process->spawn();
+    monitor.add(monitorNode.process->pid(), std::move(monitorNode));
+  }
+  return false;
+}
