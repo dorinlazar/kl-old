@@ -72,6 +72,23 @@ public:
     std::sort(_vec.begin(), _vec.end());
     return *this;
   }
+
+  // TODO UTs
+  void remove(const T& value) { _vec.erase(std::remove(_vec.begin(), _vec.end(), value), _vec.end()); }
+  void removeAt(size_t index) {
+    if (index >= 0 && index < size()) {
+      auto it = _vec.begin() + index;
+      _vec.erase(it, it + 1);
+    }
+  }
+  void removeRange(size_t index, size_t rangeSize) {
+    if (index >= 0 && index < size() && rangeSize > 0) {
+      auto it = _vec.begin() + index;
+      auto offset = index + rangeSize;
+      auto endit = offset >= _vec.size() ? _vec.end() : _vec.begin() + offset;
+      _vec.erase(it, endit);
+    }
+  }
 };
 
 template <typename T1, typename T2>
@@ -139,6 +156,8 @@ public:
   auto begin() { return _map.begin(); }
   auto end() { return _map.end(); }
 
+  size_t size() const { return _map.size(); }
+
   V& operator[](const K& key) {
     auto it = _map.find(key);
     if (it == _map.end()) {
@@ -165,6 +184,8 @@ public:
 
   void add(const K& key, V&& value) { _map.insert_or_assign(key, value); }
   void add(const K& key, const V& value) { _map.insert_or_assign(key, value); }
+
+  void remove(const K& key) { _map.erase(key); }
 
   bool has(const K& key) const { return _map.contains(key); }
 
