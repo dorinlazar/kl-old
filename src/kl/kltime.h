@@ -7,16 +7,16 @@
 namespace kl {
 
 struct TimeOfDay {
-  int32_t hour;
-  int32_t min;
-  int32_t sec;
-  int32_t nanos;
+  uint32_t hour;
+  uint32_t min;
+  uint32_t sec;
+  uint32_t nanos;
 };
 
 struct Date {
-  int32_t year;
-  int32_t month;
-  int32_t day;
+  uint32_t year;
+  uint32_t month;
+  uint32_t day;
 };
 
 struct TimeTools {
@@ -24,16 +24,16 @@ struct TimeTools {
   static const int64_t MAX_TICKS = 3155378975999999999LL; // 9999-12-31 23:59:59 UTC
   static const int64_t TICKS_PER_SECOND = 10'000'000LL;
   static const int64_t TICKS_PER_DAY = TICKS_PER_SECOND * 24 * 3600;
-  static const int32_t DAYS_IN_400_YEARS = 365 * 400 + 97;
+  static const uint32_t DAYS_IN_400_YEARS = 365 * 400 + 97;
 
-  static constexpr bool leap_year(int32_t year) { // Leap year, for one-based 1-400 interval
+  static constexpr bool leap_year(uint32_t year) { // Leap year, for one-based 1-400 interval
     return ((year & 0x03) == 0) && year != 100 && year != 200 && year != 300;
   }
 
-  static constexpr std::array<int32_t, 12> MSIZES = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-  static constexpr std::array<int32_t, 12> MSIZES_LEAP = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  static constexpr std::array<uint32_t, 12> MSIZES = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  static constexpr std::array<uint32_t, 12> MSIZES_LEAP = {31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-  static constexpr const std::array<int32_t, 12>& month_sizes(int32_t year) { // year in the interval 1-400.
+  static constexpr const std::array<uint32_t, 12>& month_sizes(int32_t year) { // year in the interval 1-400.
     return leap_year(year) ? MSIZES_LEAP : MSIZES;
   }
 };

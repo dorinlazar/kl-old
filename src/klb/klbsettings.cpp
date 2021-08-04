@@ -90,6 +90,7 @@ void CommandParameters::_processArguments(int argc, char** argv) {
 }
 
 void CommandParameters::init(int argc, char** argv, char** envp) {
+  _processArguments(argc, argv);
   if (verbose) {
     kl::log("klb v" VERSION_STRING " - KeyLocked Build tool ©2021 Dorin Lazăr");
   }

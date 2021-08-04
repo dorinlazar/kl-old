@@ -121,7 +121,8 @@ public:
     } else if (t == ExecStepType::Link) {
       if (mod->requiresLink()) {
         auto objects = getDependentObjects(mod);
-        auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes[o]; });
+        auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes.get(o); })
+                            .select([](const kl::ExecutionNode* t) { return t != nullptr; });
         auto cmdLine = _toolchain->linkCmdLine(objects, mod->getExecutablePath(), CMD.linkFlags);
         auto node = _horde.addNode(cmdLine, depNodes);
         _execNodes.add(mod->getExecutablePath(), node);

@@ -90,6 +90,15 @@ public:
     }
   }
   bool all(std::function<bool(const T&)> op) { return std::all_of(_vec.begin(), _vec.end(), op); }
+  List<T> select(std::function<bool(const T&)> op) {
+    List<T> res;
+    for (const auto& item: _vec) {
+      if (op(item)) {
+        res.add(item);
+      }
+    }
+    return res;
+  }
 };
 
 template <typename T1, typename T2>
