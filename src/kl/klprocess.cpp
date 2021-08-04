@@ -16,7 +16,6 @@ static void free_c_string(char* p) { free(p); }
 
 static char** to_c_array(const List<Text>& l) {
   char** res = (char**)malloc(sizeof(char*) * (l.size() + 1));
-  size_t buffer_size = 0;
   char** current = res;
   for (const auto& t: l) {
     *current = to_c_string(t);
@@ -163,7 +162,7 @@ bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
     if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
       monNode->node->state = Process::State::Finished;
 
-      int i = 0;
+      size_t i = 0;
       while (i < _waitingQueue.size()) {
         auto task = _waitingQueue[i];
         if (task->dependencies.all([](const kl::ExecutionNode* n) { return n->state == Process::State::Finished; })) {

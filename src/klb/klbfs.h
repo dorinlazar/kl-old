@@ -12,7 +12,7 @@ struct Folder {
 public:
   Folder() = default;
   Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
-      : _name(name), _path(path), _parent(parent) {}
+      : _parent(parent), _name(name), _path(path) {}
   void addItem(const kl::FileInfo& file, const kl::Text& path);
 
   std::shared_ptr<Folder> getFolder(const kl::Text& folder);

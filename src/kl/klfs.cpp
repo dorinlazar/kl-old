@@ -131,7 +131,7 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
   DIR* dir = opendir(buffer);
   dirent* de;
   Text padded_folder = folder + folder_separator;
-  while (de = readdir(dir)) {
+  while ((de = readdir(dir))) {
     Text t(de->d_name);
     if (t == discardable_folders[0] || t == discardable_folders[1]) {
       continue;
@@ -161,7 +161,7 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
 
 void kl::navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)> processor) {
   // let's make a dummy item
-  FileInfo dummy{.type = FileType::Directory, .path = FilePath(treeBase)};
+  FileInfo dummy{.type = FileType::Directory, .lastWrite = s_UnixEpoch, .path = FilePath(treeBase)};
   std::queue<FileInfo> to_process;
   to_process.push(dummy);
   while (!to_process.empty()) {

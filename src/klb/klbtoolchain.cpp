@@ -28,6 +28,7 @@ kl::List<kl::Text> Gcc::linkCmdLine(const kl::List<kl::Text>& objects, const kl:
   command.add("-o"_t);
   command.add(executable);
   command.add(objects);
+  command.add(libraries);
   return command;
 }
 

@@ -19,13 +19,13 @@ public:
   List(std::initializer_list<T> v) : _vec(v) {}
   List(size_t size) { _vec.reserve(size); }
   T& operator[](size_t pos) {
-    if (pos < 0 || pos >= _vec.size()) {
+    if (pos >= _vec.size()) {
       throw std::out_of_range("Invalid key");
     }
     return _vec[pos];
   }
   const T& operator[](size_t pos) const {
-    if (pos < 0 || pos >= _vec.size()) {
+    if (pos >= _vec.size()) {
       throw std::out_of_range("Invalid key");
     }
     return _vec[pos];
@@ -76,13 +76,13 @@ public:
   // TODO UTs
   void remove(const T& value) { _vec.erase(std::remove(_vec.begin(), _vec.end(), value), _vec.end()); }
   void removeAt(size_t index) {
-    if (index >= 0 && index < size()) {
+    if (index < size()) {
       auto it = _vec.begin() + index;
       _vec.erase(it, it + 1);
     }
   }
   void removeRange(size_t index, size_t rangeSize) {
-    if (index >= 0 && index < size() && rangeSize > 0) {
+    if (index < size() && rangeSize > 0) {
       auto it = _vec.begin() + index;
       auto offset = index + rangeSize;
       auto endit = offset >= _vec.size() ? _vec.end() : _vec.begin() + offset;

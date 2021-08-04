@@ -94,7 +94,8 @@ public:
     auto sec = lldiv(dayTicks, TimeTools::TICKS_PER_SECOND);
     auto mn = div(sec.quot, 60);
     auto hr = div(mn.quot, 60);
-    return {.hour = hr.quot, .min = hr.rem, .sec = mn.rem, .nanos = (int32_t)sec.rem * 100};
+    return {
+        .hour = (uint32_t)hr.quot, .min = (uint32_t)hr.rem, .sec = (uint32_t)mn.rem, .nanos = (uint32_t)sec.rem * 100};
   }
   Date date() const;
   constexpr static DateTime fromTicks(int64_t ticks) {

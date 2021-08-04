@@ -225,7 +225,7 @@ std::optional<uint32_t> Text::lastPos(char c) const {
 }
 
 std::tuple<Text, Text> Text::splitPos(int32_t where) const {
-  uint32_t maxn = size();
+  int32_t maxn = size();
   if (where < 0) {
     where += maxn;
     if (where < 0) {

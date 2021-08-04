@@ -14,11 +14,11 @@ void test_ticks() {
   kl::log("Ticks tests [OK]");
 }
 
-void check_year(int32_t year) {
-  int delta_leap = ((year & 0x03) == 0 && (year % 100 != 0 || year % 400 == 0)) ? 1 : 0;
-  int32_t months[] = {31, 28 + delta_leap, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
-  for (int32_t month = 0; month < 12; month++) {
-    for (int32_t day = 0; day < months[month]; day++) {
+void check_year(uint32_t year) {
+  uint32_t delta_leap = ((year & 0x03) == 0 && (year % 100 != 0 || year % 400 == 0)) ? 1 : 0;
+  uint32_t months[] = {31, 28 + delta_leap, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+  for (uint32_t month = 0; month < 12; month++) {
+    for (uint32_t day = 0; day < months[month]; day++) {
       auto dt = kl::DateTime(year, month + 1, day + 1);
       auto d = dt.date();
       auto t = dt.timeOfDay();
