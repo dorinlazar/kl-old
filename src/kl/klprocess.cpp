@@ -136,7 +136,7 @@ ExecutionNode* ProcessHorde::addNode(const List<Text>& params, const List<Execut
   return p;
 }
 
-bool ProcessHorde::run(uint32_t nJobs) {
+bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
   if (nJobs < 1) {
     nJobs = 1;
   }
@@ -145,6 +145,9 @@ bool ProcessHorde::run(uint32_t nJobs) {
     while (monitor.size() < nJobs && !_executionQueue.empty()) {
       auto node = _executionQueue.pop();
       auto monitorNode = std::make_shared<ExecutionMonitorNode>(node);
+      if (verbose) {
+        kl::log("> ", node->params);
+      }
       monitorNode->process.spawn();
       monitor.add(monitorNode->process.pid(), std::move(monitorNode));
     }

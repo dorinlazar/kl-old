@@ -326,11 +326,10 @@ bool Module::requiresBuild() const {
 }
 
 bool Module::requiresLink() const {
-  if (!object.has_value()) {
-    FATAL("Asking to link a file that has no object file attached:", name);
+  if (!hasMain) {
     return false;
   }
-  if (!executable.has_value()) {
+  if (!object.has_value() || !executable.has_value()) {
     return true;
   }
 
@@ -356,9 +355,20 @@ kl::Text Module::getObjectPath() const {
   return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension("o"_t).fullPath();
 }
 
+kl::Text Module::getSourcePath() const {
+  if (source.has_value()) [[likely]] {
+    return source->path.fullPath();
+  }
+  return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension("cpp"_t).fullPath();
+}
+
 kl::Text Module::getExecutablePath() const {
   if (executable.has_value()) {
     return executable->path.fullPath();
   }
   return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension(""_t).fullPath();
+}
+
+kl::Text Module::getBuildFolder() const {
+  return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).folderName();
 }

@@ -46,7 +46,9 @@ public:
   std::optional<ModuleItem> getObject() const { return object; }
   std::optional<ModuleItem> getExecutable() const { return executable; }
   kl::Text getObjectPath() const;
+  kl::Text getSourcePath() const;
   kl::Text getExecutablePath() const;
+  kl::Text getBuildFolder() const;
   bool requiresBuild() const;
   bool requiresLink() const;
   void updateObjectTimestamp(kl::DateTime timestamp);

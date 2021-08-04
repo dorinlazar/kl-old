@@ -46,8 +46,6 @@ int main(int argc, char** argv, char** envp) {
     }
   }
 
-  sched.createBuildFolders();
-
   sched.execute();
 
   return 0;

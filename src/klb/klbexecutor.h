@@ -14,5 +14,4 @@ public:
   void build(const kl::Text& module);
   void link(const kl::Text& module);
   bool execute();
-  void createBuildFolders();
 };

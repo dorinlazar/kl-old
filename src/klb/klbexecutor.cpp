@@ -1,6 +1,7 @@
 #include "klbexecutor.h"
 #include "klbtoolchain.h"
 #include "klbsettings.h"
+#include "kl/klprocess.h"
 #include <thread>
 
 enum class ExecStepType { Build, Link };
@@ -10,15 +11,36 @@ struct ExecStep {
   Module* module;
 };
 
-struct ExecutionStrategyImpl {
-  kl::List<ExecStep> buildSteps;
-  std::unique_ptr<Toolchain> toolchain;
-  ModuleCollection* _coll;
+class ExecutionStrategyImpl {
+protected:
+  std::unique_ptr<Toolchain> _toolchain;
+  ModuleCollection* _modules;
 
+public:
+  ExecutionStrategyImpl(ModuleCollection* coll) : _modules(coll) { _toolchain = std::make_unique<Gcc>(); }
+
+  virtual void add(ExecStepType t, Module* mod) = 0;
+  virtual bool execute() = 0;
+
+  kl::List<kl::Text> getDependentObjects(Module* mod) {
+    kl::Set<kl::Text> objects;
+    objects.add(mod->getObjectPath());
+    for (const auto& m: mod->requiredModules) {
+      auto depmod = _modules->getModule(m);
+      CHECK(depmod != nullptr);
+      if (depmod->getSource().has_value()) {
+        objects.add(depmod->getObjectPath());
+      }
+    }
+    return objects.toList();
+  }
+};
+
+class LinearExecutionStrategy : public ExecutionStrategyImpl {
+  kl::List<ExecStep> buildSteps;
   bool _performBuild(Module* mod) {
-    auto src = mod->getSource();
-    if (src.has_value() && mod->requiresBuild()) {
-      if (!toolchain->build(src->path.fullPath(), mod->getObjectPath(), mod->includeFolders.toList())) {
+    if (mod->requiresBuild()) {
+      if (!_toolchain->build(mod->getSourcePath(), mod->getObjectPath(), mod->includeFolders.toList())) {
         return false;
       }
       mod->updateObjectTimestamp(kl::DateTime::now());
@@ -31,18 +53,9 @@ struct ExecutionStrategyImpl {
   }
 
   bool _performLink(Module* mod) {
-    if (mod->hasMain && mod->requiresLink()) {
-      kl::Set<kl::Text> objects;
-      objects.add(mod->getObject()->path.fullPath());
-      for (const auto& m: mod->requiredModules) {
-        auto depmod = _coll->getModule(m);
-        CHECK(depmod != nullptr);
-        auto object = depmod->getObject();
-        if (object.has_value()) {
-          objects.add(object->path.fullPath());
-        }
-      }
-      if (!toolchain->link(objects.toList(), mod->getExecutablePath(), {})) {
+    if (mod->requiresLink()) {
+      auto objects = getDependentObjects(mod);
+      if (!_toolchain->link(objects, mod->getExecutablePath(), {})) {
         return false;
       }
     } else {
@@ -54,9 +67,10 @@ struct ExecutionStrategyImpl {
   }
 
 public:
-  ExecutionStrategyImpl(ModuleCollection* coll) : _coll(coll) { toolchain = std::make_unique<Gcc>(); }
-  void add(ExecStepType t, Module* mod) { buildSteps.add({.type = t, .module = mod}); }
-  bool execute() { // the most basic strategy possible;
+  LinearExecutionStrategy(ModuleCollection* coll) : ExecutionStrategyImpl(coll) {}
+  void add(ExecStepType t, Module* mod) override { buildSteps.add({.type = t, .module = mod}); }
+  bool execute() override { // the most basic strategy possible;
+    createBuildFolders();
     for (const auto& step: buildSteps) {
       bool res = false;
       if (step.type == ExecStepType::Build) {
@@ -70,10 +84,69 @@ public:
     }
     return true;
   }
+
+  void createBuildFolders() {
+    kl::Set<kl::Text> directories;
+    for (const auto& step: buildSteps) {
+      directories.add(step.module->getBuildFolder());
+    }
+    auto list = directories.toList().sortInPlace();
+
+    for (const auto& dir: list) {
+      bool made = mkDir(dir);
+      if (CMD.verbose && made) {
+        kl::log("Created folder", dir);
+      }
+    }
+  }
+};
+
+class ParallelExecutionStrategy : public ExecutionStrategyImpl {
+  kl::ProcessHorde _horde;
+  kl::Set<kl::Text> _buildFolders;
+  kl::Dict<kl::Text, kl::ExecutionNode*> _execNodes;
+
+public:
+  ParallelExecutionStrategy(ModuleCollection* coll) : ExecutionStrategyImpl(coll) {}
+
+  void add(ExecStepType t, Module* mod) override {
+    if (t == ExecStepType::Build) {
+      if (mod->requiresBuild()) {
+        _buildFolders.add(mod->getBuildFolder());
+        auto cmdLine =
+            _toolchain->buildCmdLine(mod->getSourcePath(), mod->getObjectPath(), mod->includeFolders.toList());
+        auto node = _horde.addNode(cmdLine, {});
+        _execNodes.add(mod->getObjectPath(), node);
+      }
+    } else if (t == ExecStepType::Link) {
+      if (mod->requiresLink()) {
+        auto objects = getDependentObjects(mod);
+        auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes[o]; });
+        auto cmdLine = _toolchain->linkCmdLine(objects, mod->getExecutablePath(), CMD.linkFlags);
+        auto node = _horde.addNode(cmdLine, depNodes);
+        _execNodes.add(mod->getExecutablePath(), node);
+      }
+    }
+  }
+  bool execute() override {
+    createBuildFolders();
+    return _horde.run(CMD.nJobs.value_or(2), true);
+  }
+
+  void createBuildFolders() {
+    auto list = _buildFolders.toList().sortInPlace();
+
+    for (const auto& dir: list) {
+      bool made = mkDir(dir);
+      if (CMD.verbose && made) {
+        kl::log("Created folder", dir);
+      }
+    }
+  }
 };
 
 ExecutionStrategy::ExecutionStrategy(ModuleCollection* coll) : _modules(coll) {
-  impl = std::make_unique<ExecutionStrategyImpl>(coll);
+  impl = std::make_unique<ParallelExecutionStrategy>(coll);
 }
 
 ExecutionStrategy::~ExecutionStrategy() {}
@@ -92,18 +165,4 @@ void ExecutionStrategy::link(const kl::Text& module) {
 bool ExecutionStrategy::execute() {
   kl::log("Found", std::thread::hardware_concurrency(), "processors");
   return impl->execute();
-}
-void ExecutionStrategy::createBuildFolders() {
-  kl::Set<kl::Text> directories;
-  for (const auto& step: impl->buildSteps) {
-    directories.add(kl::FilePath(CMD.buildFolder + "/"_t + step.module->name).folderName());
-  }
-  auto list = directories.toList().sortInPlace();
-
-  for (const auto& dir: list) {
-    bool made = mkDir(dir);
-    if (CMD.verbose && made) {
-      kl::log("Created folder", dir);
-    }
-  }
 }

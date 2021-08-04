@@ -49,7 +49,7 @@ class ProcessHorde {
 
 public:
   ExecutionNode* addNode(const List<Text>& params, const List<ExecutionNode*>& deps);
-  bool run(uint32_t nJobs);
+  bool run(uint32_t nJobs, bool verbose = false);
 };
 
 } // namespace kl
