@@ -20,13 +20,13 @@ public:
   List(size_t size) { _vec.reserve(size); }
   T& operator[](size_t pos) {
     if (pos >= _vec.size()) {
-      throw std::out_of_range("Invalid key");
+      throw std::out_of_range("Invalid index access");
     }
     return _vec[pos];
   }
   const T& operator[](size_t pos) const {
     if (pos >= _vec.size()) {
-      throw std::out_of_range("Invalid key");
+      throw std::out_of_range("Invalid index access");
     }
     return _vec[pos];
   }
@@ -132,7 +132,9 @@ public:
     }
   }
   T pop() {
-    CHECKST(_queue.size() != 0);
+    if (_queue.size() == 0) {
+      throw std::out_of_range("Pop on empty queue");
+    }
     T value = _queue.front();
     _queue.pop_front();
     return value;

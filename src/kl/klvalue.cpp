@@ -4,15 +4,15 @@ using namespace kl;
 
 TextChain Value::toString() const {
   TextChain tc;
-  bool      commaNeeded = false;
+  bool commaNeeded = false;
   switch (type()) {
   case ValueType::Null:
     return {"null"_t};
   case ValueType::Scalar:
-    return {"\""_t, _as_scalar(), "\""_t};
-  case ValueType::Array:
+    return {"\""_t, asScalar(), "\""_t};
+  case ValueType::List:
     tc.add("["_t);
-    for (const auto& v: _as_carray()) {
+    for (const auto& v: asList()) {
       if (commaNeeded) {
         tc.add(","_t);
       } else {
@@ -24,7 +24,7 @@ TextChain Value::toString() const {
     break;
   case ValueType::Map:
     tc.add("{"_t);
-    for (const auto& [k, v]: _as_cmap()) {
+    for (const auto& [k, v]: asMap()) {
       if (commaNeeded) {
         tc.add(","_t);
       } else {
