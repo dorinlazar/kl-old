@@ -85,6 +85,8 @@ void CommandParameters::_processArguments(int argc, char** argv) {
   for (const auto& cmd: arguments) {
     if (cmd == "-v"_t) {
       verbose = true;
+    } else {
+      targets.add(cmd);
     }
   }
 }

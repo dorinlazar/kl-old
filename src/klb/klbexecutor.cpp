@@ -166,7 +166,4 @@ void ExecutionStrategy::link(const kl::Text& module) {
   impl->add(ExecStepType::Link, mod.get());
 }
 
-bool ExecutionStrategy::execute() {
-  kl::log("Found", std::thread::hardware_concurrency(), "processors");
-  return impl->execute();
-}
+bool ExecutionStrategy::execute() { return impl->execute(); }

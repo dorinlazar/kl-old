@@ -1,15 +1,15 @@
 #include "modules.h"
 #include "klbsettings.h"
 
-ModuleCollection::ModuleCollection(const FSCache& cache) {
-  _scanModules(cache);
+void ModuleCollection::discoverAll() {
+  _scanModules();
   _updateModuleDependencies();
 }
 
-void ModuleCollection::_scanModules(const FSCache& cache) {
+void ModuleCollection::_scanModules() {
   uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
   uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
-  for (const auto& [path, folder]: cache.all) {
+  for (const auto& [path, folder]: _cache->all) {
     if (path.startsWith(CMD.sourceFolder)) { // we process sources first
       auto moduleFolder = folder->fullPath().remove_base_folder(srcDepth);
       for (const auto& file: folder->files()) {
@@ -18,7 +18,7 @@ void ModuleCollection::_scanModules(const FSCache& cache) {
       }
     }
   }
-  for (const auto& [path, folder]: cache.all) {
+  for (const auto& [path, folder]: _cache->all) {
     if (path.startsWith(CMD.buildFolder)) { // we process build output second
       auto moduleFolder = folder->fullPath().remove_base_folder(bldDepth);
       for (const auto& file: folder->files()) {

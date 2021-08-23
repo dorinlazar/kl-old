@@ -15,6 +15,8 @@ struct CommandParameters {
   kl::Dict<kl::Text, kl::Text> environment;
   kl::Dict<kl::Text, kl::Text> configurationFile;
 
+  kl::List<kl::Text> targets;
+
   void init(int argc, char** argv, char** envp);
 
 private:
@@ -25,4 +27,4 @@ private:
 };
 
 extern CommandParameters CMD;
-#define VERSION_STRING "0.1"
+#define VERSION_STRING "0.2-alpha"

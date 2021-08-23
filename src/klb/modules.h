@@ -69,9 +69,13 @@ struct ModuleCollection {
   std::shared_ptr<Module> getModule(const kl::FilePath& folder, const kl::Text& filename) const;
   std::shared_ptr<Module> makeModule(const kl::FilePath& folder, const kl::Text& filename);
 
-  ModuleCollection(const FSCache& cache);
+  ModuleCollection(FSCache* cache) : _cache(cache) {}
+
+  void discoverAll();
+  void discoverTests();
 
 private:
+  FSCache* _cache;
   void _updateModuleDependencies();
-  void _scanModules(const FSCache& cache);
+  void _scanModules();
 };
