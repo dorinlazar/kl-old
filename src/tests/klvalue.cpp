@@ -24,6 +24,11 @@ void test_value_list() {
   CHECK(!v->isScalar());
   CHECK(!v->isMap());
   CHECK(v->isList());
+  v->add(kl::Value::createScalar("100"_t));
+  v->add(kl::Value::createScalar("200"_t));
+  v->add(kl::Value::createScalar("300"_t));
+  v->add(kl::Value::createScalar("400"_t));
+  EXPECTEX<std::out_of_range>([&v]() { auto x = (*v)[10]; });
   kl::log("LIST test OK");
 }
 

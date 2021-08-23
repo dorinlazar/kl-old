@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <functional>
 #include <source_location>
 
 namespace kl {
@@ -43,4 +44,15 @@ inline void CHECKST(bool value, const std::source_location& location = std::sour
     return;
   }
   FATAL("Failure at:", location.file_name(), location.line());
+}
+
+template <typename EX>
+inline void EXPECTEX(std::function<void()> op, const std::source_location& location = std::source_location::current()) {
+  try {
+    op();
+    FATAL("Expected exception was not triggered at:", location.file_name(), location.line());
+  } catch (const EX&) {
+  } catch (...) {
+    FATAL("Invalid exception triggered at:", location.file_name(), location.line());
+  }
 }
