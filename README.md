@@ -1,7 +1,8 @@
 # KL Tools
 
 Welcome. I use this repository to build from the grounds up God-knows-what. For the time being, a build tool, because
-why not?
+why not? The name comes from KeyLocked (the name of my company) - but to be honest it comes from the fact that I like
+the letter K a lot, with an L added to mess up expectations.
 
 ## The Build Tool (KLB)
 
@@ -25,6 +26,14 @@ added as long as my audience really wants them. Here's how it works currently:
 7. Object files are output in the `build/*object/file/subdirectory*/somefile.o`. Executable files are automatically built
    when the C++ file contains an `int main(` line. Nothing but whitespace is accepted before `int`.
 
+### Current status for **klb**
+
+- The file .depot.conf (name *stolen* from [Rachel By The Bay](https://rachelbythebay.com/bb/)) will be used to
+  parametrize the build. The configuration format is not final; for the time being it's just a sectionless .INI.
+- **klb** now honors some environment variables, documentation is on the roadmap, but nothing urgent.
+- Code now compiles with multiple parallel jobs. Use JOBS=\<number> in configuration file or when running **klb** - by
+  default it will be 2.
+
 ## The KL Library
 
 I'm pretty dissatisfied with some of the offerings of the `std` namespace. `Text` is the way I try to fix part of the
@@ -38,3 +47,33 @@ expressive API more than performance.
 The `kltime` offers a simplified `DateTime` that will save me from the insanity of working directly with `std::chrono`.
 
 Other tools will appear as needed for what I'm implementing.
+
+
+# Roadmap
+
+## File formats
+
+- `(short term)` **very** basic support for the following file formats is planned:
+  - JSON
+  - YAML (maybe, even if the format is too complex for my liking)
+  - TOML (maybe)
+  - Markdown (will be incomplete)
+
+## KL Blog Engine
+
+Unbenownkst to all the follower (Hi, mum!), this is meant to be a content management system. This is the next thing I'll
+start implementing, starting from defining a derivation of markdown that allows easy extensibility with external modules
+and a template engine.
+
+## KLB
+
+**KLB** works for the time being.
+
+- `(medium term)` Support for external libraries, based on either **pkgconfig** or directly configuring compilation flags.
+  I strongly prefer the pkgconfig version, but let's see.
+- `(medium term)` Clear and complete documentation of configuration (**environment variables** and **.depot.conf**).
+- `(medium term)` Specialized folders. Perhaps special handling for src/include (but how?), special handling for
+  `src/tests` folder (on `klb test` we could build and run all the executables in the src/tests folder and subfolders),
+  `src/lib` for libraries - things that would get compiled to lib\<folder>.a
+- `(long term)` Support for modules (and a complete switch of the code of the whole KeyLocked Library). I'm thinking of
+  supporting special folder `src/modules/` for modules, allowing compilation of hybrid code bases.
