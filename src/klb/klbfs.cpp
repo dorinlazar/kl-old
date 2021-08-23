@@ -38,7 +38,6 @@ void FSCache::addFolder(const kl::Text& folderName) {
     return;
   }
   auto folder = std::make_shared<Folder>(folderName, folderName, nullptr);
-  folders.add(folderName, folder);
   uint32_t depth = kl::FilePath(folderName).folderDepth();
   kl::navigateTree(folderName, [folder, depth](const kl::FileInfo& file) -> kl::NavigateInstructions {
     auto f = file;
@@ -53,4 +52,28 @@ void FSCache::addFolder(const kl::Text& folderName) {
     all.add(f->fullPath().fullPath(), f);
     fqueue.push(f->getFolders());
   }
+}
+
+Folder* FSCache::getFolder(const kl::FilePath& name) {
+  for (const auto& [fld, container]: all) {
+    auto optfp = kl::FilePath(fld).hasFile(name);
+    if (optfp.has_value()) {
+      auto fp = *optfp;
+      Folder* folder = container.get();
+      while (fp.fullPath().size() > 0) {
+        auto pfld = folder->getFolder(fp.baseFolder());
+        if (pfld) {
+          folder = pfld.get();
+          fp = fp.remove_base_folder();
+        } else {
+          if (!folder->hasFile(fp.fullPath())) {
+            folder = nullptr;
+          }
+          break;
+        }
+      }
+      return folder;
+    }
+  }
+  return nullptr;
 }

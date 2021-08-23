@@ -54,6 +54,8 @@ public:
     }
   }
 
+  bool has(const T& value) const { return std::find(_vec.begin(), _vec.end(), value) != _vec.end(); }
+
   void forEach(std::function<void(const T&)> op) const {
     for (const auto& item: _vec) {
       op(item);

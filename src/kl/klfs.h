@@ -66,7 +66,9 @@ public:
     return depth() + 1;
   }
 
-  bool exists() const;
+  bool exists() const; // goes to the filesystem, BAD!
+
+  std::optional<FilePath> hasFile(const FilePath& file);
 
   auto operator<=>(const FilePath& fp) const { return _fullName <=> fp._fullName; }
   auto operator==(const FilePath& fp) const { return _fullName == fp._fullName; }

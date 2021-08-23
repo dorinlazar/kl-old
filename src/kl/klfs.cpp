@@ -124,6 +124,13 @@ bool FilePath::exists() const {
   return *_exists;
 }
 
+std::optional<FilePath> FilePath::hasFile(const FilePath& file) {
+  if (file._fullName.startsWith(_fullName)) {
+    return file.remove_base_folder(folderDepth());
+  }
+  return {};
+}
+
 std::vector<FileInfo> _get_directory_entries(const Text& folder) {
   std::vector<FileInfo> res;
   char buffer[1024];

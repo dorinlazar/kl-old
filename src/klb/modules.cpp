@@ -2,11 +2,16 @@
 #include "klbsettings.h"
 
 void ModuleCollection::discoverAll() {
-  _scanModules();
+  _scanAllModules();
   _updateModuleDependencies();
 }
 
-void ModuleCollection::_scanModules() {
+void ModuleCollection::discoverTests() {
+  _scanModules({"tests"_t});
+  _updateModuleDependencies();
+}
+
+void ModuleCollection::_scanAllModules() {
   uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
   uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
   for (const auto& [path, folder]: _cache->all) {
@@ -29,6 +34,42 @@ void ModuleCollection::_scanModules() {
       }
     }
   }
+}
+
+void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
+  uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
+  uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
+
+  for (const auto& target: targets) {
+    kl::FilePath fp(CMD.sourceFolder + "/" + target);
+    auto folder = _cache->getFolder(fp);
+    if (folder) {
+      kl::log("we're building a folder:", target);
+    } else {
+      kl::log("target not found as folder:", target);
+    }
+  }
+
+  // for (const auto& [path, folder]: _cache->all) {
+  //   if (path.startsWith(CMD.sourceFolder)) { // we process sources first
+  //     auto moduleFolder = folder->fullPath().remove_base_folder(srcDepth);
+  //     for (const auto& file: folder->files()) {
+  //       auto mod = makeModule(moduleFolder.fullPath(), file.path.stem());
+  //       mod->addFile(file);
+  //     }
+  //   }
+  // }
+  // for (const auto& [path, folder]: _cache->all) {
+  //   if (path.startsWith(CMD.buildFolder)) { // we process build output second
+  //     auto moduleFolder = folder->fullPath().remove_base_folder(bldDepth);
+  //     for (const auto& file: folder->files()) {
+  //       auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
+  //       if (mod) {
+  //         mod->addFile(file);
+  //       }
+  //     }
+  //   }
+  // }
 }
 
 void ModuleCollection::_updateModuleDependencies() {}

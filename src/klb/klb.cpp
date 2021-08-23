@@ -10,12 +10,15 @@ std::unique_ptr<ModuleCollection> discoverModules(const kl::List<kl::Text>& targ
   auto mc = std::make_unique<ModuleCollection>(cache);
   if (targets.size() == 0) {
     mc->discoverAll();
-
-    for (const auto& [name, mod]: mc->modules) {
-      mod->updateModuleInfo();
-    }
   } else {
     kl::log("Target-based builds are work in progress!!!");
+    if (targets.has("test")) { // let's try what we really need first.
+      mc->discoverTests();
+    }
+  }
+
+  for (const auto& [name, mod]: mc->modules) {
+    mod->updateModuleInfo();
   }
   return mc;
 }
