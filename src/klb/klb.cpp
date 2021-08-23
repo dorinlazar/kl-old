@@ -46,7 +46,5 @@ int main(int argc, char** argv, char** envp) {
     }
   }
 
-  sched.execute();
-
-  return 0;
+  return sched.execute() ? 0 : 1;
 }
