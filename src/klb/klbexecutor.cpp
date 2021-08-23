@@ -117,6 +117,7 @@ public:
             _toolchain->buildCmdLine(mod->getSourcePath(), mod->getObjectPath(), mod->includeFolders.toList());
         auto node = _horde.addNode(cmdLine, {});
         _execNodes.add(mod->getObjectPath(), node);
+        mod->updateObjectTimestamp(kl::DateTime::MAX());
       }
     } else if (t == ExecStepType::Link) {
       if (mod->requiresLink()) {
@@ -126,6 +127,8 @@ public:
         auto cmdLine = _toolchain->linkCmdLine(objects, mod->getExecutablePath(), CMD.linkFlags);
         auto node = _horde.addNode(cmdLine, depNodes);
         _execNodes.add(mod->getExecutablePath(), node);
+      } else if (CMD.verbose) {
+        kl::log("Module", mod->name, "requires no linking");
       }
     }
   }

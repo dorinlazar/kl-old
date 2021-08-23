@@ -64,7 +64,6 @@ struct TimeSpan {
 
 // Interface inspired after the C# Datetime
 class DateTime {
-public:
 private:
   // One Tick represents 100 nanoseconds.
   int64_t _ticks;
@@ -94,8 +93,10 @@ public:
     auto sec = lldiv(dayTicks, TimeTools::TICKS_PER_SECOND);
     auto mn = div(sec.quot, 60);
     auto hr = div(mn.quot, 60);
-    return {
-        .hour = (uint32_t)hr.quot, .min = (uint32_t)hr.rem, .sec = (uint32_t)mn.rem, .nanos = (uint32_t)sec.rem * 100};
+    return {.hour = (uint32_t)hr.quot,
+            .min = (uint32_t)hr.rem,
+            .sec = (uint32_t)mn.rem,
+            .nanos = (uint32_t)sec.rem * 100};
   }
   Date date() const;
   constexpr static DateTime fromTicks(int64_t ticks) {
@@ -136,6 +137,16 @@ public:
   DateTime(const DateTime&) = default;
 
   static DateTime now();
+  static DateTime MAX() {
+    DateTime dt;
+    dt._ticks = TimeTools::MAX_TICKS;
+    return dt;
+  }
+  static DateTime MIN() {
+    DateTime dt;
+    dt._ticks = TimeTools::MIN_TICKS;
+    return dt;
+  }
 
 public:
   const DateTime& operator=(const DateTime d) {
