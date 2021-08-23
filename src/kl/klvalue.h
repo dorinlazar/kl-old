@@ -77,6 +77,8 @@ public:
 
   void add(PValue v) { asList().add(v); }
   void add(const Text& txt, PValue v) { asMap().add(txt, v); }
+  void add(const Text& txt) { asList().add(createScalar(txt)); }
+  void add(const Text& txt, const Text& v) { asMap().add(txt, createScalar(v)); }
   void clear() {
     perform(
         nullptr, [](Text& textv) { textv = ""_t; }, [](MapValue& mapv) { mapv.clear(); },
@@ -131,3 +133,5 @@ using MapValue = Value::MapValue;
 using NullValue = Value::NullValue;
 
 } // namespace kl
+
+inline bool operator==(const kl::Value& v, const kl::Text& t) { return v.isScalar() && v.getValue() == t; }

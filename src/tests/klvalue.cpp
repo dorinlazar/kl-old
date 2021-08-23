@@ -58,11 +58,41 @@ void test_value_list() {
 }
 
 void test_value_map() {
-  auto v = kl::Value::createMap();
-  CHECK(!v->isNull());
-  CHECK(!v->isScalar());
-  CHECK(v->isMap());
-  CHECK(!v->isList());
+  auto pv = kl::Value::createMap();
+  auto& v = *pv;
+  CHECK(!v.isNull());
+  CHECK(!v.isScalar());
+  CHECK(v.isMap());
+  CHECK(!v.isList());
+
+  v.add("test"_t, kl::Value::createScalar("test_value"_t));
+  v.add("list"_t, kl::Value::createList());
+  v.add("map"_t, kl::Value::createMap());
+  auto& lst = *v.access("list"_t);
+  auto& m = *v.access("map"_t);
+  lst.add("100"_t);
+  lst.add("200"_t);
+  lst.add("300"_t);
+  lst.add("400"_t);
+  m.add("m01", "m01_value");
+  m.add("m02", "m02_value");
+  m.add("m03", "m03_value");
+
+  CHECK(v["test"].isScalar());
+  CHECK(v["test"].getValue() == "test_value");
+
+  CHECK(v["list"].isList(), "Expected list");
+  CHECK(v["list"].size() == 4, "Expected list of size 4");
+  CHECK(v["list"][0] == "100");
+  CHECK(v["list"][1] == "200");
+  CHECK(v["list"][2] == "300");
+  CHECK(v["list"][3] == "400");
+  CHECK(v["map"]["m01"] == "m01_value");
+  CHECK(v["map"]["m02"] == "m02_value");
+  CHECK(v["map"]["m03"] == "m03_value");
+
+  EXPECTEX<std::out_of_range>([&]() { auto x = v["nonmap"]; });
+
   kl::log("MAP test OK");
 }
 
