@@ -77,9 +77,15 @@ public:
 
   void add(PValue v) { asList().add(v); }
   void add(const Text& txt, PValue v) { asMap().add(txt, v); }
-  void clear() { _value = NullValue(); }
-  PValue operator[](int index) { return asList()[index]; }
-  PValue operator[](const Text& key) { return asMap()[key]; }
+  void clear() {
+    perform(
+        nullptr, [](Text& textv) { textv = ""_t; }, [](MapValue& mapv) { mapv.clear(); },
+        [](ListValue& listv) { listv.clear(); });
+  }
+  const Value& operator[](int index) const { return *asList()[index]; }
+  const Value& operator[](const Text& key) const { return *(asMap()[key]); }
+  PValue access(int index) { return asList()[index]; }
+  PValue access(const Text& key) { return asMap()[key]; }
   size_t size() const {
     if (isNull()) {
       return 0;
@@ -94,6 +100,28 @@ public:
       return std::get<(size_t)ValueType::Map>(_value).size();
     }
     return 0;
+  }
+
+public:
+  inline void perform(std::function<void(NullValue&)> nullOp, std::function<void(Text&)> scalarOp,
+                      std::function<void(MapValue&)> mapOp, std::function<void(ListValue&)> listOp) {
+    if (isNull()) {
+      if (nullOp) {
+        nullOp(std::get<(size_t)ValueType::Null>(_value));
+      }
+    } else if (isScalar()) {
+      if (scalarOp) {
+        scalarOp(std::get<(size_t)ValueType::Scalar>(_value));
+      }
+    } else if (isMap()) {
+      if (mapOp) {
+        mapOp(std::get<(size_t)ValueType::Map>(_value));
+      }
+    } else if (isList()) {
+      if (listOp) {
+        listOp(std::get<(size_t)ValueType::List>(_value));
+      }
+    }
   }
 };
 

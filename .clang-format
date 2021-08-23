@@ -2,8 +2,10 @@ BasedOnStyle: LLVM
 IndentWidth: 2
 TabWidth: 2
 PointerAlignment: Left
-SpaceBeforeRangeBasedForLoopColon: false
+AllowAllArgumentsOnNextLine: No
+BinPackArguments: Yes
+SpaceBeforeRangeBasedForLoopColon: No
 ColumnLimit: 120
 AlwaysBreakTemplateDeclarations: Yes
 Standard: c++20
-SortIncludes: false
+SortIncludes: No

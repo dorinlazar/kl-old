@@ -18,6 +18,7 @@ public:
   List() {}
   List(std::initializer_list<T> v) : _vec(v) {}
   List(size_t size) { _vec.reserve(size); }
+  void clear() { _vec.clear(); }
   T& operator[](size_t pos) {
     if (pos >= _vec.size()) {
       throw std::out_of_range("Invalid index access");
@@ -163,6 +164,8 @@ public:
     }
   }
 
+  void clear() { _map.clear(); }
+
   auto begin() const { return _map.cbegin(); }
   auto end() const { return _map.cend(); }
   auto begin() { return _map.begin(); }
@@ -171,6 +174,14 @@ public:
   size_t size() const { return _map.size(); }
 
   V& operator[](const K& key) {
+    auto it = _map.find(key);
+    if (it == _map.end()) {
+      throw std::out_of_range("Invalid key");
+    }
+    return it->second;
+  }
+
+  const V& operator[](const K& key) const {
     auto it = _map.find(key);
     if (it == _map.end()) {
       throw std::out_of_range("Invalid key");

@@ -88,6 +88,11 @@ public:
   }
 
 public:
+  void clear() {
+    _memblock = s_null_data;
+    _start = 0;
+    _end = 0;
+  }
   Text trim() const;
   Text trimLeft() const;
   Text trimRight() const;
