@@ -17,6 +17,12 @@ void Folder::addItem(const kl::FileInfo& fi, const kl::Text& fullPath) {
   }
 }
 
+std::shared_ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
+
+bool Folder::hasFile(const kl::Text& file) const {
+  return _files.any([file](const auto& f) { return f.path.fileName() == file; });
+}
+
 std::ostream& Folder::write(std::ostream& os) const {
   os << "Folder: " << _name << " with ";
   if (_parent) {
@@ -67,9 +73,8 @@ Folder* FSCache::getFolder(const kl::FilePath& name) {
           fp = fp.remove_base_folder();
         } else {
           if (!folder->hasFile(fp.fullPath())) {
-            folder = nullptr;
+            return nullptr;
           }
-          break;
         }
       }
       return folder;
