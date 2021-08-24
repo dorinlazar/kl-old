@@ -1,7 +1,6 @@
 #pragma once
 
 #include <variant>
-#include <memory>
 
 #include "klds.h"
 #include "kltext.h"
@@ -12,7 +11,7 @@ enum class ValueType : int { Null = 0, Scalar = 1, Map = 2, List = 3 };
 
 class Value {
 public:
-  using PValue = std::shared_ptr<Value>;
+  using PValue = ptr<Value>;
   using ListValue = List<PValue>;
   using MapValue = Dict<Text, PValue>;
   using NullValue = struct {};

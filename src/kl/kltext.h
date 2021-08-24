@@ -163,15 +163,20 @@ public:
   List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
   List<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
 
-  std::optional<Text> expect(const Text& t) const { // returns a value that skips the starting text
+  // returns a value that skips the starting text
+  std::optional<Text> expect(const Text& t) const {
     if (startsWith(t)) {
       return skip(t.size());
     }
     return {};
   }
-  std::optional<Text> expectws(const Text& t) { // returns a value that skips the starting text, skipping the whitespace
-    return trimLeft().expect(t);
-  }
+
+  // returns a value that skips the whitespace in the text
+  std::optional<Text> expectws(const Text& t) const { return trimLeft().expect(t); }
+
+  // returns text after <indentLevel> whitespaces, or empty;
+  std::optional<Text> skipIndent(const Text& t, uint32_t indentLevel) const;
+
   void fill_c_buffer(char* dest, uint32_t bufsize) const {
     if (bufsize == 0) {
       return;

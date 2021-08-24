@@ -1,6 +1,7 @@
 #include "klbsettings.h"
 #include "kl/klfs.h"
 #include <thread>
+#include "ff/poorconfig.h"
 
 void CommandParameters::_updateFlags() {
   auto cxxfl = configurationFile.getOpt("CXXFLAGS"_t);
@@ -68,13 +69,12 @@ void CommandParameters::_readDepotFile() {
   // simplified .depot.conf
   auto text = kl::readFile(".depot.conf");
   auto cfg = text.splitLines(kl::SplitEmpty::Discard);
-  for (const auto& txt: cfg) {
-    auto pos = txt.pos('=');
-    if (pos.has_value()) {
-      configurationFile.add(txt.sublen(0, *pos), txt.subpos((*pos) + 1, txt.size()));
-    } else {
-      configurationFile.add(txt, ""_t);
-    }
+
+  auto res = kl::PoorConfig::parse(cfg, '=');
+
+  for (const auto& [key, value]: res->asMap()) {
+    CHECK(value->isScalar());
+    configurationFile.add(key, value->getValue());
   }
 }
 
