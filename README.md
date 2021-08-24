@@ -53,17 +53,15 @@ Other tools will appear as needed for what I'm implementing.
 
 ## File formats
 
-- `(short term)` **very** basic support for the following file formats is planned:
-  - JSON
-  - YAML (maybe, even if the format is too complex for my liking)
-  - TOML (maybe)
-  - Markdown (will be incomplete)
+- **very** basic support for the following file formats is planned:
+  - `(short term)` PoorConfig - a restricted subset of YAML, specs to be defined.
+  - `(long term)` Markwrite - a restricted subset of Markdown with support for extensibility.
 
 ## KL Blog Engine
 
-Unbenownkst to all the follower (Hi, mum!), this is meant to be a content management system. This is the next thing I'll
-start implementing, starting from defining a derivation of markdown that allows easy extensibility with external modules
-and a template engine.
+Unbenownkst to all my follower (Hi, mum!, just kidding, mum doesn't follow me here), this is meant to be a content
+management system. This is the next thing I'll start implementing, starting from defining a derivation of markdown that
+allows easy extensibility with external modules and a template engine.
 
 ## KLB
 
