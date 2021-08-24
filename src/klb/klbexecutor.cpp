@@ -13,7 +13,7 @@ struct ExecStep {
 
 class ExecutionStrategyImpl {
 protected:
-  std::unique_ptr<Toolchain> _toolchain;
+  kl::uptr<Toolchain> _toolchain;
   ModuleCollection* _modules;
 
 public:

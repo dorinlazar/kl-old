@@ -6,7 +6,7 @@
 
 using namespace kl;
 
-std::unique_ptr<ModuleCollection> discoverModules(const kl::List<kl::Text>& targets, FSCache* cache) {
+kl::uptr<ModuleCollection> discoverModules(const kl::List<kl::Text>& targets, FSCache* cache) {
   auto mc = std::make_unique<ModuleCollection>(cache);
   if (targets.size() == 0) {
     mc->discoverAll();

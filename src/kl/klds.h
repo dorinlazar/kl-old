@@ -7,8 +7,15 @@
 #include <stdexcept>
 #include <functional>
 #include <optional>
+#include <memory>
 
 namespace kl {
+
+template <typename T>
+using ptr = std::shared_ptr<T>;
+
+template <typename T>
+using uptr = std::unique_ptr<T>;
 
 template <typename T>
 class List {
@@ -280,6 +287,9 @@ public:
     return lst;
   }
 };
+
+template <typename T>
+using PList = List<uptr<T>>;
 
 } // namespace kl
 

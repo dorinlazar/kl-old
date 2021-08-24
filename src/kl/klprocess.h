@@ -29,7 +29,7 @@ public:
   struct Impl;
 
 private:
-  std::unique_ptr<Impl> _handler;
+  uptr<Impl> _handler;
 };
 
 struct ExecutionNode {
@@ -43,7 +43,7 @@ public:
 };
 
 class ProcessHorde {
-  List<std::unique_ptr<ExecutionNode>> _nodes;
+  PList<ExecutionNode> _nodes;
   Queue<ExecutionNode*> _executionQueue;
   List<ExecutionNode*> _waitingQueue;
 

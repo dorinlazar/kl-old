@@ -5,10 +5,11 @@ main publishing format for the `klblog` engine.
 
 ## Short comparison with Markdown
 
-Markdown is meant to be a format that easily translates to the web, while at the same time keeping a pleasant text
-representation of the documents. We want to use that property and stray as little as possible away from it; however, for
-content management, we need an enriched version that supports extensibility, while not becoming an HTML dumpster. We
-still want to be pleasant looking for text-only readers and editors, while at the same time being easy to extend.
+[Markdown](https://daringfireball.net/projects/markdown/) is meant to be a format that easily translates to the web,
+while at the same time keeping a pleasant text representation of the documents. We want to use that property and stray
+as little as possible away from it; however, for content management, we need an enriched version that supports
+extensibility, while not becoming an HTML dumpster. We still want to be pleasant looking for text-only readers and
+editors, while at the same time being easy to extend.
 
 Unlike Markdown, Markwrite:
 - has an optional metadata field that the writer can use to override auto-detected properties of the document. This will

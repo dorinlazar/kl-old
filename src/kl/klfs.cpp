@@ -40,7 +40,7 @@ Text kl::readFile(const Text& filename) {
     log("File size for", filename.toView(), "exceeds expectations:", size);
     return ""_t;
   }
-  std::shared_ptr<char> memblock = std::shared_ptr<char>((char*)malloc(size), free);
+  ptr<char> memblock = ptr<char>((char*)malloc(size), free);
   is.read(memblock.get(), size);
   return Text::FromBuffer(memblock, 0, (uint32_t)size);
 }

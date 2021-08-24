@@ -139,7 +139,7 @@ bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
   if (nJobs < 1) {
     nJobs = 1;
   }
-  Dict<pid_t, std::shared_ptr<ExecutionMonitorNode>> monitor;
+  Dict<pid_t, ptr<ExecutionMonitorNode>> monitor;
   while (monitor.size() > 0 || !_executionQueue.empty()) {
     while (monitor.size() < nJobs && !_executionQueue.empty()) {
       auto node = _executionQueue.pop();

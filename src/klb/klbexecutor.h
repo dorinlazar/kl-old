@@ -6,7 +6,7 @@ struct ExecutionStrategyImpl;
 
 class ExecutionStrategy {
   ModuleCollection* _modules;
-  std::unique_ptr<ExecutionStrategyImpl> impl;
+  kl::uptr<ExecutionStrategyImpl> impl;
 
 public:
   ExecutionStrategy(ModuleCollection* coll);
