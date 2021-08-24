@@ -37,8 +37,8 @@ void ModuleCollection::_scanAllModules() {
 }
 
 void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
-  uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
-  uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
+  // uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
+  // uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
 
   for (const auto& target: targets) {
     kl::FilePath fp(CMD.sourceFolder + "/" + target);
