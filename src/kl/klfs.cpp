@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 Text discardable_folders[] = {"."_t, ".."_t};
 Text folder_separator("/");
 
-Text readFile(const Text& filename) {
+static Text _readFile(const Text& filename) {
   fs::path p = filename.startsWith("/") ? filename.toView() : fs::current_path() / filename.toView();
   std::error_code ec;
   auto size = fs::file_size(p, ec);
@@ -45,7 +45,7 @@ Text readFile(const Text& filename) {
   return Text::FromBuffer(memblock, 0, (uint32_t)size);
 }
 
-Text FilePath::normalize(const Text& filename) {
+static Text _normalize_path(const Text& filename) {
   TextChain tc;
   uint32_t lastPos = 0;
   bool lastWasSlash = false;
@@ -82,7 +82,7 @@ Text FilePath::normalize(const Text& filename) {
   return res;
 }
 
-FilePath::FilePath(const Text& path) : _fullName(normalize(path)) {
+FilePath::FilePath(const Text& path) : _fullName(_normalize_path(path)) {
   _lastSlashPos = _fullName.lastPos('/');
   _lastDotPos = _fullName.lastPos('.');
   if (_lastDotPos.has_value() && (*_lastDotPos == 0 || _fullName[*_lastDotPos - 1] == '/')) {
@@ -157,13 +157,6 @@ uint32_t FilePath::folderDepth() const {
   return depth() + 1;
 }
 
-bool FilePath::exists() const {
-  if (!_exists.has_value()) {
-    _exists = fs::exists(_fullName.toView());
-  }
-  return *_exists;
-}
-
 std::optional<FilePath> FilePath::hasFile(const FilePath& file) {
   if (file._fullName.startsWith(_fullName)) {
     return file.remove_base_folder(folderDepth());
@@ -233,7 +226,7 @@ Text FileSystemTools::getExecutablePath(const Text& exename) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
       FilePath fp(f + "/"_t + exename);
-      if (fp.exists()) {
+      if (FileSystemTools::exists(fp.fullPath())) {
         return fp.fullPath();
       }
     }
@@ -251,7 +244,17 @@ bool FileSystemTools::isDirectory(const Text& path) {
   return std::filesystem::is_directory(path.toView());
 }
 
-FileReader::FileReader(const Text& name) { _unreadContent = readFile(name); }
+bool FileSystemTools::isFile(const Text& path) {
+  // TODO try to not do it like a lazy individual that we all know you are.
+  return std::filesystem::is_regular_file(path.toView());
+}
+
+bool FileSystemTools::exists(const Text& path) {
+  // TODO try to not do it like a lazy individual that we all know you are.
+  return std::filesystem::exists(path.toView());
+}
+
+FileReader::FileReader(const Text& name) { _unreadContent = _readFile(name); }
 
 std::optional<Text> FileReader::readLine() {
   if (_unreadContent.size()) [[likely]] {

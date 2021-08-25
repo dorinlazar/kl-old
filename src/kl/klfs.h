@@ -11,9 +11,6 @@ class FilePath {
   Text _fullName;
   std::optional<uint32_t> _lastSlashPos;
   std::optional<uint32_t> _lastDotPos;
-  mutable std::optional<bool> _exists;
-
-  static Text normalize(const Text& filename);
 
 public:
   FilePath() = default;
@@ -33,8 +30,6 @@ public:
   uint32_t depth() const;
   uint32_t folderDepth() const; // depth if path is folder (usually depth()+1).
 
-  bool exists() const; // goes to the filesystem, BAD!
-
   std::optional<FilePath> hasFile(const FilePath& file);
 
   auto operator<=>(const FilePath& fp) const { return _fullName <=> fp._fullName; }
@@ -49,11 +44,13 @@ struct FileInfo {
 
 enum class NavigateInstructions { Continue, Skip, Stop };
 
-class FileSystemTools {
-public:
+struct FileSystemTools {
   static Text getExecutablePath(const Text& exename);
   static bool makeDirectory(const Text& path);
   static bool isDirectory(const Text& path);
+  static bool isFile(const Text& path);
+  static bool exists(const Text& path);
+
   static void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)>);
 };
 
