@@ -57,14 +57,16 @@ struct InputSource {
   virtual std::optional<Text> readLine() = 0;
   virtual std::optional<char> readChar() = 0;
   virtual List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) = 0;
+  virtual Text readAll() = 0;
   virtual bool hasData() = 0;
 };
 
 struct FileReader : public InputSource {
   FileReader(const Text& name);
   std::optional<Text> readLine() override final;
-  List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) override final;
   std::optional<char> readChar() override final;
+  List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) override final;
+  Text readAll() override final;
   bool hasData() override final;
 
 private:

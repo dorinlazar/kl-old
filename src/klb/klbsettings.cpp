@@ -67,7 +67,7 @@ void CommandParameters::_updateSysEnv(char** envp) {
 
 void CommandParameters::_readDepotFile() {
   // simplified .depot.conf
-  auto cfg = kl::FileReader(".depot.conf").readAllLines(kl::SplitEmpty::Discard);
+  auto cfg = kl::FileReader(".depot.conf").readAll();
 
   auto res = kl::PoorConfig::parse(cfg, '=');
 

@@ -271,6 +271,12 @@ List<Text> FileReader::readAllLines(SplitEmpty onEmpty) {
   return res;
 }
 
+Text FileReader::readAll() {
+  auto res = _unreadContent;
+  _unreadContent.clear();
+  return res;
+}
+
 std::optional<char> FileReader::readChar() {
   if (_unreadContent.size()) [[likely]] {
     char c = _unreadContent[0];

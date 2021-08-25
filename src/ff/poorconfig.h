@@ -4,6 +4,6 @@
 namespace kl {
 class PoorConfig {
 public:
-  static PValue parse(const List<Text>& fragment, char split = ':');
+  static PValue parse(const Text& fragment, char split = ':');
 };
 } // namespace kl
