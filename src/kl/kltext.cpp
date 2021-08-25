@@ -437,3 +437,11 @@ int64_t Text::toInt() const {
   // TODO make this properly
   return std::stoll(toString());
 }
+
+std::optional<Text> Text::skipIndent(uint32_t indentLevel) const {
+#error IMPLEMENT
+}
+
+uint32_t Text::getIndent() const {
+#error IMPLEMENT
+}

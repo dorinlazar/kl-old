@@ -178,7 +178,9 @@ public:
   std::optional<Text> expectws(const Text& t) const { return trimLeft().expect(t); }
 
   // returns text after <indentLevel> whitespaces, or empty;
-  std::optional<Text> skipIndent(const Text& t, uint32_t indentLevel) const;
+  std::optional<Text> skipIndent(uint32_t indentLevel) const;
+  // returns whitespace indent level
+  uint32_t getIndent() const;
 
   void fill_c_buffer(char* dest, uint32_t bufsize) const {
     if (bufsize == 0) {
