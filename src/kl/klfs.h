@@ -5,8 +5,6 @@
 
 namespace kl {
 
-enum class FileType { Directory, File };
-
 class FilePath {
   Text _fullName;
   std::optional<uint32_t> _lastSlashPos;
@@ -36,6 +34,7 @@ public:
   auto operator==(const FilePath& fp) const { return _fullName == fp._fullName; }
 };
 
+enum class FileType { Directory, File };
 struct FileInfo {
   FileType type;
   DateTime lastWrite;
