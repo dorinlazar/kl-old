@@ -93,7 +93,7 @@ public:
     auto list = directories.toList().sortInPlace();
 
     for (const auto& dir: list) {
-      bool made = kl::FileSystemTools::makeDirectory(dir);
+      bool made = kl::FileSystem::makeDirectory(dir);
       if (CMD.verbose && made) {
         kl::log("Created folder", dir);
       }
@@ -141,7 +141,7 @@ public:
     auto list = _buildFolders.toList().sortInPlace();
 
     for (const auto& dir: list) {
-      bool made = kl::FileSystemTools::makeDirectory(dir);
+      bool made = kl::FileSystem::makeDirectory(dir);
       if (CMD.verbose && made) {
         kl::log("Created folder", dir);
       }

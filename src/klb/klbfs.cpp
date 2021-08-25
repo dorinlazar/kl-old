@@ -37,7 +37,7 @@ std::ostream& Folder::write(std::ostream& os) const {
 }
 
 void FSCache::addFolder(const kl::Text& folderName) {
-  if (!kl::FileSystemTools::isDirectory(folderName)) {
+  if (!kl::FileSystem::isDirectory(folderName)) {
     if (CMD.verbose) {
       kl::log(folderName, "folder doesn't exist. Skipping");
     }
@@ -45,7 +45,7 @@ void FSCache::addFolder(const kl::Text& folderName) {
   }
   auto folder = std::make_shared<Folder>(folderName, folderName, nullptr);
   uint32_t depth = kl::FilePath(folderName).folderDepth();
-  kl::FileSystemTools::navigateTree(folderName, [folder, depth](const kl::FileInfo& file) -> kl::NavigateInstructions {
+  kl::FileSystem::navigateTree(folderName, [folder, depth](const kl::FileInfo& file) -> kl::NavigateInstructions {
     auto f = file;
     f.path = file.path.remove_base_folder(depth);
     folder->addItem(f, file.path.fullPath());

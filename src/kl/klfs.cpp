@@ -199,8 +199,8 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
   return res;
 }
 
-void FileSystemTools::navigateTree(const Text& treeBase,
-                                   std::function<NavigateInstructions(const FileInfo& file)> processor) {
+void FileSystem::navigateTree(const Text& treeBase,
+                              std::function<NavigateInstructions(const FileInfo& file)> processor) {
   // let's make a dummy item
   FileInfo dummy{.type = FileType::Directory, .lastWrite = s_UnixEpoch, .path = FilePath(treeBase)};
   std::queue<FileInfo> to_process;
@@ -221,12 +221,12 @@ void FileSystemTools::navigateTree(const Text& treeBase,
   }
 }
 
-Text FileSystemTools::getExecutablePath(const Text& exename) {
+Text FileSystem::getExecutablePath(const Text& exename) {
   if (!exename.contains('/')) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
       FilePath fp(f + "/"_t + exename);
-      if (FileSystemTools::exists(fp.fullPath())) {
+      if (FileSystem::exists(fp.fullPath())) {
         return fp.fullPath();
       }
     }
@@ -234,22 +234,22 @@ Text FileSystemTools::getExecutablePath(const Text& exename) {
   return exename;
 }
 
-bool FileSystemTools::makeDirectory(const Text& path) {
+bool FileSystem::makeDirectory(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::create_directories(path.toView());
 }
 
-bool FileSystemTools::isDirectory(const Text& path) {
+bool FileSystem::isDirectory(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::is_directory(path.toView());
 }
 
-bool FileSystemTools::isFile(const Text& path) {
+bool FileSystem::isFile(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::is_regular_file(path.toView());
 }
 
-bool FileSystemTools::exists(const Text& path) {
+bool FileSystem::exists(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::exists(path.toView());
 }

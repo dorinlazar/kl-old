@@ -44,7 +44,7 @@ struct FileInfo {
 
 enum class NavigateInstructions { Continue, Skip, Stop };
 
-struct FileSystemTools {
+struct FileSystem {
   static Text getExecutablePath(const Text& exename);
   static bool makeDirectory(const Text& path);
   static bool isDirectory(const Text& path);
