@@ -207,3 +207,25 @@ bool kl::mkDir(const Text& path) { // TODO try to not do it like a lazy individu
 bool kl::isDir(const Text& path) { // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::is_directory(path.toView());
 }
+
+FileReader::FileReader(const Text& name) { _unreadContent = readFile(name); }
+
+std::optional<Text> FileReader::readLine() {
+  if (_unreadContent.size()) [[likely]] {
+    auto [res, next] = _unreadContent.splitNextLine();
+    _unreadContent = next;
+    return res;
+  }
+  return {};
+}
+
+std::optional<char> FileReader::readChar() {
+  if (_unreadContent.size()) [[likely]] {
+    char c = _unreadContent[0];
+    _unreadContent = _unreadContent.skip(1);
+    return c;
+  }
+  return {};
+}
+
+bool FileReader::hasData() { return _unreadContent.size(); }

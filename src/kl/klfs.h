@@ -82,6 +82,22 @@ struct FileInfo {
 
 void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)>);
 
+struct InputSource {
+  virtual std::optional<Text> readLine() = 0;
+  virtual std::optional<char> readChar() = 0;
+  virtual bool hasData() = 0;
+};
+
+struct FileReader : public InputSource {
+  FileReader(const Text& name);
+  std::optional<Text> readLine() override final;
+  std::optional<char> readChar() override final;
+  bool hasData() override final;
+
+private:
+  Text _unreadContent; // we can do away with this.
+};
+
 } // namespace kl
 
 inline std::ostream& operator<<(std::ostream& os, const kl::FilePath& p) { return os << p.fullPath(); }
