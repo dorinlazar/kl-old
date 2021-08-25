@@ -320,6 +320,124 @@ void test_split_text() {
   log("Split by text [OK]");
 }
 
+void test_split_next_char() {
+  auto sp1 = "This is some bad text  "_t;
+  auto [first, next] = sp1.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == "This ");
+  CHECKST(next == "is some bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == "is ");
+  CHECKST(next == "some bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == "some ");
+  CHECKST(next == "bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == "bad ");
+  CHECKST(next == "text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == "text ");
+  CHECKST(next == " ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == " ");
+  CHECKST(next.size() == 0);
+
+  std::tie(first, next) = sp1.splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "This");
+  CHECKST(next == " is some bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "");
+  CHECKST(next == " is some bad text  ");
+  std::tie(first, next) = next.skip(1).splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "is");
+  CHECKST(next == " some bad text  ");
+  std::tie(first, next) = next.skip(1).splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "some");
+  CHECKST(next == " bad text  ");
+  std::tie(first, next) = next.skip(1).splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "bad");
+  CHECKST(next == " text  ");
+  std::tie(first, next) = next.skip(1).splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "text");
+  CHECKST(next == "  ");
+  std::tie(first, next) = next.skip(1).splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "");
+  CHECKST(next == " ");
+  std::tie(first, next) = next.skip(1).splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "");
+  CHECKST(next == "");
+
+  std::tie(first, next) = sp1.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "This");
+  CHECKST(next == "is some bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "is");
+  CHECKST(next == "some bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "some");
+  CHECKST(next == "bad text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "bad");
+  CHECKST(next == "text  ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "text");
+  CHECKST(next == " ");
+  std::tie(first, next) = next.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "");
+  CHECKST(next == "");
+
+  std::tie(first, next) = ""_t.splitNextChar(' ', SplitDirection::KeepLeft);
+  CHECKST(first == "");
+  CHECKST(next == "");
+
+  std::tie(first, next) = ""_t.splitNextChar(' ', SplitDirection::KeepRight);
+  CHECKST(first == "");
+  CHECKST(next == "");
+
+  std::tie(first, next) = ""_t.splitNextChar(' ', SplitDirection::Discard);
+  CHECKST(first == "");
+  CHECKST(next == "");
+
+  log("Split next char [OK]");
+}
+
+void test_split_next_line() {
+  auto sp1 = "This\nis\n\rsome\r\nbad\ntext\n\n"_t;
+  auto [first, next] = sp1.splitNextLine();
+  CHECKST(first == "This");
+  CHECKST(next == "is\n\rsome\r\nbad\ntext\n\n");
+  std::tie(first, next) = next.splitNextLine();
+  CHECKST(first == "is");
+  CHECKST(next == "some\r\nbad\ntext\n\n");
+  std::tie(first, next) = next.splitNextLine();
+  CHECKST(first == "some");
+  CHECKST(next == "bad\ntext\n\n");
+  std::tie(first, next) = next.splitNextLine();
+  CHECKST(first == "bad");
+  CHECKST(next == "text\n\n");
+  std::tie(first, next) = next.splitNextLine();
+  CHECKST(first == "text");
+  CHECKST(next == "\n");
+  std::tie(first, next) = next.splitNextLine();
+  CHECKST(first.size() == 0);
+  CHECKST(next.size() == 0);
+
+  auto sp2 = "A bad example"_t;
+  std::tie(first, next) = sp2.splitNextLine();
+  CHECKST(first == sp2);
+  CHECKST(next.size() == 0);
+
+  auto sp3 = "A simple\nexample"_t;
+  std::tie(first, next) = sp3.splitNextLine();
+  CHECKST(first == "A simple");
+  CHECKST(next == "example");
+
+  std::tie(first, next) = ""_t.splitNextLine();
+  CHECKST(first == "");
+  CHECKST(next == "");
+
+  log("Split next line [OK]");
+}
+
 void test_split_lines() {
   auto sp1 = "This\nis\nsome\ntext\n"_t.splitLines();
   CHECKST(sp1.size() == 5);
@@ -468,6 +586,8 @@ int main() {
   test_skip();
   test_pos();
   test_split_char();
+  test_split_next_line();
+  test_split_next_char();
   test_split_text();
   test_split_lines();
   test_last_pos();

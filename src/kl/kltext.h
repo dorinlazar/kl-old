@@ -13,6 +13,7 @@
 namespace kl {
 
 enum class SplitEmpty { Keep, Discard };
+enum class SplitDirection { KeepLeft, Discard, KeepRight };
 
 class Text {
   // the only place where we unconst this is in constructors. replace void with const char
@@ -159,6 +160,8 @@ public:
   std::optional<uint32_t> lastPos(char c) const;
 
   std::tuple<Text, Text> splitPos(int32_t where) const;
+  std::tuple<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
+  std::tuple<Text, Text> splitNextLine() const;
   List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
   List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
   List<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
