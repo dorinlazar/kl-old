@@ -5,11 +5,6 @@
 
 namespace kl {
 
-Text getExecutablePath(const Text& exename);
-bool mkDir(const Text& path);
-bool isDir(const Text& path);
-
-enum class NavigateInstructions { Continue, Skip, Stop };
 enum class FileType { Directory, File };
 
 class FilePath {
@@ -52,7 +47,15 @@ struct FileInfo {
   FilePath path;
 };
 
-void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)>);
+enum class NavigateInstructions { Continue, Skip, Stop };
+
+class FileSystemTools {
+public:
+  static Text getExecutablePath(const Text& exename);
+  static bool makeDirectory(const Text& path);
+  static bool isDirectory(const Text& path);
+  static void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)>);
+};
 
 struct InputSource {
   virtual std::optional<Text> readLine() = 0;

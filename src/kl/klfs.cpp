@@ -206,7 +206,8 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
   return res;
 }
 
-void kl::navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)> processor) {
+void FileSystemTools::navigateTree(const Text& treeBase,
+                                   std::function<NavigateInstructions(const FileInfo& file)> processor) {
   // let's make a dummy item
   FileInfo dummy{.type = FileType::Directory, .lastWrite = s_UnixEpoch, .path = FilePath(treeBase)};
   std::queue<FileInfo> to_process;
@@ -227,7 +228,7 @@ void kl::navigateTree(const Text& treeBase, std::function<NavigateInstructions(c
   }
 }
 
-Text kl::getExecutablePath(const Text& exename) {
+Text FileSystemTools::getExecutablePath(const Text& exename) {
   if (!exename.contains('/')) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
@@ -240,11 +241,13 @@ Text kl::getExecutablePath(const Text& exename) {
   return exename;
 }
 
-bool kl::mkDir(const Text& path) { // TODO try to not do it like a lazy individual that we all know you are.
+bool FileSystemTools::makeDirectory(const Text& path) {
+  // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::create_directories(path.toView());
 }
 
-bool kl::isDir(const Text& path) { // TODO try to not do it like a lazy individual that we all know you are.
+bool FileSystemTools::isDirectory(const Text& path) {
+  // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::is_directory(path.toView());
 }
 
