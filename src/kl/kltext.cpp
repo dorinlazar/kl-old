@@ -240,7 +240,6 @@ std::tuple<Text, Text> Text::splitPos(int32_t where) const {
 
 std::tuple<Text, Text> Text::splitNextChar(char c, SplitDirection direction) const {
   const char* ptr = _memblock.get();
-  uint32_t next_offset = _end;
   for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
     if (ptr[current_offset] == c) {
       if (direction == SplitDirection::KeepLeft) {
@@ -258,7 +257,6 @@ std::tuple<Text, Text> Text::splitNextChar(char c, SplitDirection direction) con
 
 std::tuple<Text, Text> Text::splitNextLine() const {
   const char* ptr = _memblock.get();
-  uint32_t next_offset = _end;
   for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
     if (ptr[current_offset] == '\n') {
       auto first = Text::FromBuffer(_memblock, _start, current_offset);

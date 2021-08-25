@@ -208,7 +208,7 @@ void Module::_scanHeader() {
     kl::log("For module", name, "header is", header->path);
   }
 
-  auto lines = kl::readFile(header->path.fullPath()).splitLines();
+  auto lines = kl::FileReader(header->path.fullPath()).readAllLines();
   for (const auto& l: lines) {
     auto t = l.trimLeft();
     if (t.size() == 0) {
@@ -251,7 +251,7 @@ void Module::_scanSource() {
     kl::log("For module", name, "source is", source->path);
   }
 
-  auto lines = kl::readFile(source->path.fullPath()).splitLines();
+  auto lines = kl::FileReader(source->path.fullPath()).readAllLines();
   for (const auto& l: lines) {
     auto t = l.trimLeft();
     if (t.size() == 0) {

@@ -16,7 +16,7 @@ namespace fs = std::filesystem;
 Text discardable_folders[] = {"."_t, ".."_t};
 Text folder_separator("/");
 
-Text kl::readFile(const Text& filename) {
+Text readFile(const Text& filename) {
   fs::path p = filename.startsWith("/") ? filename.toView() : fs::current_path() / filename.toView();
   std::error_code ec;
   auto size = fs::file_size(p, ec);
@@ -82,6 +82,38 @@ Text FilePath::normalize(const Text& filename) {
   return res;
 }
 
+FilePath::FilePath(const Text& path) : _fullName(normalize(path)) {
+  _lastSlashPos = _fullName.lastPos('/');
+  _lastDotPos = _fullName.lastPos('.');
+  if (_lastDotPos.has_value() && (*_lastDotPos == 0 || _fullName[*_lastDotPos - 1] == '/')) {
+    _lastDotPos = {};
+  }
+}
+Text FilePath::folderName() const {
+  return _lastSlashPos.has_value() ? Text(_fullName, 0, *_lastSlashPos == 0 ? 1 : *_lastSlashPos) : Text();
+}
+Text FilePath::fileName() const { return _lastSlashPos.has_value() ? _fullName.skip(*_lastSlashPos + 1) : _fullName; }
+Text FilePath::extension() const { return _lastDotPos.has_value() ? _fullName.skip(*_lastDotPos + 1) : Text(); }
+Text FilePath::stem() const {
+  uint32_t stem_start = _lastSlashPos.has_value() ? *_lastSlashPos + 1 : 0;
+  uint32_t stem_end = _lastDotPos.value_or(_fullName.size());
+  return Text(_fullName, stem_start, stem_end - stem_start);
+}
+Text FilePath::fullPath() const { return _fullName; }
+
+FilePath FilePath::replace_extension(const kl::Text& new_ext) const {
+  if (new_ext.size() > 0) {
+    if (_lastDotPos.has_value()) {
+      return FilePath(_fullName.subpos(0, *_lastDotPos) + new_ext);
+    }
+    return FilePath(_fullName + "."_t + new_ext);
+  }
+  if (_lastDotPos.has_value()) {
+    return FilePath(_fullName.subpos(0, *_lastDotPos - 1));
+  }
+  return *this;
+}
+
 Text FilePath::baseFolder(uint32_t levels) const {
   if (levels == 0 || _fullName.size() == 0) {
     return ""_t;
@@ -115,6 +147,14 @@ FilePath FilePath::remove_base_folder(uint32_t levels) const {
 FilePath FilePath::replace_base_folder(const kl::Text& new_folder, uint32_t levels) const {
   FilePath fp = remove_base_folder(levels);
   return FilePath(new_folder + folder_separator + fp._fullName);
+}
+
+uint32_t FilePath::depth() const { return _fullName.count('/') - (_fullName.startsWith("/") ? 1 : 0); }
+uint32_t FilePath::folderDepth() const {
+  if (_fullName.size() == 0 || (_fullName.size() == 1 && _fullName[0] == '.')) {
+    return 0;
+  }
+  return depth() + 1;
 }
 
 bool FilePath::exists() const {
@@ -219,6 +259,12 @@ std::optional<Text> FileReader::readLine() {
   return {};
 }
 
+List<Text> FileReader::readAllLines(SplitEmpty onEmpty) {
+  auto res = _unreadContent.splitLines(onEmpty);
+  _unreadContent.clear();
+  return res;
+}
+
 std::optional<char> FileReader::readChar() {
   if (_unreadContent.size()) [[likely]] {
     char c = _unreadContent[0];
@@ -229,3 +275,5 @@ std::optional<char> FileReader::readChar() {
 }
 
 bool FileReader::hasData() { return _unreadContent.size(); }
+
+std::ostream& operator<<(std::ostream& os, const kl::FilePath& p) { return os << p.fullPath(); }
