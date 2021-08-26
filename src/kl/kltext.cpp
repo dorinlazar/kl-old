@@ -557,6 +557,7 @@ std::optional<Text> Text::skipIndent(uint32_t indentLevel) const {
     if (*ptr != ' ') {
       return {};
     }
+    ptr++;
   }
   return skip(indentLevel);
 }

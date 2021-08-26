@@ -3,7 +3,18 @@ using namespace kl;
 
 static std::pair<PValue, Text> _readMap(const Text& fragment, char split) {
   auto value = Value::createMap();
-  Text nextData = fragment;
+  // Text processingLeftOver = fragment;
+  // std::optional<uint32_t> indentLevel;
+  // while (fragment.size() > 0) {
+  //   auto [currentLine, nextData] = processingLeftOver.splitNextLine();
+  //   if (currentLine.size() > 0) {
+  //     if (!indentLevel.has_value()) {
+  //       indentLevel = currentLine.getIndent();
+  //     }
+  //   }
+  //   processingLeftOver = nextData;
+  // }
+
   // bool indent = fragment.skipIndent()
   // while (nextData.)
   for (const auto& line: fragment.splitLines()) {

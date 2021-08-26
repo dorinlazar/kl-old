@@ -575,6 +575,33 @@ void test_fill_c_buff() {
   log("fill_c_buffer [OK]");
 }
 
+void test_indent() {
+  CHECKST(""_t.getIndent() == 0);
+  CHECKST("  "_t.getIndent() == 2);
+  CHECKST("  xxx"_t.getIndent() == 2);
+  CHECKST(" x "_t.getIndent() == 1);
+
+  CHECKST(!""_t.skipIndent(2).has_value());
+  CHECKST(""_t.skipIndent(0).has_value());
+  CHECKST(""_t.skipIndent(0) == ""_t);
+  CHECKST("  "_t.skipIndent(1).has_value());
+  CHECKST("  "_t.skipIndent(1) == " "_t);
+  CHECKST("  "_t.skipIndent(2).has_value());
+  CHECKST("  "_t.skipIndent(2) == ""_t);
+  CHECKST(!"  "_t.skipIndent(3).has_value());
+  CHECKST(!"  "_t.skipIndent(100).has_value());
+  CHECKST(!"  xxx"_t.skipIndent(3).has_value());
+  CHECKST("  xxx"_t.skipIndent(2) == "xxx"_t);
+  CHECKST("  xxx"_t.skipIndent(1) == " xxx"_t);
+  CHECKST("  xxx"_t.skipIndent(0) == "  xxx"_t);
+  CHECKST(!" x "_t.skipIndent(3).has_value());
+  CHECKST(!" x "_t.skipIndent(2).has_value());
+  CHECKST(" x "_t.skipIndent(1) == "x "_t);
+  CHECKST(" x "_t.skipIndent(0) == " x "_t);
+
+  log("TEXT: Indent [OK]");
+}
+
 int main() {
   test_text_construction();
   test_trimming();
@@ -594,5 +621,6 @@ int main() {
   test_sublen_subpos();
   test_fill_c_buff();
   test_count();
+  test_indent();
   return 0;
 }
