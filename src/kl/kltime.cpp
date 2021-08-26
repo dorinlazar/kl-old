@@ -31,7 +31,7 @@ static constexpr std::array<int32_t, 400 * 12 + 1> _calculateDeltaMonths() {
   return res;
 }
 
-static constexpr std::array<int32_t, 400 * 12 + 1> DeltaMonths = _calculateDeltaMonths();
+static const std::array<int32_t, 400 * 12 + 1> DeltaMonths = _calculateDeltaMonths();
 
 const DateTime DateTime::UnixEpoch(1970, 1, 1);
 const DateTime DateTime::MAX = DateTime::fromTicks(TimeLimits::MAX_TICKS);
