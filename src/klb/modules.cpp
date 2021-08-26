@@ -16,7 +16,7 @@ void ModuleCollection::_scanAllModules() {
   uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
   for (const auto& [path, folder]: _cache->all) {
     if (path.startsWith(CMD.sourceFolder)) { // we process sources first
-      auto moduleFolder = folder->fullPath().remove_base_folder(srcDepth);
+      auto moduleFolder = path == CMD.sourceFolder ? ""_t : folder->fullPath().remove_base_folder(srcDepth);
       for (const auto& file: folder->files()) {
         auto mod = makeModule(moduleFolder.fullPath(), file.path.stem());
         mod->addFile(file);
