@@ -3,6 +3,86 @@ using namespace kl;
 
 std::shared_ptr<char> Text::s_null_data = std::make_shared<char>(0);
 
+Text::Text(const std::string& s) {
+  _end = s.size();
+  if (_end > 0) {
+    // TODO replace as soon as gcc implements with make_shared_for_overwrite
+    _memblock = std::shared_ptr<char>((char*)malloc(_end), free);
+    std::copy(s.begin(), s.end(), _memblock.get());
+  }
+}
+
+Text::Text(const char* ptr) {
+  if (ptr) {
+    _end = std::strlen(ptr);
+    if (_end > 0) {
+      // TODO replace as soon as gcc implements with make_shared_for_overwrite
+      _memblock = std::shared_ptr<char>((char*)malloc(_end), free);
+      std::copy(ptr, ptr + _end, _memblock.get());
+    }
+  }
+}
+
+Text::Text(const char* ptr, uint32_t max) {
+  if (ptr) {
+    _end = std::min((uint32_t)std::strlen(ptr), max);
+    if (_end > 0) {
+      // TODO replace as soon as gcc implements with make_shared_for_overwrite
+      _memblock = std::shared_ptr<char>((char*)malloc(_end), free);
+      std::copy(ptr, ptr + _end, _memblock.get());
+    }
+  }
+}
+
+Text::Text(const Text& t, uint32_t start, uint32_t length) {
+  _memblock = t._memblock;
+  _start = std::min(t._start + start, t._end);
+  _end = std::min(_start + length, t._end);
+  if (_start == _end) {
+    _memblock = s_null_data;
+    _start = 0;
+    _end = 0;
+  }
+}
+
+Text& Text::operator=(const Text& v) {
+  _memblock = v._memblock;
+  _start = v._start;
+  _end = v._end;
+  return *this;
+}
+
+Text Text::FromBuffer(std::shared_ptr<char> p, uint32_t start, uint32_t end) {
+  if (start >= end || p.get() == nullptr) {
+    return {};
+  }
+  Text t;
+  t._memblock = p;
+  t._start = start;
+  t._end = end;
+  return t;
+}
+
+void Text::clear() {
+  _memblock = s_null_data;
+  _start = 0;
+  _end = 0;
+}
+
+Text Text::copy() const { return Text(_memblock.get() + _start, size()); }
+
+char Text::operator[](uint32_t index) const {
+  CHECKST(index < size()); // This is brutal. Do I really need this? Alternative: return \0
+  return *(_memblock.get() + _start + index);
+}
+
+uint32_t Text::size() const { return _end - _start; }
+const char* Text::begin() const { return _memblock.get() ? _memblock.get() + _start : nullptr; }
+const char* Text::end() const { return _memblock.get() + _end; }
+
+std::string Text::toString() const { return std::string((const char*)_memblock.get() + _start, size()); }
+std::string_view Text::toView() const { return std::string_view(_memblock.get() + _start, (size_t)size()); }
+
 Text Text::trim() const {
   const char* ptr = (const char*)_memblock.get();
   uint32_t s = _start;
@@ -438,10 +518,119 @@ int64_t Text::toInt() const {
   return std::stoll(toString());
 }
 
+Text Text::subpos(uint32_t start, uint32_t end) const {
+  if (start >= size() || end < start) {
+    return Text();
+  }
+  end++; // include the ending character
+  if (end > size()) {
+    end = size();
+  }
+  return Text::FromBuffer(_memblock, _start + start, _start + end);
+}
+
+Text Text::sublen(uint32_t start, uint32_t len) const {
+  if (start >= size()) {
+    return Text();
+  }
+  if (start + len > size()) {
+    len = size() - start;
+  }
+  return Text::FromBuffer(_memblock, _start + start, _start + start + len);
+}
+
+std::optional<Text> Text::expect(const Text& t) const {
+  if (startsWith(t)) {
+    return skip(t.size());
+  }
+  return {};
+}
+
+std::optional<Text> Text::expectws(const Text& t) const { return trimLeft().expect(t); }
+
 std::optional<Text> Text::skipIndent(uint32_t indentLevel) const {
-#error IMPLEMENT
+  if (size() < indentLevel) [[unlikely]] {
+    return {};
+  }
+  auto ptr = begin();
+  for (uint32_t i = 0; i < indentLevel; i++) {
+    if (*ptr != ' ') {
+      return {};
+    }
+  }
+  return skip(indentLevel);
 }
 
 uint32_t Text::getIndent() const {
-#error IMPLEMENT
+  uint32_t level = 0;
+  for (char c: *this) {
+    if (c == ' ') {
+      level++;
+    } else {
+      return level;
+    }
+  }
+  return level;
+}
+
+void Text::fill_c_buffer(char* dest, uint32_t bufsize) const {
+  if (bufsize == 0) {
+    return;
+  }
+  uint32_t amount_to_copy = bufsize <= size() ? bufsize - 1 : size();
+  std::copy(begin(), begin() + amount_to_copy, dest);
+  dest[amount_to_copy] = 0;
+}
+
+uint32_t Text::count(char t) const {
+  uint32_t count = 0;
+  for (auto c: *this) {
+    if (c == t) {
+      count++;
+    }
+  }
+  return count;
+}
+
+kl::Text operator"" _t(const char* p, size_t s) { return kl::Text(p, s); }
+
+void TextChain::_updateLength() {
+  _length = 0;
+  for (const auto& t: _chain) {
+    _length += t.size();
+  }
+}
+
+TextChain::TextChain(std::initializer_list<Text> l) : _chain(l) { _updateLength(); }
+TextChain::TextChain(List<Text>&& l) : _chain(l) { _updateLength(); }
+TextChain::TextChain(const List<Text>& l) : _chain(l) { _updateLength(); }
+const List<Text>& TextChain::chain() const { return _chain; }
+void TextChain::operator+=(const Text& text) {
+  _chain.add(text);
+  _length += text.size();
+}
+
+void TextChain::add(const Text& text) {
+  _chain.add(text);
+  _length += text.size();
+};
+
+void TextChain::operator+=(const TextChain& text) {
+  _chain.add(text._chain);
+  _length += text._length;
+}
+
+void TextChain::add(const TextChain& text) {
+  _chain.add(text._chain);
+  _length += text._length;
+};
+
+TextChain::operator Text() const { return toText(); }
+void TextChain::clear() {
+  _chain = {};
+  _length = 0;
+}
+
+std::size_t std::hash<kl::Text>::operator()(const kl::Text& s) const noexcept {
+  return std::hash<std::string_view>{}(s.toView());
 }
