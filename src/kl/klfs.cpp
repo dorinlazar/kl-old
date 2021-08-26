@@ -202,7 +202,7 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
 void FileSystem::navigateTree(const Text& treeBase,
                               std::function<NavigateInstructions(const FileInfo& file)> processor) {
   // let's make a dummy item
-  FileInfo dummy{.type = FileType::Directory, .lastWrite = s_UnixEpoch, .path = FilePath(treeBase)};
+  FileInfo dummy{.type = FileType::Directory, .lastWrite = DateTime::UnixEpoch, .path = FilePath(treeBase)};
   std::queue<FileInfo> to_process;
   to_process.push(dummy);
   while (!to_process.empty()) {

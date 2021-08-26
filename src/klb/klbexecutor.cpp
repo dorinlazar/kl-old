@@ -117,7 +117,7 @@ public:
             _toolchain->buildCmdLine(mod->getSourcePath(), mod->getObjectPath(), mod->includeFolders.toList());
         auto node = _horde.addNode(cmdLine, {});
         _execNodes.add(mod->getObjectPath(), node);
-        mod->updateObjectTimestamp(kl::DateTime::MAX());
+        mod->updateObjectTimestamp(kl::DateTime::MAX);
       }
     } else if (t == ExecStepType::Link) {
       if (mod->requiresLink()) {

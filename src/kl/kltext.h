@@ -119,16 +119,17 @@ public:
   TextChain(List<Text>&& l);
   TextChain(const List<Text>& l);
 
-  const List<Text>& chain() const;
-
   inline TextChain& operator=(const TextChain& v) = default;
 
   void operator+=(const Text& text);
   void add(const Text& text);
   void operator+=(const TextChain& text);
   void add(const TextChain& text);
+
   Text toText() const;
   operator Text() const;
+
+  const List<Text>& chain() const;
 
   void clear();
   void consolidate();

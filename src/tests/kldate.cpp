@@ -2,15 +2,16 @@
 #include "kl/kltime.h"
 
 void sanity_checks() {
-  CHECKST((25 * kl::TimeTools::DAYS_IN_400_YEARS - 366) * kl::TimeTools::TICKS_PER_DAY == kl::TimeTools::MAX_TICKS + 1);
+  CHECKST((25 * kl::TimeLimits::DAYS_IN_400_YEARS - 366) * kl::TimeLimits::TICKS_PER_DAY ==
+          kl::TimeLimits::MAX_TICKS + 1);
   kl::log("DateTime sanity checks [OK]");
 }
 
 void test_ticks() {
-  CHECKST(kl::DateTime::fromTicks(kl::TimeTools::MIN_TICKS - 100).ticks() == kl::TimeTools::MIN_TICKS);
-  CHECKST(kl::DateTime::fromTicks(kl::TimeTools::MIN_TICKS).ticks() == kl::TimeTools::MIN_TICKS);
-  CHECKST(kl::DateTime::fromTicks(kl::TimeTools::MAX_TICKS).ticks() == kl::TimeTools::MAX_TICKS);
-  CHECKST(kl::DateTime::fromTicks(kl::TimeTools::MAX_TICKS + 1000).ticks() == kl::TimeTools::MAX_TICKS);
+  CHECKST(kl::DateTime::fromTicks(kl::TimeLimits::MIN_TICKS - 100).ticks() == kl::TimeLimits::MIN_TICKS);
+  CHECKST(kl::DateTime::fromTicks(kl::TimeLimits::MIN_TICKS).ticks() == kl::TimeLimits::MIN_TICKS);
+  CHECKST(kl::DateTime::fromTicks(kl::TimeLimits::MAX_TICKS).ticks() == kl::TimeLimits::MAX_TICKS);
+  CHECKST(kl::DateTime::fromTicks(kl::TimeLimits::MAX_TICKS + 1000).ticks() == kl::TimeLimits::MAX_TICKS);
   kl::log("Ticks tests [OK]");
 }
 
@@ -58,7 +59,7 @@ void check_year(uint32_t year) {
 
 void test_date_time() {
   auto dt = kl::DateTime(9999, 12, 31, 23, 59, 59, 999999999);
-  CHECKST(dt.ticks() == kl::TimeTools::MAX_TICKS);
+  CHECKST(dt.ticks() == kl::TimeLimits::MAX_TICKS);
   CHECKST(dt.days() == 3652058);
   auto d = dt.date();
   CHECKST(d.year == 9999);
