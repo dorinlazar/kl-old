@@ -66,14 +66,19 @@ void CommandParameters::_updateSysEnv(char** envp) {
 }
 
 void CommandParameters::_readDepotFile() {
-  // simplified .depot.conf
-  auto cfg = kl::FileReader(".depot.conf").readAll();
+  try {
+    auto cfg = kl::FileReader(".depot.conf").readAll();
 
-  auto res = kl::PoorConfig::parse(cfg, '=');
+    auto res = kl::PoorConfig::parse(cfg, '=');
 
-  for (const auto& [key, value]: res->asMap()) {
-    CHECK(value->isScalar());
-    configurationFile.add(key, value->getValue());
+    for (const auto& [key, value]: res->asMap()) {
+      CHECK(value->isScalar());
+      configurationFile.add(key, value->getValue());
+    }
+  } catch (...) {
+    if (verbose) {
+      kl::log("No .depot.conf exists. Using defaults.");
+    }
   }
 }
 

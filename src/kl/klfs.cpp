@@ -18,13 +18,16 @@ Text folder_separator("/");
 
 static Text _readFile(const Text& filename) {
   fs::path p = filename.startsWith("/") ? filename.toView() : fs::current_path() / filename.toView();
-  std::error_code ec;
-  auto size = fs::file_size(p, ec);
-  if (ec) {
-    err("Encountered error while checking", filename, ":", ec.message());
-    return ""_t;
+  auto size = fs::file_size(p); // throws if error;
+
+  if (size > 0x8FFFFFFFULL) [[unlikely]] {
+    // we don't work with oversized data
+    throw std::out_of_range("File size exceeds expectations");
   }
-  std::ifstream is(p, std::ifstream::binary);
+
+  std::ifstream is;
+  is.exceptions(std::ios_base::failbit | std::ios_base::badbit);
+  is.open(p, std::ifstream::binary);
   char a, b, c;
   a = is.get();
   b = is.get();
@@ -33,12 +36,6 @@ static Text _readFile(const Text& filename) {
     is.seekg(0);
   } else {
     size -= 3;
-  }
-
-  if (size > 0x8FFFFFFFULL) {
-    // we don't work with oversized data
-    log("File size for", filename.toView(), "exceeds expectations:", size);
-    return ""_t;
   }
   ptr<char> memblock = ptr<char>((char*)malloc(size), free);
   is.read(memblock.get(), size);
