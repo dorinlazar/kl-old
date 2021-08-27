@@ -39,20 +39,6 @@ static std::pair<PValue, Text> _readMap(const Text& fragment, char split, uint32
     }
     processingLeftOver = nextData;
   }
-
-  // // bool indent = fragment.skipIndent()
-  // // while (nextData.)
-  // for (const auto& line: fragment.splitLines()) {
-  //   auto pos = line.pos(split);
-  //   if (pos.has_value()) {
-  //     value->add(line.sublen(0, *pos).trim(), line.subpos((*pos) + 1, line.size()).trim());
-  //   } else {
-  //     auto txt = line.trim();
-  //     if (txt.size() > 0) {
-  //       value->add(line.trim(), ""_t);
-  //     }
-  //   }
-  // }
   return {value, processingLeftOver};
 }
 
