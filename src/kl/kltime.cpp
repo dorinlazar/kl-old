@@ -93,7 +93,7 @@ DateTime::DateTime(uint32_t year, uint32_t month, uint32_t day, uint32_t hour, u
   day--;
   // This isn't constexpr in C++20 :( auto years = std::div(year - 1, 400);
   // ldiv_t years{.quot = year / 400, .rem = year % 400};
-  auto years = std::div(year - 1, 400);
+  auto years = std::div(year, 400);
   auto& monthsizes = _month_sizes(years.rem + 1);
   if (day >= monthsizes[month]) [[unlikely]] {
     _ticks = 0;
