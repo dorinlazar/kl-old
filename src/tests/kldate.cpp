@@ -59,6 +59,7 @@ void check_year(uint32_t year) {
 
 void test_date_time() {
   auto dt = kl::DateTime(9999, 12, 31, 23, 59, 59, 999999999);
+  kl::log ("dt.ticks:", dt.ticks(), kl::TimeLimits::MAX_TICKS);
   CHECKST(dt.ticks() == kl::TimeLimits::MAX_TICKS);
   CHECKST(dt.days() == 3652058);
   auto d = dt.date();

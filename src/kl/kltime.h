@@ -20,11 +20,11 @@ struct Date {
 };
 
 struct TimeLimits {
-  static const int64_t MIN_TICKS = 0LL;                   // 0001-01-01 00:00:00 UTC (if that makes any sense)
-  static const int64_t MAX_TICKS = 3155378975999999999LL; // 9999-12-31 23:59:59 UTC
-  static const int64_t TICKS_PER_SECOND = 10'000'000LL;
-  static const int64_t TICKS_PER_DAY = TICKS_PER_SECOND * 24 * 3600;
-  static const uint32_t DAYS_IN_400_YEARS = 365 * 400 + 97;
+  static constexpr int64_t MIN_TICKS = 0LL;                   // 0001-01-01 00:00:00 UTC (if that makes any sense)
+  static constexpr int64_t MAX_TICKS = 3155378975999999999LL; // 9999-12-31 23:59:59 UTC
+  static constexpr int64_t TICKS_PER_SECOND = 10'000'000LL;
+  static constexpr int64_t TICKS_PER_DAY = TICKS_PER_SECOND * 24 * 3600;
+  static constexpr uint32_t DAYS_IN_400_YEARS = 365 * 400 + 97;
 };
 
 // Interface inspired after the C# Timespan
