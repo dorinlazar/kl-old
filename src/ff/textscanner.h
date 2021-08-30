@@ -45,6 +45,12 @@ public:
   ParsedCharacter readChar();
   ParsedCharacter readCharEscaped();
   Text readQuotedString();
+  Text readWord();
+  Text readLine();
+  void expectws(char character, NewLineHandling handling = NewLineHandling::Keep);
+
+public:
+  void error(const Text& why) const;
 };
 
 } // namespace kl

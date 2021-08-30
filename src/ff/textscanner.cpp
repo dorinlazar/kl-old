@@ -47,14 +47,14 @@ bool TextScanner::empty() const { return _dataLeft == 0; }
 
 char TextScanner::topChar() const {
   if (empty()) {
-    throw ParsingError("Requesting data from empty container", _line, _column);
+    error("Requesting data from empty container");
   }
   return *_current;
 }
 
 ParsedCharacter TextScanner::readChar() {
   if (empty()) {
-    throw ParsingError("Reading from empty data"_t, _line, _column);
+    error("Reading from empty data");
   }
   ParsedCharacter result{.character = *_current};
   advance();
@@ -63,24 +63,25 @@ ParsedCharacter TextScanner::readChar() {
 
 ParsedCharacter TextScanner::readCharEscaped() {
   if (empty()) {
-    throw ParsingError("Reading from empty data"_t, _line, _column);
+    error("Reading from empty data");
   }
   ParsedCharacter result{.character = *_current};
   advance();
   if (result.character == '\\') {
     if (empty()) {
-      throw ParsingError("Reading from empty data mid-escape"_t, _line, _column);
+      error("Reading from empty data mid-escape");
     }
     result.escaped = true;
     switch (*_current) {
     case 'r': result.character = '\r'; break;
     case 'n': result.character = '\n'; break;
+    case '\n': result.character = '\n'; break;
     case 't': result.character = '\t'; break;
     case '0': result.character = '\0'; break;
     case '\\': result.character = '\\'; break;
     case '"': result.character = '"'; break;
     case '\'': result.character = '\''; break;
-    default: throw ParsingError("Invalid escape character"_t, _line, _column);
+    default: error("Invalid escape character");
     }
     advance();
   }
@@ -89,7 +90,7 @@ ParsedCharacter TextScanner::readCharEscaped() {
 
 Text TextScanner::readQuotedString() {
   if (empty() || *_current != '"') {
-    throw ParsingError("Unexpected character", _line, _column);
+    error("Unexpected character");
   }
   advance();
   TextChain tc;
@@ -108,3 +109,41 @@ Text TextScanner::readQuotedString() {
   }
   return tc.toText();
 }
+
+Text TextScanner::readWord() {
+  auto start = _offset;
+  while (!empty()) {
+    char c = *_current;
+    if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')) {
+      advance();
+    } else {
+      break;
+    }
+  }
+  return _originalSource.subpos(start, _offset - 1);
+}
+
+// TODO make this smarter, to support the \rs as well
+Text TextScanner::readLine() {
+  auto start = _offset;
+  while (!empty()) {
+    if (*_current == '\n') {
+      break;
+    }
+    advance();
+  }
+  auto res = _originalSource.subpos(start, _offset - 1);
+  if (!empty()) {
+    advance();
+  }
+  return res;
+}
+
+void TextScanner::expectws(char character, NewLineHandling handling) {
+  skipWhitespace(handling);
+  if (readChar().character != character) {
+    error("Unexpected character");
+  }
+}
+
+void TextScanner::error(const Text& why) const { throw ParsingError(why, _line, _column); }

@@ -62,7 +62,71 @@ void test_read_quoted_string() {
   kl::log("SCANNER Quoted [OK]");
 }
 
+void test_read_word() {
+  kl::TextScanner scanner1("This word");
+  CHECKST(scanner1.readWord() == "This");
+  CHECKST(scanner1.readWord() == "");
+  CHECKST(scanner1.readChar().character == ' ');
+  CHECKST(scanner1.readWord() == "word");
+  CHECKST(scanner1.empty());
+  kl::TextScanner scanner2("Thisword");
+  CHECKST(scanner2.readWord() == "Thisword");
+  CHECKST(scanner2.empty());
+
+  kl::TextScanner scanner3("This_long012_ISword indeed");
+  CHECKST(scanner3.readWord() == "This_long012_ISword");
+  CHECKST(scanner3.readChar().character == ' ');
+  CHECKST(scanner3.readWord() == "indeed");
+  CHECKST(scanner3.empty());
+
+  kl::TextScanner scanner4("This_long\\012_ISword indeed");
+  CHECKST(scanner4.readWord() == "This_long");
+
+  kl::TextScanner scanner5("This_long\0_12_ISword indeed");
+  CHECKST(scanner5.readWord() == "This_long");
+
+  kl::log("SCANNER Word [OK]");
+}
+
+void test_read_escaped_char() {
+  kl::TextScanner scanner1("This_long\\012_ISword indeed");
+  CHECKST(scanner1.readWord() == "This_long");
+  CHECKST(scanner1.readCharEscaped().character == '\0');
+
+  kl::TextScanner scanner2("\t\\t\\0\\n\n");
+  auto ch = scanner2.readCharEscaped();
+  CHECKST(ch.character == '\t');
+  CHECKST(!ch.escaped);
+  ch = scanner2.readCharEscaped();
+  CHECKST(ch.character == '\t');
+  CHECKST(ch.escaped);
+  ch = scanner2.readCharEscaped();
+  CHECKST(ch.character == '\0');
+  CHECKST(ch.escaped);
+  ch = scanner2.readCharEscaped();
+  CHECKST(ch.character == '\n');
+  CHECKST(ch.escaped);
+  ch = scanner2.readCharEscaped();
+  CHECKST(ch.character == '\n');
+  CHECKST(!ch.escaped);
+  CHECKST(scanner2.empty());
+
+  kl::log("SCANNER read escaped [OK]");
+}
+
+void test_read_new_line() {
+  kl::TextScanner scanner1("A long line\nand all good");
+  CHECKST(scanner1.readLine() == "A long line");
+  CHECKST(scanner1.readLine() == "and all good");
+  CHECKST(scanner1.empty());
+
+  kl::log("SCANNER read new line [OK]");
+}
+
 int main() {
   test_scanner_whitespace();
   test_read_quoted_string();
+  test_read_word();
+  test_read_escaped_char();
+  test_read_new_line();
 }
