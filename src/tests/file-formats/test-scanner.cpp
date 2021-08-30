@@ -54,6 +54,9 @@ void test_read_quoted_string() {
   kl::TextScanner scannerEmpty("\"\"");
   CHECKST(scannerEmpty.readQuotedString() == ""_t);
 
+  kl::TextScanner scannerEsc("\"This text contains escaped characters like:\\n- newlines\\n-\\ttabs\"");
+  CHECKST(scannerEsc.readQuotedString() == "This text contains escaped characters like:\n- newlines\n-\ttabs"_t);
+
   EXPECTEX<kl::ParsingError>([]() { kl::TextScanner("\"").readQuotedString(); });
 
   kl::log("SCANNER Quoted [OK]");

@@ -75,6 +75,7 @@ ParsedCharacter TextScanner::readCharEscaped() {
     switch (*_current) {
     case 'r': result.character = '\r'; break;
     case 'n': result.character = '\n'; break;
+    case 't': result.character = '\t'; break;
     case '0': result.character = '\0'; break;
     case '\\': result.character = '\\'; break;
     case '"': result.character = '"'; break;
