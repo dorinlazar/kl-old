@@ -118,7 +118,7 @@ void ModuleItem::_updateModuleType() {
     type = ModuleItemType::Object;
   } else if (extension.startsWith("c")) {
     type = ModuleItemType::Code;
-  } else if (extension.size() == 0) {
+  } else if (extension == "exe"_t) {
     type = ModuleItemType::Executable;
   } else {
     type = ModuleItemType::Unknown;
@@ -407,7 +407,7 @@ kl::Text Module::getExecutablePath() const {
   if (executable.has_value()) {
     return executable->path.fullPath();
   }
-  return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension(""_t).fullPath();
+  return kl::FilePath(name).replace_base_folder(CMD.buildFolder, 0).replace_extension("exe"_t).fullPath();
 }
 
 kl::Text Module::getBuildFolder() const {
