@@ -432,6 +432,12 @@ List<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
 }
 
 Text TextChain::toText() const {
+  if (_chain.size() == 0) {
+    return {};
+  }
+  if (_chain.size() == 1) {
+    return _chain[0];
+  }
   // TODO replace as soon as gcc implements with make_shared_for_overwrite
   std::shared_ptr<char> memblock = std::shared_ptr<char>((char*)malloc(_length), free);
   char* ptr = memblock.get();

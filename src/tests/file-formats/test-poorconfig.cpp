@@ -78,9 +78,20 @@ test-up: back on track!!!");
   kl::log("POORCONFIG Multilevel values [OK]");
 }
 
+void test_invalid_config_01() {
+  try {
+    auto value = kl::PoorConfig::parse("\n\
+url\n\
+name: dorinlazar.ro\n");
+  } catch (const kl::ParsingError& fmtError) {
+    CHECKST(fmtError.line() == 2);
+  }
+}
+
 int main() {
   test_basic();
   test_newlines();
   test_empty();
   test_multi_level_values();
+  test_invalid_config_01();
 }

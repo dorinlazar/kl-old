@@ -1,5 +1,6 @@
 #pragma once
 #include "kl/klvalue.h"
+#include "textscanner.h"
 
 namespace kl {
 class PoorConfig {
