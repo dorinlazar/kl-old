@@ -1,5 +1,26 @@
 #include "ff/textscanner.h"
 
+void test_line_column() {
+  kl::TextScanner sc("   \n   x     ");
+  sc.skipWhitespace(kl::NewLineHandling::Keep);
+  CHECKST(sc.line() == 1);
+  CHECKST(sc.column() == 4);
+  CHECKST(sc.readChar().character == '\n');
+  CHECKST(sc.line() == 2);
+  CHECKST(sc.column() == 1);
+  sc.rewind();
+  CHECKST(sc.line() == 1);
+  CHECKST(sc.column() == 1);
+  sc.skipWhitespace(kl::NewLineHandling::Skip);
+  CHECKST(sc.line() == 2 && sc.column() == 4);
+  CHECKST(sc.readChar().character == 'x');
+  CHECKST(sc.line() == 2 && sc.column() == 5);
+  sc.skipWhitespace();
+  CHECKST(sc.line() == 2 && sc.column() == 10);
+
+  kl::log("SCANNER line/column [OK]");
+}
+
 void test_scanner_whitespace() {
   kl::TextScanner scanner1("     a");
   scanner1.skipWhitespace();
@@ -157,6 +178,7 @@ void test_remainder() {
 }
 
 int main() {
+  test_line_column();
   test_scanner_whitespace();
   test_read_quoted_string();
   test_read_word();

@@ -156,10 +156,11 @@ Text TextScanner::remainder() const {
 
 void TextScanner::expectws(char character, NewLineHandling handling) {
   skipWhitespace(handling);
-  auto ch = readChar();
-  if (ch.character != character) {
-    error("Unexpected character:"_t + Text(&ch.character, 1) + " vs: " + Text(&character, 1));
+  auto ch = topChar();
+  if (ch != character) {
+    error("Unexpected character: "_t + Text(ch) + " vs: " + Text(character));
   }
+  advance();
 }
 
 void TextScanner::error(const Text& why) const { throw ParsingError(why, loc._line, loc._column); }

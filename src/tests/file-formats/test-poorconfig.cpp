@@ -83,6 +83,7 @@ void test_invalid_config_01() {
     auto value = kl::PoorConfig::parse("\nurl\nname: dorinlazar.ro\n");
   } catch (const kl::ParsingError& fmtError) {
     CHECKST(fmtError.line() == 2);
+    CHECKST(fmtError.column() == 4);
   }
 }
 

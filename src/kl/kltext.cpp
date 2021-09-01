@@ -3,6 +3,12 @@ using namespace kl;
 
 std::shared_ptr<char> Text::s_null_data = std::make_shared<char>(0);
 
+Text::Text(char c) {
+  _memblock = std::shared_ptr<char>((char*)malloc(sizeof(c)), free);
+  _memblock.get()[0] = c;
+  _end = sizeof(c);
+}
+
 Text::Text(const std::string& s) {
   _end = s.size();
   if (_end > 0) {

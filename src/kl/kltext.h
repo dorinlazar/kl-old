@@ -28,6 +28,7 @@ public:
   Text(const Text&) = default;
   Text(Text&&) = default;
 
+  Text(char c);
   Text(const std::string& s);
   Text(const char* ptr);
   Text(const char* ptr, uint32_t max);
