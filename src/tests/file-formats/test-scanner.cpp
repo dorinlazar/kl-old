@@ -142,6 +142,20 @@ void test_indentation() {
   kl::log("SCANNER indentation [OK]");
 }
 
+void test_remainder() {
+  kl::TextScanner scanner1("This word");
+  CHECKST(scanner1.remainder() == "This word");
+  CHECKST(scanner1.readWord() == "This");
+  CHECKST(scanner1.remainder() == " word");
+  CHECKST(scanner1.readChar().character == ' ');
+  CHECKST(scanner1.remainder() == "word");
+  CHECKST(scanner1.readWord() == "word");
+  CHECKST(scanner1.empty());
+  CHECKST(scanner1.remainder() == ""_t);
+
+  kl::log("SCANNER remainder [OK]");
+}
+
 int main() {
   test_scanner_whitespace();
   test_read_quoted_string();
@@ -149,4 +163,5 @@ int main() {
   test_read_escaped_char();
   test_read_new_line();
   test_indentation();
+  test_remainder();
 }

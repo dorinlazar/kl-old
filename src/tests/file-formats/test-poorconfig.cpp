@@ -80,9 +80,7 @@ test-up: back on track!!!");
 
 void test_invalid_config_01() {
   try {
-    auto value = kl::PoorConfig::parse("\n\
-url\n\
-name: dorinlazar.ro\n");
+    auto value = kl::PoorConfig::parse("\nurl\nname: dorinlazar.ro\n");
   } catch (const kl::ParsingError& fmtError) {
     CHECKST(fmtError.line() == 2);
   }

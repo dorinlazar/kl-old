@@ -3,7 +3,8 @@
 using namespace kl;
 
 ParsingError::ParsingError(const Text& why, uint32_t line, uint32_t column)
-    : std::logic_error(why.toString()), _line(line), _column(column) {}
+    : std::logic_error((why + "@"_t + std::to_string(line) + ":" + std::to_string(column)).toText().toString()),
+      _line(line), _column(column) {}
 
 uint32_t ParsingError::line() const { return _line; }
 uint32_t ParsingError::column() const { return _column; }
@@ -39,7 +40,6 @@ void TextScanner::advance() {
   if (loc._dataLeft == 0) [[unlikely]] {
     error("Trying to advance beyond end of text");
   }
-  loc._offset++;
   if (*loc._current == '\n') {
     loc._line++;
     loc._column = 1;
@@ -48,6 +48,7 @@ void TextScanner::advance() {
   }
   loc._dataLeft--;
   loc._current++;
+  loc._offset++;
 }
 
 bool TextScanner::empty() const { return loc._dataLeft == 0; }
@@ -121,7 +122,7 @@ Text TextScanner::readWord() {
   auto start = loc._offset;
   while (!empty()) {
     char c = *loc._current;
-    if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')) {
+    if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_' || c == '-')) {
       advance();
     } else {
       break;
@@ -146,10 +147,18 @@ Text TextScanner::readLine() {
   return res;
 }
 
+Text TextScanner::remainder() const {
+  if (empty()) {
+    return ""_t;
+  }
+  return _originalSource.skip(loc._offset);
+}
+
 void TextScanner::expectws(char character, NewLineHandling handling) {
   skipWhitespace(handling);
-  if (readChar().character != character) {
-    error("Unexpected character");
+  auto ch = readChar();
+  if (ch.character != character) {
+    error("Unexpected character:"_t + Text(&ch.character, 1) + " vs: " + Text(&character, 1));
   }
 }
 

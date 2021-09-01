@@ -36,6 +36,7 @@ public:
   Text readQuotedString();
   Text readWord();
   Text readLine();
+  Text remainder() const;
   void expectws(char character, NewLineHandling handling = NewLineHandling::Keep);
   uint32_t getIndentationLevel() const;
 
