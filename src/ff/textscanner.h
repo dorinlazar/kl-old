@@ -21,20 +21,9 @@ struct ParsedCharacter {
 enum class NewLineHandling { Skip, Keep };
 
 class TextScanner {
-  uint32_t _line = 1;
-  uint32_t _column = 1;
-  uint32_t _offset = 0;
-
-  Text _originalSource;
-  const char* _current;
-  uint32_t _dataLeft = 0;
-
-  void advance();
 
 public:
   TextScanner(const Text& source);
-
-  void rewind();
 
   uint32_t line() const;
   uint32_t column() const;
@@ -48,9 +37,31 @@ public:
   Text readWord();
   Text readLine();
   void expectws(char character, NewLineHandling handling = NewLineHandling::Keep);
+  uint32_t getIndentationLevel() const;
+
+public:
+  struct DataLocation {
+    friend class TextScanner;
+
+  protected:
+    uint32_t _line = 1;
+    uint32_t _column = 1;
+    uint32_t _offset = 0;
+    uint32_t _dataLeft = 0;
+    const char* _current;
+  };
+
+  void rewind();
+  const DataLocation& location() const;
+  void restoreLocation(const DataLocation& location);
 
 public:
   void error(const Text& why) const;
+
+private:
+  DataLocation loc;
+  Text _originalSource;
+  void advance();
 };
 
 } // namespace kl

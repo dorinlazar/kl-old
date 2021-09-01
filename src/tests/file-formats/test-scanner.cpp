@@ -123,10 +123,30 @@ void test_read_new_line() {
   kl::log("SCANNER read new line [OK]");
 }
 
+void test_indentation() {
+  kl::TextScanner sc1("      text");
+  CHECKST(sc1.getIndentationLevel() == 6);
+  sc1.readChar();
+  CHECKST(sc1.getIndentationLevel() == 5);
+  sc1.skipWhitespace();
+  CHECKST(sc1.getIndentationLevel() == 0);
+  CHECKST(sc1.readWord() == "text");
+  CHECKST(sc1.empty());
+  CHECKST(sc1.getIndentationLevel() == 0);
+
+  kl::TextScanner sc2("  \n    ");
+  CHECKST(sc2.getIndentationLevel() == 2);
+  sc2.readLine();
+  CHECKST(sc2.getIndentationLevel() == 4);
+
+  kl::log("SCANNER indentation [OK]");
+}
+
 int main() {
   test_scanner_whitespace();
   test_read_quoted_string();
   test_read_word();
   test_read_escaped_char();
   test_read_new_line();
+  test_indentation();
 }
