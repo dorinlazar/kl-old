@@ -70,7 +70,7 @@ public:
         value->add(key, readArray());
       } else {
         auto [v, comment] = _scanner.readLine().splitNextChar(_comment);
-        value->add(key, v);
+        value->add(key, v.trim());
       }
     }
     return value;
