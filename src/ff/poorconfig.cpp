@@ -2,8 +2,6 @@
 #include "textscanner.h"
 using namespace kl;
 
-const Text CommentCharacter = "#"_t;
-
 class PoorConfigParser {
   TextScanner _scanner;
   char _split;
@@ -11,8 +9,8 @@ class PoorConfigParser {
 
   bool _uselessLine() {
     auto startOfLine = _scanner.location();
-    auto line = _scanner.readLine();
-    if (line.trim().size() == 0 || line.expectws(CommentCharacter).has_value()) {
+    auto line = _scanner.readLine().trimLeft();
+    if (line.size() == 0 || line[0] == _comment) {
       return true;
     }
     _scanner.restoreLocation(startOfLine);
@@ -22,7 +20,7 @@ class PoorConfigParser {
   void _discardAfterValueJunk() {
     _scanner.skipWhitespace(NewLineHandling::Keep);
     if (!_scanner.empty()) {
-      if (_scanner.topChar() != '#' && _scanner.topChar() != '\n') {
+      if (_scanner.topChar() != _comment && _scanner.topChar() != '\n') {
         _scanner.error("Trash at the end of the value");
       }
       _scanner.readLine();
@@ -107,5 +105,4 @@ public:
 PValue PoorConfig::parse(const Text& fragment, char split) {
   PoorConfigParser parser(fragment, split);
   return parser.readMap();
-  // return _readMap(fragment, split).first;
 }
