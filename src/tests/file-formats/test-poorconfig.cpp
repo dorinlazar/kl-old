@@ -38,8 +38,8 @@ void test_empty() {
 
 void test_multi_level_values() {
   auto value = kl::PoorConfig::parse("\n\
-url: https://dorinlazar.ro\n\
-name: dorinlazar.ro\n\
+url: https://example.com\n\
+name: example.com\n\
 params:\n\
   test: test-value\n\
   test2: test2-value\n\
@@ -56,10 +56,10 @@ test-up: back on track!!!");
   CHECKST(map.has("test-up"));
 
   CHECKST(map["url"]->isScalar());
-  CHECKST(map["url"]->getValue() == "https://dorinlazar.ro");
+  CHECKST(map["url"]->getValue() == "https://example.com");
 
   CHECKST(map["name"]->isScalar());
-  CHECKST(map["name"]->getValue() == "dorinlazar.ro");
+  CHECKST(map["name"]->getValue() == "example.com");
 
   CHECKST(map["params"]->isMap());
   auto& params = map["params"]->asMap();
@@ -80,8 +80,8 @@ test-up: back on track!!!");
 
 void test_comments() {
   auto value = kl::PoorConfig::parse("\n\
-url: https://dorinlazar.ro # the URL: hello world\n\
-name: dorinlazar.ro#how tight can we make this?\n\
+url: https://example.com # the URL: hello world\n\
+name: example.com#how tight can we make this?\n\
         #naturally a comment $$\n\
 params:\n\
   test: test-value\n\
@@ -101,10 +101,10 @@ test-up: back on track!!!");
   CHECKST(map.has("test-up"));
 
   CHECKST(map["url"]->isScalar());
-  CHECKST(map["url"]->getValue() == "https://dorinlazar.ro");
+  CHECKST(map["url"]->getValue() == "https://example.com");
 
   CHECKST(map["name"]->isScalar());
-  CHECKST(map["name"]->getValue() == "dorinlazar.ro");
+  CHECKST(map["name"]->getValue() == "example.com");
 
   CHECKST(map["params"]->isMap());
   auto& params = map["params"]->asMap();
@@ -123,9 +123,72 @@ test-up: back on track!!!");
   kl::log("POORCONFIG Comments [OK]");
 }
 
+void test_list() {
+  auto value = kl::PoorConfig::parse(R"(url: "https://example.com"
+names: ["name01", "name02"]
+deeper:
+  x: y
+  y: ["hello", "world"
+, "mean", "world"
+] #discardable junk
+  z: we keep having this conversation
+a-list: [
+  "hello",
+  "dear",
+  "listeners"
+]
+empty: []
+last: ["value"])");
+  auto map = value->asMap();
+  CHECKST(map.size() == 6);
+  CHECKST(map.has("url"));
+  CHECKST(map.has("names"));
+  CHECKST(map.has("deeper"));
+  CHECKST(map.has("a-list"));
+  CHECKST(map.has("empty"));
+  CHECKST(map.has("last"));
+
+  CHECKST(map["url"]->getValue() == "https://example.com");
+
+  CHECKST(map["names"]->isList());
+  const auto& list1 = map["names"]->asList();
+  CHECKST(list1.size() == 2);
+  CHECKST(list1[0]->getValue() == "name01");
+  CHECKST(list1[1]->getValue() == "name02");
+
+  CHECKST(map["deeper"]->isMap());
+  auto& deeper = map["deeper"]->asMap();
+  CHECKST(deeper.size() == 3);
+  CHECKST(deeper["x"]->getValue() == "y");
+  CHECKST(deeper["y"]->isList());
+  const auto& y = deeper["y"]->asList();
+  CHECKST(y.size() == 4);
+  CHECKST(y[0]->getValue() == "hello");
+  CHECKST(y[1]->getValue() == "world");
+  CHECKST(y[2]->getValue() == "mean");
+  CHECKST(y[3]->getValue() == "world");
+  CHECKST(deeper["z"]->getValue() == "we keep having this conversation");
+
+  CHECKST(map["a-list"]->isList());
+  const auto& alist = map["a-list"]->asList();
+  CHECKST(alist.size() == 3);
+  CHECKST(alist[0]->getValue() == "hello");
+  CHECKST(alist[1]->getValue() == "dear");
+  CHECKST(alist[2]->getValue() == "listeners");
+
+  CHECKST(map["empty"]->isList());
+  CHECKST(map["empty"]->asList().size() == 0);
+
+  CHECKST(map["last"]->isList());
+  CHECKST(map["last"]->asList().size() == 1);
+  CHECKST(map["last"]->asList()[0]->getValue() == "value");
+
+  kl::log("POORCONFIG Basic List tests [OK]");
+}
+
 void test_invalid_config_01() {
   try {
-    auto value = kl::PoorConfig::parse("\nurl\nname: dorinlazar.ro\n");
+    auto value = kl::PoorConfig::parse("\nurl\nname: example.com\n");
   } catch (const kl::ParsingError& fmtError) {
     CHECKST(fmtError.line() == 2);
     CHECKST(fmtError.column() == 4);
@@ -140,4 +203,5 @@ int main() {
   test_multi_level_values();
   test_invalid_config_01();
   test_comments();
+  test_list();
 }
