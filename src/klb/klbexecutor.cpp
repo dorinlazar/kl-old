@@ -28,7 +28,7 @@ public:
     for (const auto& m: mod->requiredModules) {
       auto depmod = _modules->getModule(m);
       CHECK(depmod != nullptr);
-      if (depmod->getSource().has_value()) {
+      if (depmod->hasSource()) {
         objects.add(depmod->getObjectPath());
       }
     }
