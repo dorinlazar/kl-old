@@ -20,7 +20,6 @@ struct Module {
   kl::Set<kl::Text> requiredModules;
   kl::Set<kl::Text> resolvedLocalHeaderDeps;
   kl::Set<kl::Text> includeFolders;
-  kl::DateTime headerTimeStamp;
 
 public:
   Module(ModuleCollection* container, const kl::Text& seed);

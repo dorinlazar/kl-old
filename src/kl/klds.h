@@ -117,8 +117,8 @@ class Pair {
   std::pair<T1, T2> _pair;
 
 public:
-  Pair(T1&& t1, T2&& t2) { _pair = std::make_pair(std::move(t1), std::move(t2)); }
-  Pair(T1 t1, T2 t2) { _pair = std::make_pair(t1, t2); }
+  Pair(T1&& t1, T2&& t2) : _pair(t1, t2) {}
+  Pair(T1 t1, T2 t2) : _pair(t1, t2) {}
   Pair(Pair&&) = default;
   Pair(const Pair&) = default;
   ~Pair() = default;

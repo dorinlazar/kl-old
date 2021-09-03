@@ -88,25 +88,27 @@ void Module::_updateHeaderDependencies() {
 
   kl::Queue<kl::Text> toProcess;
   toProcess.push(headerLocalIncludes.toList());
+  kl::Set<kl::Text> headerDeps;
 
   while (!toProcess.empty()) {
     auto deph = toProcess.pop();
-    resolvedLocalHeaderDeps.add(deph);
+    headerDeps.add(deph);
     auto mod = parent->getModule(""_t, deph);
     CHECK(mod != nullptr, "Unable to identify module for", deph, "required from", name, "header dependency");
     if (mod->resolvedLocalHeaderDeps.size() > 0) {
       for (const auto& h: mod->headerLocalIncludes) {
         if (h != modh) {
-          resolvedLocalHeaderDeps.add(h);
+          headerDeps.add(h);
         }
       }
     } else {
       for (const auto& h: mod->headerLocalIncludes) {
-        if (!toProcess.has(h) && !resolvedLocalHeaderDeps.has(h) && h != modh) {
+        if (!toProcess.has(h) && !headerDeps.has(h) && h != modh) {
           toProcess.push(h);
         }
       }
     }
+    resolvedLocalHeaderDeps = headerDeps;
   }
 }
 
