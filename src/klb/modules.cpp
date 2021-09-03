@@ -1,5 +1,6 @@
 #include "modules.h"
 #include "klbsettings.h"
+#include "ff/codescanner.h"
 
 void ModuleCollection::discoverAll() { _scanAllModules(); }
 
@@ -129,33 +130,6 @@ void Module::updateModuleInfo() {
   _updateIncludeFolders();
 }
 
-struct IncludeInfo {
-  kl::Text include;
-  bool system = false;
-};
-
-std::optional<IncludeInfo> readInclude(const kl::Text& input) {
-  auto t = input.skip(1).expectws("include");
-  if (t.has_value() && t->size() >= 3) {
-    auto inc = t->expectws("<");
-    if (inc.has_value()) { // looking forward to seeing a ? operator here.
-      auto res = inc->pos('>');
-      if (res.has_value()) {
-        return IncludeInfo{.include = inc->subpos(0, (*res) - 1).copy(), .system = true};
-      }
-    } else {
-      inc = t->expectws("\"");
-      if (inc.has_value()) {
-        auto res = inc->pos('"');
-        if (res.has_value()) {
-          return IncludeInfo{.include = inc->subpos(0, (*res) - 1).copy(), .system = false};
-        }
-      }
-    }
-  }
-  return {};
-}
-
 void Module::_scanHeader() {
   if (!header.has_value()) {
     if (CMD.verbose) {
@@ -167,34 +141,10 @@ void Module::_scanHeader() {
     kl::log("For module", name, "header is", getHeaderPath());
   }
 
-  auto lines = kl::FileReader(getHeaderPath()).readAllLines();
-  for (const auto& l: lines) {
-    auto t = l.trimLeft();
-    if (t.size() == 0) {
-      continue;
-    }
-    if (t[0] == '#') {
-      auto ii = readInclude(t);
-      if (ii.has_value()) {
-        if (ii->system) {
-          headerSysIncludes.add(ii->include);
-        } else {
-          headerLocalIncludes.add(_resolveHeader(ii->include));
-        }
-      }
-    }
-  }
-}
-
-inline bool checkForMain(const kl::Text& txt) {
-  auto t = txt.expect("int");
-  if (t.has_value()) {
-    t = t->expectws("main");
-    if (t.has_value()) {
-      return !t.has_value() || t->size() == 0 || t->expectws("(").has_value();
-    }
-  }
-  return false;
+  kl::SourceCodeScanner scanner(getHeaderPath());
+  headerSysIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
+  headerLocalIncludes.add(scanner.localIncludes().transform<kl::Text>(
+      [this](const kl::Text& tr) { return this->_resolveHeader(tr.copy()); }));
 }
 
 void Module::_scanSource() {
@@ -209,28 +159,15 @@ void Module::_scanSource() {
     kl::log("For module", name, "source is", getSourcePath());
   }
 
-  auto lines = kl::FileReader(getSourcePath()).readAllLines();
-  for (const auto& l: lines) {
-    auto t = l.trimLeft();
-    if (t.size() == 0) {
-      continue;
-    }
-    if (t[0] == '#') {
-      auto ii = readInclude(t);
-      if (ii.has_value()) {
-        if (ii->system) {
-          systemIncludes.add(ii->include);
-        } else {
-          localIncludes.add(_resolveHeader(ii->include));
-        }
-      }
-    } else if (!hasMain) {
-      hasMain = checkForMain(t);
-    }
-  }
+  kl::SourceCodeScanner scanner(getSourcePath());
+  hasMain = scanner.hasMain();
+  systemIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
+  localIncludes.add(scanner.localIncludes().transform<kl::Text>(
+      [this](const kl::Text& tr) { return this->_resolveHeader(tr.copy()); }));
 }
 
 kl::Text Module::_resolveHeader(const kl::Text& inc) {
+  // TODO this should check against the filesystem && and add the module as well (when doing discovery)
   auto mod = parent->getModule(kl::FilePath(name).folderName(), inc);
   if (!mod) {
     mod = parent->getModule(""_t, inc);
