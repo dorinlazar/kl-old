@@ -177,6 +177,27 @@ void test_remainder() {
   kl::log("SCANNER remainder [OK]");
 }
 
+void test_expect() {
+  kl::TextScanner sc("This word");
+  sc.expect('T');
+  sc.expectws('h');
+  sc.expect('i');
+  EXPECTEX<kl::ParsingError>([&sc]() { sc.expect('k'); });
+  sc.expect('s');
+  auto location = sc.location();
+  sc.expect(' ');
+  sc.expect('w');
+  sc.restoreLocation(location);
+  sc.expectws('w');
+  sc.expectws('o');
+  sc.expectws('r');
+  sc.expect('d');
+  CHECKST(sc.empty());
+  EXPECTEX<kl::ParsingError>([&sc]() { sc.expect('x'); });
+
+  kl::log("SCANNER expect [OK]");
+}
+
 int main() {
   test_line_column();
   test_scanner_whitespace();
@@ -186,4 +207,5 @@ int main() {
   test_read_new_line();
   test_indentation();
   test_remainder();
+  test_expect();
 }

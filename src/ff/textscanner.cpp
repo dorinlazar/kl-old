@@ -154,13 +154,17 @@ Text TextScanner::remainder() const {
   return _originalSource.skip(loc._offset);
 }
 
-void TextScanner::expectws(char character, NewLineHandling handling) {
-  skipWhitespace(handling);
+void TextScanner::expect(char character) {
   auto ch = topChar();
   if (ch != character) {
     error("Unexpected character: "_t + Text(ch) + " vs: " + Text(character));
   }
   advance();
+}
+
+void TextScanner::expectws(char character, NewLineHandling handling) {
+  skipWhitespace(handling);
+  expect(character);
 }
 
 void TextScanner::error(const Text& why) const { throw ParsingError(why, loc._line, loc._column); }
