@@ -118,6 +118,16 @@ Text TextScanner::readQuotedString() {
   return tc.toText();
 }
 
+Text TextScanner::readUntil(char character) {
+  auto _start = loc._offset;
+  while (true) {
+    auto ch = readChar();
+    if (ch.character == character) {
+      return _originalSource.subpos(_start, loc._offset - 2);
+    }
+  }
+}
+
 Text TextScanner::readWord() {
   auto start = loc._offset;
   while (!empty()) {

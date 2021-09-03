@@ -34,6 +34,7 @@ public:
   ParsedCharacter readChar();
   ParsedCharacter readCharEscaped();
   Text readQuotedString();
+  Text readUntil(char character);
   Text readWord();
   Text readLine();
   Text remainder() const;

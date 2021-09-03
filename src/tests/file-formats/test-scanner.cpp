@@ -198,6 +198,26 @@ void test_expect() {
   kl::log("SCANNER expect [OK]");
 }
 
+void test_read_until() {
+  kl::TextScanner sc("This word");
+  CHECKST(sc.readUntil('s') == "Thi"_t);
+  CHECKST(sc.topChar() == ' ');
+  CHECKST(sc.readUntil(' ') == ""_t);
+  CHECKST(sc.readUntil('r') == "wo");
+
+  EXPECTEX<kl::ParsingError>([&sc]() { sc.readUntil('k'); });
+  CHECKST(sc.empty());
+  sc.rewind();
+
+  EXPECTEX<kl::ParsingError>([&sc]() { sc.readUntil('k'); });
+  CHECKST(sc.empty());
+  sc.rewind();
+
+  CHECKST(sc.readUntil('d') == "This wor");
+
+  kl::log("SCANNER readUntil [OK]");
+}
+
 int main() {
   test_line_column();
   test_scanner_whitespace();
@@ -208,4 +228,5 @@ int main() {
   test_indentation();
   test_remainder();
   test_expect();
+  test_read_until();
 }
