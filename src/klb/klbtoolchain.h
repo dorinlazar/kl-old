@@ -1,6 +1,7 @@
 #pragma once
 
-#include "modules.h"
+#include "kl/kltext.h"
+#include "kl/klds.h"
 
 class Toolchain {
 public:

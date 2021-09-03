@@ -56,21 +56,3 @@ private:
   kl::FilePath _buildPath;
   kl::FilePath _sourcePath;
 };
-
-struct ModuleCollection {
-  kl::Dict<kl::Text, std::shared_ptr<Module>> modules;
-  std::shared_ptr<Module> getModule(const kl::Text& filename) const;
-  std::shared_ptr<Module> getModule(const kl::FilePath& folder, const kl::Text& filename) const;
-  std::shared_ptr<Module> getOrCreateModule(const kl::FilePath& folder, const kl::Text& filename);
-
-  ModuleCollection(FSCache* cache) : _cache(cache) {}
-
-  void discoverAll();
-  void discoverTests();
-
-private:
-  FSCache* _cache;
-  void _updateModuleDependencies();
-  void _scanAllModules();
-  void _scanModules(const kl::List<kl::Text>& targets);
-};
