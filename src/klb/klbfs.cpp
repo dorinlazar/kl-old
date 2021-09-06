@@ -105,26 +105,27 @@ kl::List<Folder*> FSCache::getAllBuildFolders() const {
   return {};
 }
 
-kl::ptr<Folder> _readFolder(const kl::Text& folderName, kl::ptr<Folder> parent) {
-  if (!kl::FileSystem::isDirectory(folderName)) {
+kl::ptr<Folder> _readFolder(const kl::FilePath& folderName, kl::ptr<Folder> parent) {
+  if (!kl::FileSystem::isDirectory(folderName.fullPath())) {
     if (CMD.verbose) {
       kl::log(folderName, "folder doesn't exist. Skipping");
     }
     return nullptr;
   }
   auto folder = parent->createFolder(folderName);
-  uint32_t depth = kl::FilePath(folderName).folderDepth();
-  kl::FileSystem::navigateTree(folderName, [folder, depth](const kl::FileInfo& file) -> kl::NavigateInstructions {
-    auto f = file;
-    f.path = file.path.remove_base_folder(depth);
-    folder->addItem(f, file.path.fullPath());
-    return kl::NavigateInstructions::Continue;
-  });
+  uint32_t depth = folderName.folderDepth();
+  kl::FileSystem::navigateTree(folderName.fullPath(),
+                               [folder, depth](const kl::FileInfo& file) -> kl::NavigateInstructions {
+                                 auto f = file;
+                                 f.path = file.path.remove_base_folder(depth);
+                                 folder->addItem(f, file.path.fullPath());
+                                 return kl::NavigateInstructions::Continue;
+                               });
 
   return folder;
 }
 
-FSCache::FSCache(const kl::Text& source, const kl::Text& build) {
+FSCache::FSCache(const kl::FilePath& source, const kl::FilePath& build) {
   _parent = std::make_shared<Folder>("[BASE FOLDER]"_t, ""_t, nullptr);
   _source = _readFolder(source, _parent);
   _build = _readFolder(build, _parent);

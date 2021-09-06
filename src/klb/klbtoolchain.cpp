@@ -17,7 +17,7 @@ kl::List<kl::Text> Gcc::buildCmdLine(const kl::Text& source, const kl::Text& des
   command.add("-o"_t);
   command.add(destination);
   command.add(source);
-  command.add("-I"_t + CMD.sourceFolder);
+  command.add("-I"_t + CMD.sourceFolder.fullPath());
   command.add(include.transform<kl::Text>([](const kl::Text& t) { return "-I"_t + t; }));
   return command;
 }

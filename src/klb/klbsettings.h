@@ -1,10 +1,11 @@
 #pragma once
 #include "kl/kltext.h"
+#include "kl/klfs.h"
 
 struct CommandParameters {
   bool verbose = false;
-  kl::Text buildFolder = "build"_t;
-  kl::Text sourceFolder = "src"_t;
+  kl::FilePath buildFolder;
+  kl::FilePath sourceFolder;
   int32_t processorCount = 0;
   std::optional<int32_t> nJobs;
   kl::List<kl::Text> cxxFlags;

@@ -31,7 +31,7 @@ class FSCache {
   kl::ptr<Folder> _addFolder(const kl::Text& path);
 
 public:
-  FSCache(const kl::Text& source, const kl::Text& build);
+  FSCache(const kl::FilePath& source, const kl::FilePath& build);
   Folder* getFolder(const kl::FilePath& name) const;
   kl::List<Folder*> getAllSubFolders(const kl::FilePath& base) const;
   kl::List<Folder*> getAllSourceFolders() const;

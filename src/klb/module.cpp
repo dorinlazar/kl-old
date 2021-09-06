@@ -4,10 +4,9 @@
 #include "ff/codescanner.h"
 #include "depprocessor.h"
 
-Module::Module(ModuleCollection* parent, const kl::Text& seed)
-    : name(seed), parent(parent), _buildPath(name), _sourcePath(name) {
-  _sourcePath = _sourcePath.replace_base_folder(CMD.sourceFolder, 0).replace_extension(""_t);
-  _buildPath = _buildPath.replace_base_folder(CMD.buildFolder, 0).replace_extension(""_t);
+Module::Module(ModuleCollection* parent, const kl::Text& seed) : name(seed), parent(parent) {
+  _sourcePath = CMD.sourceFolder.add(name).replace_extension(""_t);
+  _buildPath = CMD.buildFolder.add(name).replace_extension(""_t);
 }
 
 void Module::addFile(const kl::FileInfo& fi) {
@@ -112,7 +111,7 @@ void Module::_updateModuleDependencies() {
 
 void Module::_updateIncludeFolders() {
   for (const auto& mod: requiredModules) {
-    includeFolders.add(kl::FilePath(mod).replace_base_folder(CMD.sourceFolder, 0).folderName());
+    includeFolders.add(CMD.sourceFolder.add(mod).folderName());
   }
 }
 
