@@ -36,7 +36,7 @@ int main(int argc, char** argv, char** envp) {
   for (const auto& [name, mod]: mc->modules) {
     if (mod->hasMain) {
       DependencyProcessor<kl::Text> proc;
-      proc.addItem(name);
+      proc.add(name);
       proc.process([&mc](const kl::Text& modName) {
         auto mod = mc->getModule(modName);
         CHECK(mod != nullptr, "Unable to find required module", modName);

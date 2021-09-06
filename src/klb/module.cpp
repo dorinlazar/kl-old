@@ -2,6 +2,7 @@
 #include "modulecollection.h"
 #include "klbsettings.h"
 #include "ff/codescanner.h"
+#include "depprocessor.h"
 
 Module::Module(ModuleCollection* parent, const kl::Text& seed)
     : name(seed), parent(parent), _buildPath(name), _sourcePath(name) {
@@ -86,30 +87,17 @@ void Module::_updateHeaderDependencies() {
 
   auto modh = kl::FilePath(name).replace_extension(header->extension()).fullPath();
 
-  kl::Queue<kl::Text> toProcess;
-  toProcess.push(headerLocalIncludes.toList());
-  kl::Set<kl::Text> headerDeps;
-
-  while (!toProcess.empty()) {
-    auto deph = toProcess.pop();
-    headerDeps.add(deph);
+  DependencyProcessor<kl::Text> proc;
+  proc.add(name);
+  proc.process([this, &modh](const kl::Text& deph) {
     auto mod = parent->getModule(""_t, deph);
     CHECK(mod != nullptr, "Unable to identify module for", deph, "required from", name, "header dependency");
     if (mod->resolvedLocalHeaderDeps.size() > 0) {
-      for (const auto& h: mod->headerLocalIncludes) {
-        if (h != modh) {
-          headerDeps.add(h);
-        }
-      }
-    } else {
-      for (const auto& h: mod->headerLocalIncludes) {
-        if (!toProcess.has(h) && !headerDeps.has(h) && h != modh) {
-          toProcess.push(h);
-        }
-      }
+      return mod->resolvedLocalHeaderDeps.toList().select([&modh](const kl::Text& h) { return h != modh; });
     }
-    resolvedLocalHeaderDeps = headerDeps;
-  }
+    return mod->headerLocalIncludes.toList().select([&modh](const kl::Text& h) { return h != modh; });
+  });
+  resolvedLocalHeaderDeps = proc.result();
 }
 
 void Module::_updateModuleDependencies() {

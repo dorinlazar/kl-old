@@ -7,7 +7,8 @@ class DependencyProcessor {
   kl::Queue<T> processingQueue;
 
 public:
-  void addItem(const T& item) { processingQueue.push(item); }
+  void add(const T& item) { processingQueue.push(item); }
+  void add(const kl::List<T>& items) { processingQueue.push(items); }
   void process(std::function<kl::List<T>(const T&)> processor) {
     while (!processingQueue.empty()) {
       auto item = processingQueue.pop();
