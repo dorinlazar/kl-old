@@ -11,14 +11,13 @@ struct Folder {
 
 public:
   Folder() = default;
-  Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
-      : _parent(parent), _name(name), _path(path) {}
+  Folder(const kl::Text& name, const kl::Text& path, const Folder* parent);
   void addItem(const kl::FileInfo& file, const kl::Text& path);
 
   std::shared_ptr<Folder> getFolder(const kl::Text& folder);
-  kl::List<std::shared_ptr<Folder>> getFolders() const { return _folders.values(); }
-  const kl::FilePath& fullPath() const { return _path; }
-  const kl::List<kl::FileInfo>& files() const { return _files; }
+  kl::List<std::shared_ptr<Folder>> getFolders() const;
+  const kl::FilePath& fullPath() const;
+  const kl::List<kl::FileInfo>& files() const;
   bool hasFile(const kl::Text& file) const;
   std::ostream& write(std::ostream& os) const;
 };

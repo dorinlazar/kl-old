@@ -1,6 +1,9 @@
 #include "klbfs.h"
 #include "klbsettings.h"
 
+Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
+    : _parent(parent), _name(name), _path(path) {}
+
 void Folder::addItem(const kl::FileInfo& fi, const kl::Text& fullPath) {
   if (fi.path.folderName().size() == 0) {
     if (fi.type == kl::FileType::Directory) {
@@ -18,6 +21,9 @@ void Folder::addItem(const kl::FileInfo& fi, const kl::Text& fullPath) {
 }
 
 std::shared_ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
+kl::List<std::shared_ptr<Folder>> Folder::getFolders() const { return _folders.values(); }
+const kl::FilePath& Folder::fullPath() const { return _path; }
+const kl::List<kl::FileInfo>& Folder::files() const { return _files; }
 
 bool Folder::hasFile(const kl::Text& file) const {
   return _files.any([file](const auto& f) { return f.path.fileName() == file; });
