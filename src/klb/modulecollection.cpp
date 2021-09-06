@@ -10,7 +10,6 @@ void ModuleCollection::_scanAllModules() {
   uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
   uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
   for (auto folder: _cache->getAllSourceFolders()) {
-    kl::log("Processing folder", folder->fullPath());
     auto path = folder->fullPath();
     auto modFld = path.fullPath() == CMD.sourceFolder ? ""_t : folder->fullPath().remove_base_folder(srcDepth);
     for (const auto& file: folder->files()) {
