@@ -154,12 +154,7 @@ uint32_t FilePath::folderDepth() const {
   return depth() + 1;
 }
 
-std::optional<FilePath> FilePath::hasFile(const FilePath& file) {
-  if (file._fullName.startsWith(_fullName)) {
-    return file.remove_base_folder(folderDepth());
-  }
-  return {};
-}
+List<Text> FilePath::breadcrumbs() const { return _fullName.splitByChar(folder_separator[0]); }
 
 std::vector<FileInfo> _get_directory_entries(const Text& folder) {
   std::vector<FileInfo> res;

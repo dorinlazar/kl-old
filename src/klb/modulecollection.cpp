@@ -9,23 +9,21 @@ void ModuleCollection::discoverTests() { _scanModules({"tests"_t}); }
 void ModuleCollection::_scanAllModules() {
   uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
   uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
-  for (const auto& [path, folder]: _cache->all) {
-    if (path.startsWith(CMD.sourceFolder)) { // we process sources first
-      auto moduleFolder = path == CMD.sourceFolder ? ""_t : folder->fullPath().remove_base_folder(srcDepth);
-      for (const auto& file: folder->files()) {
-        auto mod = getOrCreateModule(moduleFolder.fullPath(), file.path.stem());
-        mod->addFile(file);
-      }
+  for (auto folder: _cache->getAllSourceFolders()) {
+    kl::log("Processing folder", folder->fullPath());
+    auto path = folder->fullPath();
+    auto modFld = path.fullPath() == CMD.sourceFolder ? ""_t : folder->fullPath().remove_base_folder(srcDepth);
+    for (const auto& file: folder->files()) {
+      auto mod = getOrCreateModule(modFld, file.path.stem());
+      mod->addFile(file);
     }
   }
-  for (const auto& [path, folder]: _cache->all) {
-    if (path.startsWith(CMD.buildFolder)) { // we process build output second
-      auto moduleFolder = folder->fullPath().remove_base_folder(bldDepth);
-      for (const auto& file: folder->files()) {
-        auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
-        if (mod) {
-          mod->addFile(file);
-        }
+  for (auto folder: _cache->getAllBuildFolders()) {
+    auto moduleFolder = folder->fullPath().remove_base_folder(bldDepth);
+    for (const auto& file: folder->files()) {
+      auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
+      if (mod) {
+        mod->addFile(file);
       }
     }
   }
@@ -43,21 +41,20 @@ void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
   }
 
   for (auto folder: folders) {
-    auto moduleFolder = folder->fullPath().remove_base_folder(srcDepth);
+    auto path = folder->fullPath();
+    auto modFld = path.fullPath() == CMD.sourceFolder ? ""_t : folder->fullPath().remove_base_folder(srcDepth);
     for (const auto& file: folder->files()) {
-      auto mod = getOrCreateModule(moduleFolder.fullPath(), file.path.stem());
+      auto mod = getOrCreateModule(modFld, file.path.stem());
       mod->addFile(file);
     }
   }
 
-  for (const auto& [path, folder]: _cache->all) {
-    if (path.startsWith(CMD.buildFolder)) { // we process build output second
-      auto moduleFolder = folder->fullPath().remove_base_folder(bldDepth);
-      for (const auto& file: folder->files()) {
-        auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
-        if (mod) {
-          mod->addFile(file);
-        }
+  for (auto folder: _cache->getAllBuildFolders()) {
+    auto moduleFolder = folder->fullPath().remove_base_folder(bldDepth);
+    for (const auto& file: folder->files()) {
+      auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
+      if (mod) {
+        mod->addFile(file);
       }
     }
   }

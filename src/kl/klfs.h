@@ -28,7 +28,7 @@ public:
   uint32_t depth() const;
   uint32_t folderDepth() const; // depth if path is folder (usually depth()+1).
 
-  std::optional<FilePath> hasFile(const FilePath& file);
+  List<Text> breadcrumbs() const;
 
   auto operator<=>(const FilePath& fp) const { return _fullName <=> fp._fullName; }
   auto operator==(const FilePath& fp) const { return _fullName == fp._fullName; }

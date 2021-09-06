@@ -36,12 +36,66 @@ std::ostream& Folder::write(std::ostream& os) const {
   return os;
 }
 
-void FSCache::addFolder(const kl::Text& folderName) {
+Folder* FSCache::getFolder(const kl::FilePath& name) const {
+  bool isSource = name.fullPath().startsWith(CMD.sourceFolder);
+  kl::ptr<Folder> where = isSource ? _source : _build;
+  if (!where) {
+    return nullptr;
+  }
+  auto fp = name.remove_base_folder(isSource ? kl::FilePath(CMD.sourceFolder).folderDepth()
+                                             : kl::FilePath(CMD.buildFolder).folderDepth());
+
+  auto breadcrumbs = fp.breadcrumbs();
+
+  for (const auto& subfld: breadcrumbs) {
+    where = where->getFolder(subfld);
+  }
+  return where.get();
+}
+
+kl::List<Folder*> getSubfoldersRecursively(Folder* start) {
+  kl::List<Folder*> res;
+  kl::Queue<Folder*> queue;
+  queue.push(start);
+  while (!queue.empty()) {
+    auto fld = queue.pop();
+    res.add(fld);
+    for (const auto& f: fld->getFolders()) {
+      queue.push(f.get());
+    }
+  }
+  return res;
+}
+
+kl::List<Folder*> FSCache::getAllSubFolders(const kl::FilePath& base) const {
+  Folder* baseFolder = getFolder(base);
+  if (baseFolder) {
+    return getSubfoldersRecursively(baseFolder);
+  }
+  return {};
+}
+
+// Temporary implementations;
+kl::List<Folder*> FSCache::getAllSourceFolders() const {
+  if (_source) {
+    return getSubfoldersRecursively(_source.get());
+  }
+  return {};
+}
+
+kl::List<Folder*> FSCache::getAllBuildFolders() const {
+  if (_build) {
+    return getSubfoldersRecursively(_build.get());
+  }
+  return {};
+}
+
+kl::ptr<Folder> _readFolder(const kl::Text& folderName) {
   if (!kl::FileSystem::isDirectory(folderName)) {
     if (CMD.verbose) {
       kl::log(folderName, "folder doesn't exist. Skipping");
     }
-    return;
+    return nullptr;
   }
   auto folder = std::make_shared<Folder>(folderName, folderName, nullptr);
   uint32_t depth = kl::FilePath(folderName).folderDepth();
@@ -51,51 +105,11 @@ void FSCache::addFolder(const kl::Text& folderName) {
     folder->addItem(f, file.path.fullPath());
     return kl::NavigateInstructions::Continue;
   });
-  kl::Queue<std::shared_ptr<Folder>> fqueue;
-  fqueue.push(folder);
-  while (!fqueue.empty()) {
-    auto f = fqueue.pop();
-    all.add(f->fullPath().fullPath(), f);
-    fqueue.push(f->getFolders());
-  }
+
+  return folder;
 }
 
-Folder* FSCache::getFolder(const kl::FilePath& name) const {
-  for (const auto& [fld, container]: all) {
-    auto optfp = kl::FilePath(fld).hasFile(name);
-    if (optfp.has_value()) {
-      auto fp = *optfp;
-      Folder* folder = container.get();
-      while (fp.fullPath().size() > 0) {
-        auto pfld = folder->getFolder(fp.baseFolder());
-        if (pfld) {
-          folder = pfld.get();
-          fp = fp.remove_base_folder();
-        } else {
-          if (!folder->hasFile(fp.fullPath())) {
-            return nullptr;
-          }
-        }
-      }
-      return folder;
-    }
-  }
-  return nullptr;
-}
-
-kl::List<Folder*> FSCache::getAllSubFolders(const kl::FilePath& base) const {
-  kl::List<Folder*> res;
-  Folder* baseFolder = getFolder(base);
-  if (baseFolder) {
-    kl::Queue<Folder*> queue;
-    queue.push(baseFolder);
-    while (!queue.empty()) {
-      auto fld = queue.pop();
-      res.add(fld);
-      for (const auto& f: fld->getFolders()) {
-        queue.push(f.get());
-      }
-    }
-  }
-  return res;
+FSCache::FSCache(const kl::Text& source, const kl::Text& build) {
+  _source = _readFolder(source);
+  _build = _readFolder(build);
 }

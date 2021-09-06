@@ -25,9 +25,7 @@ kl::uptr<ModuleCollection> discoverModules(const kl::List<kl::Text>& targets, FS
 
 int main(int argc, char** argv, char** envp) {
   CMD.init(argc, argv, envp);
-  auto fscache = std::make_unique<FSCache>();
-  fscache->addFolder(CMD.sourceFolder);
-  fscache->addFolder(CMD.buildFolder);
+  auto fscache = std::make_unique<FSCache>(CMD.sourceFolder, CMD.buildFolder);
 
   auto mc = discoverModules(CMD.targets, fscache.get());
 

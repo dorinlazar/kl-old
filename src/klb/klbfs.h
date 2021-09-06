@@ -23,12 +23,19 @@ public:
   std::ostream& write(std::ostream& os) const;
 };
 
-struct FSCache {
-  kl::Dict<kl::Text, std::shared_ptr<Folder>> all;
+class FSCache {
+  kl::ptr<Folder> _build;
+  kl::ptr<Folder> _source;
+  kl::ptr<Folder> _parent;
 
-  void addFolder(const kl::Text& folderName);
+  kl::ptr<Folder> _addFolder(const kl::Text& path);
+
+public:
+  FSCache(const kl::Text& source, const kl::Text& build);
   Folder* getFolder(const kl::FilePath& name) const;
   kl::List<Folder*> getAllSubFolders(const kl::FilePath& base) const;
+  kl::List<Folder*> getAllSourceFolders() const;
+  kl::List<Folder*> getAllBuildFolders() const;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Folder> l) { return l->write(os); }
