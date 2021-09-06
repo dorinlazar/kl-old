@@ -31,20 +31,6 @@ void ModuleCollection::_scanAllModules() {
   }
 }
 
-static kl::List<Folder*> _getAllFolders(Folder* folder) {
-  kl::List<Folder*> res;
-  kl::Queue<Folder*> queue;
-  queue.push(folder);
-  while (!queue.empty()) {
-    auto fld = queue.pop();
-    res.add(fld);
-    for (const auto& f: fld->getFolders()) {
-      queue.push(f.get());
-    }
-  }
-  return res;
-}
-
 void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
   uint32_t srcDepth = kl::FilePath(CMD.sourceFolder).folderDepth();
   uint32_t bldDepth = kl::FilePath(CMD.buildFolder).folderDepth();
@@ -53,13 +39,7 @@ void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
 
   for (const auto& target: targets) {
     kl::FilePath fp(CMD.sourceFolder + "/" + target);
-    auto folder = _cache->getFolder(fp);
-    if (folder) {
-      kl::log("we're building a folder:", target, folder->fullPath());
-      folders.add(_getAllFolders(folder));
-    } else {
-      kl::log("target not found as folder:", target);
-    }
+    folders.add(_cache->getAllSubFolders(fp));
   }
 
   for (auto folder: folders) {

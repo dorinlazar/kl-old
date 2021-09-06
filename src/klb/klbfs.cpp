@@ -60,7 +60,7 @@ void FSCache::addFolder(const kl::Text& folderName) {
   }
 }
 
-Folder* FSCache::getFolder(const kl::FilePath& name) {
+Folder* FSCache::getFolder(const kl::FilePath& name) const {
   for (const auto& [fld, container]: all) {
     auto optfp = kl::FilePath(fld).hasFile(name);
     if (optfp.has_value()) {
@@ -81,4 +81,21 @@ Folder* FSCache::getFolder(const kl::FilePath& name) {
     }
   }
   return nullptr;
+}
+
+kl::List<Folder*> FSCache::getAllSubFolders(const kl::FilePath& base) const {
+  kl::List<Folder*> res;
+  Folder* baseFolder = getFolder(base);
+  if (baseFolder) {
+    kl::Queue<Folder*> queue;
+    queue.push(baseFolder);
+    while (!queue.empty()) {
+      auto fld = queue.pop();
+      res.add(fld);
+      for (const auto& f: fld->getFolders()) {
+        queue.push(f.get());
+      }
+    }
+  }
+  return res;
 }

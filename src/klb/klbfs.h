@@ -27,7 +27,8 @@ struct FSCache {
   kl::Dict<kl::Text, std::shared_ptr<Folder>> all;
 
   void addFolder(const kl::Text& folderName);
-  Folder* getFolder(const kl::FilePath& name);
+  Folder* getFolder(const kl::FilePath& name) const;
+  kl::List<Folder*> getAllSubFolders(const kl::FilePath& base) const;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Folder> l) { return l->write(os); }
