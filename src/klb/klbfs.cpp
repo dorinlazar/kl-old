@@ -61,14 +61,6 @@ std::ostream& Folder::write(std::ostream& os) const {
 }
 
 Folder* FSCache::getFolder(const kl::FilePath& name) const {
-  // bool isSource = name.fullPath().startsWith(CMD.sourceFolder);
-  // kl::ptr<Folder> where = isSource ? _source : _build;
-  // if (!where) {
-  //   return nullptr;
-  // }
-  // auto fp = name.remove_base_folder(isSource ? kl::FilePath(CMD.sourceFolder).folderDepth()
-  //                                            : kl::FilePath(CMD.buildFolder).folderDepth());
-
   auto where = _parent;
   for (const auto& subfld: name.breadcrumbs()) {
     where = where->getFolder(subfld);
