@@ -29,6 +29,7 @@ public:
   uint32_t folderDepth() const; // depth if path is folder (usually depth()+1).
 
   List<Text> breadcrumbs() const;
+  FilePath add(const kl::Text& component) const;
 
   auto operator<=>(const FilePath& fp) const { return _fullName <=> fp._fullName; }
   auto operator==(const FilePath& fp) const { return _fullName == fp._fullName; }

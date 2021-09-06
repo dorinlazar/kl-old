@@ -20,8 +20,26 @@ void Folder::addItem(const kl::FileInfo& fi, const kl::Text& fullPath) {
   }
 }
 
-std::shared_ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
-kl::List<std::shared_ptr<Folder>> Folder::getFolders() const { return _folders.values(); }
+kl::ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
+kl::List<kl::ptr<Folder>> Folder::getFolders() const { return _folders.values(); }
+kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
+  if (fp.fullPath().size() == 0) {
+    return nullptr;
+  }
+  kl::ptr<Folder> where = nullptr;
+  kl::FilePath currentPath;
+  for (const auto& fld: fp.breadcrumbs()) {
+    currentPath = currentPath.add(fld);
+    Folder* ptr = where != nullptr ? where.get() : this;
+    where = ptr->getFolder(fld);
+    if (where == nullptr) {
+      where = std::make_shared<Folder>();
+      ptr->_folders.add(fld, where);
+    }
+  }
+  return where;
+}
+
 const kl::FilePath& Folder::fullPath() const { return _path; }
 const kl::List<kl::FileInfo>& Folder::files() const { return _files; }
 
@@ -43,17 +61,16 @@ std::ostream& Folder::write(std::ostream& os) const {
 }
 
 Folder* FSCache::getFolder(const kl::FilePath& name) const {
-  bool isSource = name.fullPath().startsWith(CMD.sourceFolder);
-  kl::ptr<Folder> where = isSource ? _source : _build;
-  if (!where) {
-    return nullptr;
-  }
-  auto fp = name.remove_base_folder(isSource ? kl::FilePath(CMD.sourceFolder).folderDepth()
-                                             : kl::FilePath(CMD.buildFolder).folderDepth());
+  // bool isSource = name.fullPath().startsWith(CMD.sourceFolder);
+  // kl::ptr<Folder> where = isSource ? _source : _build;
+  // if (!where) {
+  //   return nullptr;
+  // }
+  // auto fp = name.remove_base_folder(isSource ? kl::FilePath(CMD.sourceFolder).folderDepth()
+  //                                            : kl::FilePath(CMD.buildFolder).folderDepth());
 
-  auto breadcrumbs = fp.breadcrumbs();
-
-  for (const auto& subfld: breadcrumbs) {
+  auto where = _parent;
+  for (const auto& subfld: name.breadcrumbs()) {
     where = where->getFolder(subfld);
   }
   return where.get();
@@ -96,14 +113,14 @@ kl::List<Folder*> FSCache::getAllBuildFolders() const {
   return {};
 }
 
-kl::ptr<Folder> _readFolder(const kl::Text& folderName) {
+kl::ptr<Folder> _readFolder(const kl::Text& folderName, kl::ptr<Folder> parent) {
   if (!kl::FileSystem::isDirectory(folderName)) {
     if (CMD.verbose) {
       kl::log(folderName, "folder doesn't exist. Skipping");
     }
     return nullptr;
   }
-  auto folder = std::make_shared<Folder>(folderName, folderName, nullptr);
+  auto folder = parent->createFolder(folderName);
   uint32_t depth = kl::FilePath(folderName).folderDepth();
   kl::FileSystem::navigateTree(folderName, [folder, depth](const kl::FileInfo& file) -> kl::NavigateInstructions {
     auto f = file;
@@ -116,6 +133,7 @@ kl::ptr<Folder> _readFolder(const kl::Text& folderName) {
 }
 
 FSCache::FSCache(const kl::Text& source, const kl::Text& build) {
-  _source = _readFolder(source);
-  _build = _readFolder(build);
+  _parent = std::make_shared<Folder>("[BASE FOLDER]"_t, ""_t, nullptr);
+  _source = _readFolder(source, _parent);
+  _build = _readFolder(build, _parent);
 }

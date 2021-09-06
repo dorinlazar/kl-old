@@ -156,6 +156,13 @@ uint32_t FilePath::folderDepth() const {
 
 List<Text> FilePath::breadcrumbs() const { return _fullName.splitByChar(folder_separator[0]); }
 
+FilePath FilePath::add(const kl::Text& component) const {
+  if (_fullName.size() == 0 || (_fullName.size() == 1 && _fullName[0] == '.')) {
+    return FilePath(component);
+  }
+  return FilePath(_fullName + folder_separator + component);
+}
+
 std::vector<FileInfo> _get_directory_entries(const Text& folder) {
   std::vector<FileInfo> res;
   char buffer[1024];

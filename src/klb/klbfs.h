@@ -6,7 +6,7 @@ struct Folder {
   const Folder* _parent = nullptr;
   kl::Text _name;
   kl::FilePath _path;
-  kl::Dict<kl::Text, std::shared_ptr<Folder>> _folders;
+  kl::Dict<kl::Text, kl::ptr<Folder>> _folders;
   kl::List<kl::FileInfo> _files;
 
 public:
@@ -14,8 +14,9 @@ public:
   Folder(const kl::Text& name, const kl::Text& path, const Folder* parent);
   void addItem(const kl::FileInfo& file, const kl::Text& path);
 
-  std::shared_ptr<Folder> getFolder(const kl::Text& folder);
-  kl::List<std::shared_ptr<Folder>> getFolders() const;
+  kl::ptr<Folder> getFolder(const kl::Text& folder);
+  kl::List<kl::ptr<Folder>> getFolders() const;
+  kl::ptr<Folder> createFolder(const kl::FilePath& path);
   const kl::FilePath& fullPath() const;
   const kl::List<kl::FileInfo>& files() const;
   bool hasFile(const kl::Text& file) const;
