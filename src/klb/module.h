@@ -6,13 +6,11 @@
 struct ModuleCollection;
 
 struct Module {
-  kl::Text name;
   bool hasMain;
   kl::Set<kl::Text> headerLocalIncludes;
   kl::Set<kl::Text> headerSysIncludes;
   kl::Set<kl::Text> localIncludes;
   kl::Set<kl::Text> systemIncludes;
-  ModuleCollection* parent;
   kl::Set<kl::Text> requiredModules;
   kl::Set<kl::Text> resolvedLocalHeaderDeps;
   kl::Set<kl::Text> includeFolders;
@@ -25,12 +23,12 @@ public:
 
 public:
   bool hasSource() const;
-  kl::Text getHeaderPath() const;
-  kl::Text getSourcePath() const;
-  kl::Text getObjectPath() const;
-  kl::Text getExecutablePath() const;
-
-  kl::Text getBuildFolder() const;
+  kl::Text headerPath() const;
+  kl::Text sourcePath() const;
+  kl::Text objectPath() const;
+  kl::Text executablePath() const;
+  kl::Text buildFolder() const;
+  const kl::Text& name() const;
 
   bool requiresBuild() const;
   bool requiresLink() const;
@@ -48,6 +46,9 @@ private:
   std::optional<ModuleItem> getSource() const { return source; }
   std::optional<ModuleItem> getObject() const { return object; }
   std::optional<ModuleItem> getExecutable() const { return executable; }
+
+  kl::Text _name;
+  ModuleCollection* _parent;
 
   kl::FilePath _buildPath;
   kl::FilePath _sourcePath;

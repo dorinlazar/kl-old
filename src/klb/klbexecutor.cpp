@@ -24,12 +24,12 @@ public:
 
   kl::List<kl::Text> getDependentObjects(Module* mod) {
     kl::Set<kl::Text> objects;
-    objects.add(mod->getObjectPath());
+    objects.add(mod->objectPath());
     for (const auto& m: mod->requiredModules) {
       auto depmod = _modules->getModule(m);
       CHECK(depmod != nullptr);
       if (depmod->hasSource()) {
-        objects.add(depmod->getObjectPath());
+        objects.add(depmod->objectPath());
       }
     }
     return objects.toList();
@@ -40,13 +40,13 @@ class LinearExecutionStrategy : public ExecutionStrategyImpl {
   kl::List<ExecStep> buildSteps;
   bool _performBuild(Module* mod) {
     if (mod->requiresBuild()) {
-      if (!_toolchain->build(mod->getSourcePath(), mod->getObjectPath(), mod->includeFolders.toList())) {
+      if (!_toolchain->build(mod->sourcePath(), mod->objectPath(), mod->includeFolders.toList())) {
         return false;
       }
       mod->updateObjectTimestamp(kl::DateTime::now());
     } else {
       if (CMD.verbose) {
-        kl::log("Module:", mod->name, "doesn't require rebuild. Skipping...");
+        kl::log("Module:", mod->name(), "doesn't require rebuild. Skipping...");
       }
     }
     return true;
@@ -55,12 +55,12 @@ class LinearExecutionStrategy : public ExecutionStrategyImpl {
   bool _performLink(Module* mod) {
     if (mod->requiresLink()) {
       auto objects = getDependentObjects(mod);
-      if (!_toolchain->link(objects, mod->getExecutablePath(), {})) {
+      if (!_toolchain->link(objects, mod->executablePath(), {})) {
         return false;
       }
     } else {
       if (CMD.verbose) {
-        kl::log("Module:", mod->name, "doesn't require relink. Skipping...");
+        kl::log("Module:", mod->name(), "doesn't require relink. Skipping...");
       }
     }
     return true;
@@ -88,7 +88,7 @@ public:
   void createBuildFolders() {
     kl::Set<kl::Text> directories;
     for (const auto& step: buildSteps) {
-      directories.add(step.module->getBuildFolder());
+      directories.add(step.module->buildFolder());
     }
     auto list = directories.toList().sortInPlace();
 
@@ -112,11 +112,10 @@ public:
   void add(ExecStepType t, Module* mod) override {
     if (t == ExecStepType::Build) {
       if (mod->requiresBuild()) {
-        _buildFolders.add(mod->getBuildFolder());
-        auto cmdLine =
-            _toolchain->buildCmdLine(mod->getSourcePath(), mod->getObjectPath(), mod->includeFolders.toList());
+        _buildFolders.add(mod->buildFolder());
+        auto cmdLine = _toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders.toList());
         auto node = _horde.addNode(cmdLine, {});
-        _execNodes.add(mod->getObjectPath(), node);
+        _execNodes.add(mod->objectPath(), node);
         mod->updateObjectTimestamp(kl::DateTime::MAX);
       }
     } else if (t == ExecStepType::Link) {
@@ -124,11 +123,11 @@ public:
         auto objects = getDependentObjects(mod);
         auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes.get(o); })
                             .select([](const kl::ExecutionNode* t) { return t != nullptr; });
-        auto cmdLine = _toolchain->linkCmdLine(objects, mod->getExecutablePath(), CMD.linkFlags);
+        auto cmdLine = _toolchain->linkCmdLine(objects, mod->executablePath(), CMD.linkFlags);
         auto node = _horde.addNode(cmdLine, depNodes);
-        _execNodes.add(mod->getExecutablePath(), node);
+        _execNodes.add(mod->executablePath(), node);
       } else if (CMD.verbose) {
-        kl::log("Module", mod->name, "requires no linking");
+        kl::log("Module", mod->name(), "requires no linking");
       }
     }
   }
