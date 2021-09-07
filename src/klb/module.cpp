@@ -27,7 +27,6 @@ void Module::scanModuleRequirements() {
 
 void Module::updateModuleInfo() {
   _updateHeaderDependencies();
-  _updateModuleDependencies();
   _updateIncludeFolders();
 }
 
@@ -43,13 +42,13 @@ void Module::_scanHeader() {
   }
 
   kl::SourceCodeScanner scanner(headerPath());
-  headerSysIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
-  headerLocalIncludes.add(scanner.localIncludes().transform<kl::Text>(
+  _headerSysIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
+  _headerLocalIncludes.add(scanner.localIncludes().transform<kl::Text>(
       [this](const kl::Text& tr) { return this->_resolveHeader(tr.copy()); }));
 }
 
 void Module::_scanSource() {
-  hasMain = false;
+  _hasMain = false;
   if (!source.has_value()) {
     if (CMD.verbose) {
       kl::log("For module", _name, "we have no source");
@@ -61,17 +60,17 @@ void Module::_scanSource() {
   }
 
   kl::SourceCodeScanner scanner(sourcePath());
-  hasMain = scanner.hasMain();
-  systemIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
-  localIncludes.add(scanner.localIncludes().transform<kl::Text>(
+  _hasMain = scanner.hasMain();
+  _systemIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
+  _localIncludes.add(scanner.localIncludes().transform<kl::Text>(
       [this](const kl::Text& tr) { return this->_resolveHeader(tr.copy()); }));
 }
 
 kl::Text Module::_resolveHeader(const kl::Text& inc) {
   // TODO this should check against the filesystem && and add the module as well (when doing discovery)
-  auto mod = _parent->getModule(kl::FilePath(_name).folderName(), inc);
+  auto mod = _parent->tryGetModule(kl::FilePath(_name).folderName(), inc);
   if (!mod) {
-    mod = _parent->getModule(""_t, inc);
+    mod = _parent->tryGetModule(""_t, inc);
     CHECK(mod != nullptr, "Unable to identify module for", inc, "required from", _name);
   }
   auto text = kl::FilePath(mod->_name).replace_extension(kl::FilePath(inc).extension()).fullPath();
@@ -94,27 +93,31 @@ void Module::_updateHeaderDependencies() {
   proc.process([this, &modh](const kl::Text& deph) {
     auto mod = _parent->getModule(""_t, deph);
     CHECK(mod != nullptr, "Unable to identify module for", deph, "required from", _name, "header dependency");
-    if (mod->resolvedLocalHeaderDeps.size() > 0) {
-      return mod->resolvedLocalHeaderDeps.toList().select([&modh](const kl::Text& h) { return h != modh; });
+    if (mod->_resolvedLocalHeaderDeps.size() > 0) {
+      return mod->_resolvedLocalHeaderDeps.toList().select([&modh](const kl::Text& h) { return h != modh; });
     }
-    return mod->headerLocalIncludes.toList().select([&modh](const kl::Text& h) { return h != modh; });
+    return mod->_headerLocalIncludes.toList().select([&modh](const kl::Text& h) { return h != modh; });
   });
-  resolvedLocalHeaderDeps = proc.result();
-}
-
-void Module::_updateModuleDependencies() {
-  for (const auto& inc: localIncludes) {
-    auto mod = _parent->getModule(""_t, inc);
-    CHECK(mod != nullptr, "Unable to identify module for", inc, "required from", _name);
-    requiredModules.add(kl::FilePath(inc).replace_extension(""_t).fullPath());
-    requiredModules.add(mod->resolvedLocalHeaderDeps.toList().transform<kl::Text>(
-        [](const kl::Text& t) { return kl::FilePath(t).replace_extension(""_t).fullPath(); }));
-  }
+  _resolvedLocalHeaderDeps = proc.result();
 }
 
 void Module::_updateIncludeFolders() {
-  for (const auto& mod: requiredModules) {
-    includeFolders.add(CMD.sourceFolder.add(mod).folderName());
+  kl::Set<kl::Text> inc;
+  for (const auto& mod: _requiredModules) {
+    inc.add(CMD.sourceFolder.add(mod->name()).folderName());
+  }
+  _includeFolders = inc.toList();
+}
+
+void Module::updateModuleDependencies() {
+  if (source.has_value()) {
+    kl::Set<kl::Text> depHeaders;
+    for (const auto& inc: _localIncludes) {
+      depHeaders.add(_parent->getModule(inc)->_resolvedLocalHeaderDeps);
+    }
+
+    _requiredModules = depHeaders.toList().transform<Module*>(
+        [this](const kl::Text& include) { return _parent->getModule(include).get(); });
   }
 }
 
@@ -140,8 +143,7 @@ bool Module::requiresBuild() const {
   if (source->timestamp() > dt) {
     return true;
   }
-  for (const auto& mod: requiredModules) {
-    auto hmod = _parent->getModule(mod);
+  for (const auto& hmod: _requiredModules) {
     CHECK(hmod != nullptr);
     auto hmodheader = hmod->getHeader();
     if (hmodheader.has_value() && hmodheader->timestamp() > dt) {
@@ -152,7 +154,7 @@ bool Module::requiresBuild() const {
 }
 
 bool Module::requiresLink() const {
-  if (!hasMain) {
+  if (!_hasMain) {
     return false;
   }
   if (!object.has_value() || !executable.has_value()) {
@@ -163,9 +165,7 @@ bool Module::requiresLink() const {
   if (object->timestamp() > dt) {
     return true;
   }
-  for (const auto& mod: requiredModules) {
-    auto hmod = _parent->getModule(mod);
-    CHECK(hmod != nullptr);
+  for (const auto& hmod: _requiredModules) {
     auto hmodobject = hmod->getObject();
     if (hmodobject.has_value() && hmodobject->timestamp() > dt) {
       return true;
@@ -199,3 +199,16 @@ kl::Text Module::buildFolder() const { return _buildPath.fullPath(); }
 bool Module::hasSource() const { return source.has_value(); }
 
 const kl::Text& Module::name() const { return _name; }
+bool Module::hasMain() const { return _hasMain; }
+
+void Module::recurseModuleDependencies() {
+  DependencyProcessor<Module*> proc;
+  proc.add(this);
+  proc.process([this](Module* mod) { return mod->_requiredModules; });
+  _requiredModules = proc.result().toList();
+  kl::log("Required modules for", _name,
+          "after recursion:", _requiredModules.transform<kl::Text>([](const Module* m) { return m->name(); }));
+}
+
+const kl::List<Module*>& Module::requiredModules() const { return _requiredModules; }
+const kl::List<kl::Text>& Module::includeFolders() const { return _includeFolders; }

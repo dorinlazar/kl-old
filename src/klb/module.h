@@ -6,29 +6,26 @@
 struct ModuleCollection;
 
 struct Module {
-  bool hasMain;
-  kl::Set<kl::Text> headerLocalIncludes;
-  kl::Set<kl::Text> headerSysIncludes;
-  kl::Set<kl::Text> localIncludes;
-  kl::Set<kl::Text> systemIncludes;
-  kl::Set<kl::Text> requiredModules;
-  kl::Set<kl::Text> resolvedLocalHeaderDeps;
-  kl::Set<kl::Text> includeFolders;
 
 public:
   Module(ModuleCollection* container, const kl::Text& seed);
   void addFile(const kl::FileInfo& fi);
   void scanModuleRequirements();
   void updateModuleInfo();
+  void updateModuleDependencies();
+  void recurseModuleDependencies();
 
 public:
   bool hasSource() const;
+  bool hasMain() const;
   kl::Text headerPath() const;
   kl::Text sourcePath() const;
   kl::Text objectPath() const;
   kl::Text executablePath() const;
   kl::Text buildFolder() const;
   const kl::Text& name() const;
+  const kl::List<Module*>& requiredModules() const;
+  const kl::List<kl::Text>& includeFolders() const;
 
   bool requiresBuild() const;
   bool requiresLink() const;
@@ -38,7 +35,6 @@ private:
   void _updateComponentPaths();
   void _scanSource();
   void _scanHeader();
-  void _updateModuleDependencies();
   void _updateHeaderDependencies();
   void _updateIncludeFolders();
   kl::Text _resolveHeader(const kl::Text& name);
@@ -49,6 +45,14 @@ private:
 
   kl::Text _name;
   ModuleCollection* _parent;
+  bool _hasMain;
+  kl::Set<kl::Text> _headerLocalIncludes;
+  kl::Set<kl::Text> _headerSysIncludes;
+  kl::Set<kl::Text> _localIncludes;
+  kl::Set<kl::Text> _systemIncludes;
+  kl::List<Module*> _requiredModules;
+  kl::Set<kl::Text> _resolvedLocalHeaderDeps;
+  kl::List<kl::Text> _includeFolders;
 
   kl::FilePath _buildPath;
   kl::FilePath _sourcePath;

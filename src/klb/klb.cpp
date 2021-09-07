@@ -29,17 +29,8 @@ int main(int argc, char** argv, char** envp) {
   Set<kl::Text> requiredModules;
 
   for (const auto& [name, mod]: mc->modules) {
-    if (mod->hasMain) {
-      DependencyProcessor<kl::Text> proc;
-      proc.add(name);
-      proc.process([&mc](const kl::Text& modName) {
-        auto mod = mc->getModule(modName);
-        CHECK(mod != nullptr, "Unable to find required module", modName);
-        return mod->requiredModules.toList();
-      });
-
-      mod->requiredModules = proc.result();
-      requiredModules.add(proc.result());
+    if (mod->hasMain()) {
+      requiredModules.add(mod->requiredModules().transform<kl::Text>([](Module* m) { return m->name(); }));
     }
   }
 
@@ -50,7 +41,7 @@ int main(int argc, char** argv, char** envp) {
   }
 
   for (const auto& [name, mod]: mc->modules) {
-    if (mod->hasMain) {
+    if (mod->hasMain()) {
       sched.link(name);
     }
   }

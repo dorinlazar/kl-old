@@ -7,6 +7,7 @@ struct ModuleCollection {
   kl::ptr<Module> getModule(const kl::Text& filename) const;
   kl::ptr<Module> getModule(const kl::FilePath& folder, const kl::Text& filename) const;
   kl::ptr<Module> getOrCreateModule(const kl::FilePath& folder, const kl::Text& filename);
+  kl::ptr<Module> tryGetModule(const kl::FilePath& folder, const kl::Text& filename) const;
 
   ModuleCollection(FSCache* cache) : _cache(cache) {}
 

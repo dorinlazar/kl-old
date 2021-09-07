@@ -10,6 +10,14 @@ void ModuleCollection::discoverAll() {
   for (const auto& [name, mod]: modules) {
     mod->updateModuleInfo();
   }
+  for (const auto& [name, mod]: modules) {
+    mod->updateModuleDependencies();
+  }
+  for (const auto& [name, mod]: modules) {
+    if (mod->hasMain()) {
+      mod->recurseModuleDependencies();
+    }
+  }
 }
 
 void ModuleCollection::discoverTests() {
@@ -77,19 +85,22 @@ void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
 }
 
 std::shared_ptr<Module> ModuleCollection::getModule(const kl::FilePath& folder, const kl::Text& file) const {
-  kl::Text moduleName = kl::FilePath((folder.fullPath().size() ? folder.fullPath() : "."_t) + "/"_t + file)
-                            .replace_extension(""_t)
-                            .fullPath();
-  return modules.get(moduleName, nullptr);
+  kl::Text moduleName = folder.add(file).replace_extension(""_t).fullPath();
+  return modules[moduleName];
+}
+
+std::shared_ptr<Module> ModuleCollection::tryGetModule(const kl::FilePath& folder, const kl::Text& file) const {
+  kl::Text moduleName = folder.add(file).replace_extension(""_t).fullPath();
+  return modules.get(moduleName);
 }
 
 std::shared_ptr<Module> ModuleCollection::getModule(const kl::Text& file) const {
   kl::Text moduleName = kl::FilePath(file).replace_extension(""_t).fullPath();
-  return modules.get(moduleName, nullptr);
+  return modules[moduleName];
 }
 
 std::shared_ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& folder, const kl::Text& stem) {
-  kl::Text moduleName = kl::FilePath(folder.fullPath() + "/"_t + stem).fullPath();
+  kl::Text moduleName = folder.add(stem).fullPath();
   auto val = modules.get(moduleName, nullptr);
   if (!val) {
     val = std::make_shared<Module>(this, moduleName);

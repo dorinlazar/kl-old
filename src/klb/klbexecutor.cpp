@@ -25,11 +25,9 @@ public:
   kl::List<kl::Text> getDependentObjects(Module* mod) {
     kl::Set<kl::Text> objects;
     objects.add(mod->objectPath());
-    for (const auto& m: mod->requiredModules) {
-      auto depmod = _modules->getModule(m);
-      CHECK(depmod != nullptr);
-      if (depmod->hasSource()) {
-        objects.add(depmod->objectPath());
+    for (const auto& m: mod->requiredModules()) {
+      if (m->hasSource()) {
+        objects.add(m->objectPath());
       }
     }
     return objects.toList();
@@ -40,7 +38,7 @@ class LinearExecutionStrategy : public ExecutionStrategyImpl {
   kl::List<ExecStep> buildSteps;
   bool _performBuild(Module* mod) {
     if (mod->requiresBuild()) {
-      if (!_toolchain->build(mod->sourcePath(), mod->objectPath(), mod->includeFolders.toList())) {
+      if (!_toolchain->build(mod->sourcePath(), mod->objectPath(), mod->includeFolders())) {
         return false;
       }
       mod->updateObjectTimestamp(kl::DateTime::now());
@@ -113,7 +111,7 @@ public:
     if (t == ExecStepType::Build) {
       if (mod->requiresBuild()) {
         _buildFolders.add(mod->buildFolder());
-        auto cmdLine = _toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders.toList());
+        auto cmdLine = _toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders());
         auto node = _horde.addNode(cmdLine, {});
         _execNodes.add(mod->objectPath(), node);
         mod->updateObjectTimestamp(kl::DateTime::MAX);
