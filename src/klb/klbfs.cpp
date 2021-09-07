@@ -64,8 +64,22 @@ Folder* FSCache::getFolder(const kl::FilePath& name) const {
   auto where = _parent;
   for (const auto& subfld: name.breadcrumbs()) {
     where = where->getFolder(subfld);
+    if (where == nullptr) {
+      return nullptr;
+    }
   }
   return where.get();
+}
+
+bool FSCache::fileExists(const kl::FilePath& path) const {
+  auto where = _parent;
+  for (const auto& subfld: path.folderName().splitByChar('/')) {
+    where = where->getFolder(subfld);
+    if (where == nullptr) {
+      return false;
+    }
+  }
+  return where->hasFile(path.fileName());
 }
 
 kl::List<Folder*> getSubfoldersRecursively(Folder* start) {

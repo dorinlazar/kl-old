@@ -5,7 +5,7 @@
 void ModuleCollection::discoverAll() {
   _scanAllModules();
   for (const auto& [name, mod]: modules) {
-    mod->scanModuleRequirements();
+    mod->readDirectRequirements();
   }
   for (const auto& [name, mod]: modules) {
     mod->updateModuleInfo();
@@ -23,7 +23,7 @@ void ModuleCollection::discoverAll() {
 void ModuleCollection::discoverTests() {
   _scanModules({"tests"_t});
   for (const auto& [name, mod]: modules) {
-    mod->scanModuleRequirements();
+    mod->readDirectRequirements();
   }
   for (const auto& [name, mod]: modules) {
     mod->updateModuleInfo();
@@ -107,4 +107,14 @@ std::shared_ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& 
     modules.add(moduleName, val);
   }
   return val;
+}
+
+kl::FilePath ModuleCollection::resolvePath(const kl::Text& name, Module* origin) const {
+  auto path = CMD.sourceFolder.add(name);
+  if (!_cache->fileExists(path)) {
+    path = kl::FilePath(CMD.sourceFolder.add(origin->name()).folderName()).add(name);
+    CHECK(_cache->fileExists(path), "Unable to locate dependency", name, "included in module", origin->name(),
+          ". Tried:", CMD.sourceFolder.add(name), path);
+  }
+  return path.remove_base_folder(CMD.sourceFolder.folderDepth());
 }

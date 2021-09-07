@@ -9,6 +9,8 @@ struct ModuleCollection {
   kl::ptr<Module> getOrCreateModule(const kl::FilePath& folder, const kl::Text& filename);
   kl::ptr<Module> tryGetModule(const kl::FilePath& folder, const kl::Text& filename) const;
 
+  kl::FilePath resolvePath(const kl::Text& name, Module* origin) const;
+
   ModuleCollection(FSCache* cache) : _cache(cache) {}
 
   void discoverAll();

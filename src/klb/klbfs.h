@@ -32,10 +32,12 @@ class FSCache {
 
 public:
   FSCache(const kl::FilePath& source, const kl::FilePath& build);
-  Folder* getFolder(const kl::FilePath& name) const;
   kl::List<Folder*> getAllSubFolders(const kl::FilePath& base) const;
   kl::List<Folder*> getAllSourceFolders() const;
   kl::List<Folder*> getAllBuildFolders() const;
+
+  Folder* getFolder(const kl::FilePath& name) const;
+  bool fileExists(const kl::FilePath& path) const;
 };
 
 inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<Folder> l) { return l->write(os); }

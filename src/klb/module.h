@@ -10,7 +10,7 @@ struct Module {
 public:
   Module(ModuleCollection* container, const kl::Text& seed);
   void addFile(const kl::FileInfo& fi);
-  void scanModuleRequirements();
+  void readDirectRequirements();
   void updateModuleInfo();
   void updateModuleDependencies();
   void recurseModuleDependencies();
@@ -25,7 +25,7 @@ public:
   kl::Text buildFolder() const;
   const kl::Text& name() const;
   const kl::List<Module*>& requiredModules() const;
-  const kl::List<kl::Text>& includeFolders() const;
+  kl::List<kl::Text> includeFolders() const;
 
   bool requiresBuild() const;
   bool requiresLink() const;
@@ -36,12 +36,6 @@ private:
   void _scanSource();
   void _scanHeader();
   void _updateHeaderDependencies();
-  void _updateIncludeFolders();
-  kl::Text _resolveHeader(const kl::Text& name);
-  std::optional<ModuleItem> getHeader() const { return header; }
-  std::optional<ModuleItem> getSource() const { return source; }
-  std::optional<ModuleItem> getObject() const { return object; }
-  std::optional<ModuleItem> getExecutable() const { return executable; }
 
   kl::Text _name;
   ModuleCollection* _parent;
@@ -52,13 +46,12 @@ private:
   kl::Set<kl::Text> _systemIncludes;
   kl::List<Module*> _requiredModules;
   kl::Set<kl::Text> _resolvedLocalHeaderDeps;
-  kl::List<kl::Text> _includeFolders;
 
   kl::FilePath _buildPath;
   kl::FilePath _sourcePath;
 
-  std::optional<ModuleItem> header;
-  std::optional<ModuleItem> source;
-  std::optional<ModuleItem> object;
-  std::optional<ModuleItem> executable;
+  std::optional<ModuleItem> _header;
+  std::optional<ModuleItem> _source;
+  std::optional<ModuleItem> _object;
+  std::optional<ModuleItem> _executable;
 };
