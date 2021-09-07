@@ -36,9 +36,9 @@ void Module::_scanHeader() {
   }
 
   kl::SourceCodeScanner scanner(headerPath());
-  _headerSysIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
-  _headerLocalIncludes.add(scanner.localIncludes().transform<kl::Text>(
-      [this](const kl::Text& tr) { return _parent->resolvePath(tr.copy(), this).fullPath(); }));
+  _headerSysIncludes = scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); });
+  _headerLocalIncludes = scanner.localIncludes().transform<kl::Text>(
+      [this](const kl::Text& tr) { return _parent->resolvePath(tr.copy(), this).fullPath(); });
 }
 
 void Module::_scanSource() {
@@ -55,9 +55,9 @@ void Module::_scanSource() {
 
   kl::SourceCodeScanner scanner(sourcePath());
   _hasMain = scanner.hasMain();
-  _systemIncludes.add(scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); }));
-  _localIncludes.add(scanner.localIncludes().transform<kl::Text>(
-      [this](const kl::Text& tr) { return _parent->resolvePath(tr.copy(), this).fullPath(); }));
+  _systemIncludes = scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); });
+  _localIncludes = scanner.localIncludes().transform<kl::Text>(
+      [this](const kl::Text& tr) { return _parent->resolvePath(tr.copy(), this).fullPath(); });
 }
 
 void Module::updateHeaderDependencies() {
@@ -188,21 +188,11 @@ void Module::recurseModuleDependencies() {
     modules.add(mod);
     for (auto m: mod->_requiredModules) {
       if (!modules.has(m) && !processingQueue.has(m)) {
-        if (_name == "klb/klb") {
-          kl::log("Adding to queue", m->_name,
-                  m->_requiredModules.transform<kl::Text>([](Module* p) { return p->name(); }), "triggered by",
-                  mod->_name);
-        }
         processingQueue.push(m);
       }
     }
   }
-  kl::log("Before recursion, module", _name,
-          "has deps:", _requiredModules.transform<kl::Text>([](Module* p) { return p->name(); }));
-
   _requiredModules = modules.toList();
-  kl::log("After recursion, module", _name,
-          "has deps:", _requiredModules.transform<kl::Text>([](Module* p) { return p->name(); }));
 }
 
 const kl::List<Module*>& Module::requiredModules() const { return _requiredModules; }

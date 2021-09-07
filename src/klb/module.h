@@ -39,10 +39,10 @@ private:
   kl::Text _name;
   ModuleCollection* _parent;
   bool _hasMain;
-  kl::Set<kl::Text> _headerLocalIncludes;
-  kl::Set<kl::Text> _headerSysIncludes;
-  kl::Set<kl::Text> _localIncludes;
-  kl::Set<kl::Text> _systemIncludes;
+  kl::List<kl::Text> _headerLocalIncludes;
+  kl::List<kl::Text> _headerSysIncludes;
+  kl::List<kl::Text> _localIncludes;
+  kl::List<kl::Text> _systemIncludes;
   kl::List<Module*> _requiredModules;
   kl::List<kl::Text> _resolvedLocalHeaderDeps;
 

@@ -8,8 +8,8 @@ using namespace kl;
 struct SourceCodeScannerImpl {
   TextScanner _scanner;
   Text _filename;
-  List<Text> _local;
-  List<Text> _system;
+  Set<Text> _local;
+  Set<Text> _system;
   bool _hasMain = false;
 
   SourceCodeScannerImpl(const Text& file) : _scanner(kl::FileReader(file).readAll()), _filename(file) { _scanFile(); }
@@ -51,8 +51,8 @@ struct SourceCodeScannerImpl {
 
 SourceCodeScanner::SourceCodeScanner(const kl::Text& filename) {
   SourceCodeScannerImpl scanner(filename);
-  _local = scanner._local;
-  _system = scanner._system;
+  _local = scanner._local.toList();
+  _system = scanner._system.toList();
   _hasMain = scanner._hasMain;
 }
 
