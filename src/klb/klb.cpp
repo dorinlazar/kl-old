@@ -17,9 +17,6 @@ kl::uptr<ModuleCollection> discoverModules(const kl::List<kl::Text>& targets, FS
     }
   }
 
-  for (const auto& [name, mod]: mc->modules) {
-    mod->updateModuleInfo();
-  }
   return mc;
 }
 

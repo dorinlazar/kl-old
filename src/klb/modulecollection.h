@@ -15,7 +15,6 @@ struct ModuleCollection {
 
 private:
   FSCache* _cache;
-  void _updateModuleDependencies();
   void _scanAllModules();
   void _scanModules(const kl::List<kl::Text>& targets);
 };

@@ -20,9 +20,12 @@ void Module::addFile(const kl::FileInfo& fi) {
   }
 }
 
-void Module::updateModuleInfo() {
+void Module::scanModuleRequirements() {
   _scanHeader();
   _scanSource();
+}
+
+void Module::updateModuleInfo() {
   _updateHeaderDependencies();
   _updateModuleDependencies();
   _updateIncludeFolders();

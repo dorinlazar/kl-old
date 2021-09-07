@@ -7,10 +7,6 @@ struct ModuleCollection;
 
 struct Module {
   kl::Text name;
-  std::optional<ModuleItem> header;
-  std::optional<ModuleItem> source;
-  std::optional<ModuleItem> object;
-  std::optional<ModuleItem> executable;
   bool hasMain;
   kl::Set<kl::Text> headerLocalIncludes;
   kl::Set<kl::Text> headerSysIncludes;
@@ -24,6 +20,7 @@ struct Module {
 public:
   Module(ModuleCollection* container, const kl::Text& seed);
   void addFile(const kl::FileInfo& fi);
+  void scanModuleRequirements();
   void updateModuleInfo();
 
 public:
@@ -54,4 +51,9 @@ private:
 
   kl::FilePath _buildPath;
   kl::FilePath _sourcePath;
+
+  std::optional<ModuleItem> header;
+  std::optional<ModuleItem> source;
+  std::optional<ModuleItem> object;
+  std::optional<ModuleItem> executable;
 };
