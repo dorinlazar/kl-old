@@ -12,7 +12,15 @@ void ModuleCollection::discoverAll() {
   }
 }
 
-void ModuleCollection::discoverTests() { _scanModules({"tests"_t}); }
+void ModuleCollection::discoverTests() {
+  _scanModules({"tests"_t});
+  for (const auto& [name, mod]: modules) {
+    mod->scanModuleRequirements();
+  }
+  for (const auto& [name, mod]: modules) {
+    mod->updateModuleInfo();
+  }
+}
 
 void ModuleCollection::_scanAllModules() {
   uint32_t srcDepth = CMD.sourceFolder.folderDepth();
