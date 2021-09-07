@@ -8,7 +8,7 @@ void ModuleCollection::discoverAll() {
     mod->readDirectRequirements();
   }
   for (const auto& [name, mod]: modules) {
-    mod->updateModuleInfo();
+    mod->updateHeaderDependencies();
   }
   for (const auto& [name, mod]: modules) {
     mod->updateModuleDependencies();
@@ -26,7 +26,7 @@ void ModuleCollection::discoverTests() {
     mod->readDirectRequirements();
   }
   for (const auto& [name, mod]: modules) {
-    mod->updateModuleInfo();
+    mod->updateHeaderDependencies();
   }
 }
 
@@ -87,11 +87,6 @@ void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
 std::shared_ptr<Module> ModuleCollection::getModule(const kl::FilePath& folder, const kl::Text& file) const {
   kl::Text moduleName = folder.add(file).replace_extension(""_t).fullPath();
   return modules[moduleName];
-}
-
-std::shared_ptr<Module> ModuleCollection::tryGetModule(const kl::FilePath& folder, const kl::Text& file) const {
-  kl::Text moduleName = folder.add(file).replace_extension(""_t).fullPath();
-  return modules.get(moduleName);
 }
 
 std::shared_ptr<Module> ModuleCollection::getModule(const kl::Text& file) const {

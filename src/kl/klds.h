@@ -271,6 +271,9 @@ public:
       _data.insert(t);
     }
   }
+
+  void remove(const T& value) { _data.erase(value); }
+
   bool has(const T& v) { return _data.contains(v); }
 
   void forEach(std::function<void(const T&)> op) const {

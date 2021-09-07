@@ -2,7 +2,6 @@
 #include "modulecollection.h"
 #include "klbsettings.h"
 #include "ff/codescanner.h"
-#include "depprocessor.h"
 
 Module::Module(ModuleCollection* parent, const kl::Text& seed) : _name(seed), _parent(parent) {
   _sourcePath = CMD.sourceFolder.add(_name).replace_extension(""_t);
@@ -24,8 +23,6 @@ void Module::readDirectRequirements() {
   _scanHeader();
   _scanSource();
 }
-
-void Module::updateModuleInfo() { _updateHeaderDependencies(); }
 
 void Module::_scanHeader() {
   if (!_header.has_value()) {
@@ -63,24 +60,31 @@ void Module::_scanSource() {
       [this](const kl::Text& tr) { return _parent->resolvePath(tr.copy(), this).fullPath(); }));
 }
 
-void Module::_updateHeaderDependencies() {
+void Module::updateHeaderDependencies() {
   if (!_header.has_value()) {
     return;
   }
 
   auto modh = kl::FilePath(_name).replace_extension(_header->extension()).fullPath();
 
-  DependencyProcessor<kl::Text> proc;
-  proc.add(_name);
-  proc.process([this, &modh](const kl::Text& deph) {
+  kl::Set<kl::Text> resolved;
+  kl::Queue<kl::Text> processingQueue;
+  processingQueue.push(modh);
+  while (!processingQueue.empty()) {
+    auto deph = processingQueue.pop();
+    resolved.add(deph);
     auto mod = _parent->getModule(""_t, deph);
-    CHECK(mod != nullptr, "Unable to identify module for", deph, "required from", _name, "header dependency");
     if (mod->_resolvedLocalHeaderDeps.size() > 0) {
-      return mod->_resolvedLocalHeaderDeps.toList().select([&modh](const kl::Text& h) { return h != modh; });
+      resolved.add(mod->_resolvedLocalHeaderDeps);
+    } else {
+      for (const auto& h: mod->_headerLocalIncludes) {
+        if (!resolved.has(h) && !processingQueue.has(h)) {
+          processingQueue.push(h);
+        }
+      }
     }
-    return mod->_headerLocalIncludes.toList().select([&modh](const kl::Text& h) { return h != modh; });
-  });
-  _resolvedLocalHeaderDeps = proc.result();
+  }
+  _resolvedLocalHeaderDeps = resolved.toList();
 }
 
 void Module::updateModuleDependencies() {
@@ -176,10 +180,29 @@ const kl::Text& Module::name() const { return _name; }
 bool Module::hasMain() const { return _hasMain; }
 
 void Module::recurseModuleDependencies() {
-  DependencyProcessor<Module*> proc;
-  proc.add(this);
-  proc.process([this](Module* mod) { return mod->_requiredModules; });
-  _requiredModules = proc.result().toList();
+  kl::Set<Module*> modules;
+  kl::Queue<Module*> processingQueue;
+  processingQueue.push(this);
+  while (!processingQueue.empty()) {
+    auto mod = processingQueue.pop();
+    modules.add(mod);
+    for (auto m: mod->_requiredModules) {
+      if (!modules.has(m) && !processingQueue.has(m)) {
+        if (_name == "klb/klb") {
+          kl::log("Adding to queue", m->_name,
+                  m->_requiredModules.transform<kl::Text>([](Module* p) { return p->name(); }), "triggered by",
+                  mod->_name);
+        }
+        processingQueue.push(m);
+      }
+    }
+  }
+  kl::log("Before recursion, module", _name,
+          "has deps:", _requiredModules.transform<kl::Text>([](Module* p) { return p->name(); }));
+
+  _requiredModules = modules.toList();
+  kl::log("After recursion, module", _name,
+          "has deps:", _requiredModules.transform<kl::Text>([](Module* p) { return p->name(); }));
 }
 
 const kl::List<Module*>& Module::requiredModules() const { return _requiredModules; }

@@ -1,6 +1,5 @@
 #include "modulecollection.h"
 #include "klbsettings.h"
-#include "depprocessor.h"
 #include "klbexecutor.h"
 #include "klbsettings.h"
 

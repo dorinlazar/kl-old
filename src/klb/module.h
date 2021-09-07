@@ -11,7 +11,7 @@ public:
   Module(ModuleCollection* container, const kl::Text& seed);
   void addFile(const kl::FileInfo& fi);
   void readDirectRequirements();
-  void updateModuleInfo();
+  void updateHeaderDependencies();
   void updateModuleDependencies();
   void recurseModuleDependencies();
 
@@ -35,7 +35,6 @@ private:
   void _updateComponentPaths();
   void _scanSource();
   void _scanHeader();
-  void _updateHeaderDependencies();
 
   kl::Text _name;
   ModuleCollection* _parent;
@@ -45,7 +44,7 @@ private:
   kl::Set<kl::Text> _localIncludes;
   kl::Set<kl::Text> _systemIncludes;
   kl::List<Module*> _requiredModules;
-  kl::Set<kl::Text> _resolvedLocalHeaderDeps;
+  kl::List<kl::Text> _resolvedLocalHeaderDeps;
 
   kl::FilePath _buildPath;
   kl::FilePath _sourcePath;
