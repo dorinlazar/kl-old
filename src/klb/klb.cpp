@@ -21,6 +21,7 @@ int main(int argc, char** argv, char** envp) {
 
   for (const auto& target: CMD.targets) {
     kl::FilePath fp(target);
+    // TODO implement a FilePath::startsWith that does this per path component
     if (target.startsWith(CMD.buildFolder.fullPath())) {
       fp = fp.remove_base_folder(CMD.buildFolder.folderDepth());
     } else if (target.startsWith(CMD.sourceFolder.fullPath())) {
