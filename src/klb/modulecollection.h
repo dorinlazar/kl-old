@@ -8,7 +8,7 @@ struct ModuleCollection {
   kl::ptr<Module> getOrCreateModule(const kl::FilePath& folder, const kl::Text& filename);
 
   kl::List<Module*> getTargetModules(const kl::List<kl::Text>& targets);
-  kl::List<Module*> getExecutables(const kl::Text& basePath);
+  kl::List<kl::Text> getModuleNames(const kl::Text& basePath);
 
   kl::FilePath resolvePath(const kl::Text& name, Module* origin) const;
 

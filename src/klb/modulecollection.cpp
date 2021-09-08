@@ -89,9 +89,10 @@ kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& t
       if (!mod) [[unlikely]] {
         FATAL("Unable to identify target", file);
       }
-      if (fp.extension() == "o"_t) {
+      auto ext = fp.extension();
+      if (ext == "o"_t) {
         requiredModules.add(mod.get());
-      } else if (mod->hasMain() && (fp.extension() == "exe"_t || fp.extension().size() == 0)) {
+      } else if (mod->hasMain() && (ext == "exe"_t || ext == ""_t || ext.startsWith("c"))) {
         requiredModules.add(mod->requiredModules());
       } else {
         FATAL("Don't know how to build", file);
@@ -101,11 +102,15 @@ kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& t
   return requiredModules.toList();
 }
 
-kl::List<Module*> ModuleCollection::getExecutables(const kl::Text& basePath) {
-  kl::List<Module*> result;
+kl::List<kl::Text> ModuleCollection::getModuleNames(const kl::Text& basePath) {
+  auto path = kl::FilePath(basePath).replace_extension(""_t);
+  kl::List<kl::Text> result;
   for (const auto& [name, mod]: modules) {
+    if (name == path) {
+      return {basePath};
+    }
     if (mod->hasMain() && name.startsWith(basePath) && name.skip(basePath.size()).startsWith("/")) {
-      result.add(mod.get());
+      result.add(name);
     }
   }
   return result;

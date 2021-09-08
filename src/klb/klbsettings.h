@@ -8,6 +8,7 @@ struct CommandParameters {
   kl::FilePath sourceFolder;
   int32_t processorCount = 0;
   std::optional<int32_t> nJobs;
+  bool runMode = false;
   kl::List<kl::Text> cxxFlags;
   kl::List<kl::Text> cFlags;
   kl::List<kl::Text> linkFlags;

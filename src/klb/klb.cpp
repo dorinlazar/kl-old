@@ -18,29 +18,16 @@ int main(int argc, char** argv, char** envp) {
   auto mc = discoverModules(fscache.get());
 
   kl::Set<kl::Text> targets;
-  bool testMode = false;
+
   for (const auto& target: CMD.targets) {
-    if (target == "test"_t) {
-      testMode = true;
-    } else {
-      kl::FilePath fp(target);
-      if (target.startsWith(CMD.buildFolder.fullPath())) {
-        fp = fp.remove_base_folder(CMD.buildFolder.folderDepth());
-      } else if (target.startsWith(CMD.sourceFolder.fullPath())) {
-        fp = fp.remove_base_folder(CMD.sourceFolder.folderDepth());
-      }
-
-      targets.add(fp.fullPath());
+    kl::FilePath fp(target);
+    if (target.startsWith(CMD.buildFolder.fullPath())) {
+      fp = fp.remove_base_folder(CMD.buildFolder.folderDepth());
+    } else if (target.startsWith(CMD.sourceFolder.fullPath())) {
+      fp = fp.remove_base_folder(CMD.sourceFolder.folderDepth());
     }
-  }
 
-  kl::List<Module*> tests;
-
-  if (testMode) {
-    targets.remove("test"_t);
-    tests = mc->getExecutables("tests");
-    kl::log("Tests:", tests.transform<kl::Text>([](Module* m) { return m->name(); }));
-    targets.add(tests.transform<kl::Text>([](Module* m) { return m->name(); }));
+    targets.add(mc->getModuleNames(fp.fullPath()));
   }
 
   auto modules = mc->getTargetModules(targets.toList());
@@ -56,9 +43,11 @@ int main(int argc, char** argv, char** envp) {
     }
   }
 
-  if (tests.size()) {
-    for (const auto& mod: tests) {
-      sched.run(mod);
+  if (CMD.runMode) {
+    for (const auto& mod: modules) {
+      if (mod->hasMain()) {
+        sched.run(mod);
+      }
     }
   }
 
