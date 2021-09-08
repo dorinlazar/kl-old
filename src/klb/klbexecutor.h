@@ -11,7 +11,8 @@ class ExecutionStrategy {
 public:
   ExecutionStrategy(ModuleCollection* coll);
   ~ExecutionStrategy();
-  void build(const kl::Text& module);
-  void link(const kl::Text& module);
+  void build(Module* module);
+  void link(Module* module);
+  void run(Module* module);
   bool execute();
 };

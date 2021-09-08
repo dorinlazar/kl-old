@@ -4,7 +4,7 @@
 #include "kl/klprocess.h"
 #include <thread>
 
-enum class ExecStepType { Build, Link };
+enum class ExecStepType { Build, Link, Run };
 
 struct ExecStep {
   ExecStepType type;
@@ -62,8 +62,17 @@ public:
       } else if (CMD.verbose) {
         kl::log("Module", mod->name(), "requires no linking");
       }
+    } else if (t == ExecStepType::Run) {
+      auto exe = mod->executablePath();
+      kl::List<kl::ExecutionNode*> nodes;
+      if (mod->requiresLink()) {
+        nodes.add(_execNodes[exe]);
+      }
+      auto node = _horde.addNode({exe}, nodes);
+      _execNodes.add("RUN_"_t + mod->executablePath(), node);
     }
   }
+
   bool execute() override {
     createBuildFolders();
     return _horde.run(CMD.nJobs.value_or(2), true);
@@ -86,16 +95,7 @@ ExecutionStrategy::ExecutionStrategy(ModuleCollection* coll) : _modules(coll) {
 }
 
 ExecutionStrategy::~ExecutionStrategy() {}
-void ExecutionStrategy::build(const kl::Text& module) {
-  auto mod = _modules->getModule(module);
-  CHECK(mod != nullptr, "Module not found:", module);
-  impl->add(ExecStepType::Build, mod.get());
-}
-
-void ExecutionStrategy::link(const kl::Text& module) {
-  auto mod = _modules->getModule(module);
-  CHECK(mod != nullptr, "Module not found:", module);
-  impl->add(ExecStepType::Link, mod.get());
-}
-
+void ExecutionStrategy::build(Module* mod) { impl->add(ExecStepType::Build, mod); }
+void ExecutionStrategy::link(Module* mod) { impl->add(ExecStepType::Link, mod); }
+void ExecutionStrategy::run(Module* mod) { impl->add(ExecStepType::Run, mod); }
 bool ExecutionStrategy::execute() { return impl->execute(); }

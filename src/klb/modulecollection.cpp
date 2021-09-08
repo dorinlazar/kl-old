@@ -2,7 +2,7 @@
 #include "klbsettings.h"
 #include "ff/codescanner.h"
 
-void ModuleCollection::discoverAll() {
+void ModuleCollection::discoverModules() {
   _scanAllModules();
   for (const auto& [name, mod]: modules) {
     mod->readDirectRequirements();
@@ -20,16 +20,6 @@ void ModuleCollection::discoverAll() {
   }
 }
 
-void ModuleCollection::discoverTests() {
-  _scanModules({"tests"_t});
-  for (const auto& [name, mod]: modules) {
-    mod->readDirectRequirements();
-  }
-  for (const auto& [name, mod]: modules) {
-    mod->updateHeaderDependencies();
-  }
-}
-
 void ModuleCollection::_scanAllModules() {
   uint32_t srcDepth = CMD.sourceFolder.folderDepth();
   uint32_t bldDepth = CMD.buildFolder.folderDepth();
@@ -41,37 +31,6 @@ void ModuleCollection::_scanAllModules() {
       mod->addFile(file);
     }
   }
-  for (auto folder: _cache->getAllBuildFolders()) {
-    auto path = folder->fullPath();
-    auto moduleFolder = path == CMD.buildFolder ? ""_t : path.remove_base_folder(bldDepth);
-    for (const auto& file: folder->files()) {
-      auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
-      if (mod) {
-        mod->addFile(file);
-      }
-    }
-  }
-}
-
-void ModuleCollection::_scanModules(const kl::List<kl::Text>& targets) {
-  uint32_t srcDepth = CMD.sourceFolder.folderDepth();
-  uint32_t bldDepth = CMD.buildFolder.folderDepth();
-
-  kl::List<Folder*> folders;
-
-  for (const auto& target: targets) {
-    folders.add(_cache->getAllSubFolders(CMD.sourceFolder.add(target)));
-  }
-
-  for (auto folder: folders) {
-    auto path = folder->fullPath();
-    auto modFld = path.fullPath() == CMD.sourceFolder ? ""_t : folder->fullPath().remove_base_folder(srcDepth);
-    for (const auto& file: folder->files()) {
-      auto mod = getOrCreateModule(modFld, file.path.stem());
-      mod->addFile(file);
-    }
-  }
-
   for (auto folder: _cache->getAllBuildFolders()) {
     auto path = folder->fullPath();
     auto moduleFolder = path == CMD.buildFolder ? ""_t : path.remove_base_folder(bldDepth);
@@ -112,4 +71,42 @@ kl::FilePath ModuleCollection::resolvePath(const kl::Text& name, Module* origin)
           ". Tried:", CMD.sourceFolder.add(name), path);
   }
   return path.remove_base_folder(CMD.sourceFolder.folderDepth());
+}
+
+kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& targets) {
+  kl::Set<Module*> requiredModules;
+  if (targets.size() == 0) {
+    for (const auto& [name, mod]: modules) {
+      if (mod->hasMain()) {
+        requiredModules.add(mod->requiredModules());
+      }
+    }
+  } else {
+    for (const auto& file: targets) {
+      kl::FilePath fp(file);
+      kl::Text moduleName = fp.replace_extension(""_t).fullPath();
+      auto mod = modules.get(moduleName);
+      if (!mod) [[unlikely]] {
+        FATAL("Unable to identify target", file);
+      }
+      if (fp.extension() == "o"_t) {
+        requiredModules.add(mod.get());
+      } else if (mod->hasMain() && (fp.extension() == "exe"_t || fp.extension().size() == 0)) {
+        requiredModules.add(mod->requiredModules());
+      } else {
+        FATAL("Don't know how to build", file);
+      }
+    }
+  }
+  return requiredModules.toList();
+}
+
+kl::List<Module*> ModuleCollection::getExecutables(const kl::Text& basePath) {
+  kl::List<Module*> result;
+  for (const auto& [name, mod]: modules) {
+    if (mod->hasMain() && name.startsWith(basePath) && name.skip(basePath.size()).startsWith("/")) {
+      result.add(mod.get());
+    }
+  }
+  return result;
 }

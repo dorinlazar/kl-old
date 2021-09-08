@@ -5,17 +5,9 @@
 
 using namespace kl;
 
-kl::uptr<ModuleCollection> discoverModules(const kl::List<kl::Text>& targets, FSCache* cache) {
+kl::uptr<ModuleCollection> discoverModules(FSCache* cache) {
   auto mc = std::make_unique<ModuleCollection>(cache);
-  if (targets.size() == 0) {
-    mc->discoverAll();
-  } else {
-    kl::log("Target-based builds are work in progress!!!");
-    if (targets.has("test")) { // let's try what we really need first.
-      mc->discoverTests();
-    }
-  }
-
+  mc->discoverModules();
   return mc;
 }
 
@@ -23,25 +15,50 @@ int main(int argc, char** argv, char** envp) {
   CMD.init(argc, argv, envp);
   auto fscache = std::make_unique<FSCache>(CMD.sourceFolder, CMD.buildFolder);
 
-  auto mc = discoverModules(CMD.targets, fscache.get());
+  auto mc = discoverModules(fscache.get());
 
-  Set<kl::Text> requiredModules;
+  kl::Set<kl::Text> targets;
+  bool testMode = false;
+  for (const auto& target: CMD.targets) {
+    if (target == "test"_t) {
+      testMode = true;
+    } else {
+      kl::FilePath fp(target);
+      if (target.startsWith(CMD.buildFolder.fullPath())) {
+        fp = fp.remove_base_folder(CMD.buildFolder.folderDepth());
+      } else if (target.startsWith(CMD.sourceFolder.fullPath())) {
+        fp = fp.remove_base_folder(CMD.sourceFolder.folderDepth());
+      }
 
-  for (const auto& [name, mod]: mc->modules) {
-    if (mod->hasMain()) {
-      requiredModules.add(mod->requiredModules().transform<kl::Text>([](Module* m) { return m->name(); }));
+      targets.add(fp.fullPath());
     }
   }
 
-  ExecutionStrategy sched(mc.get());
+  kl::List<Module*> tests;
 
-  for (const auto& modName: requiredModules) {
-    sched.build(modName);
+  if (testMode) {
+    targets.remove("test"_t);
+    tests = mc->getExecutables("tests");
+    kl::log("Tests:", tests.transform<kl::Text>([](Module* m) { return m->name(); }));
+    targets.add(tests.transform<kl::Text>([](Module* m) { return m->name(); }));
   }
 
-  for (const auto& [name, mod]: mc->modules) {
+  auto modules = mc->getTargetModules(targets.toList());
+  ExecutionStrategy sched(mc.get());
+
+  for (const auto& mod: modules) {
+    sched.build(mod);
+  }
+
+  for (const auto& mod: modules) {
     if (mod->hasMain()) {
-      sched.link(name);
+      sched.link(mod);
+    }
+  }
+
+  if (tests.size()) {
+    for (const auto& mod: tests) {
+      sched.run(mod);
     }
   }
 
