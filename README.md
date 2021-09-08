@@ -23,8 +23,13 @@ added as long as my audience really wants them. Here's how it works currently:
 5. `klb` will automatically pull the dependencies based on the files you include, and their implementation dependencies
    as well. This way for an executable we link only the objects really needed by an application.
 6. To build your code you just need to run `klb` in the root folder (not the src folder).
-7. Object files are output in the `build/*object/file/subdirectory*/somefile.o`. Executable files are automatically built
-   when the C++ file contains an `int main(` line. Nothing but whitespace is accepted before `int`.
+7. Object files are output in the `build/*source/file/subdirectory*/somefile.o`.
+8. Executables are output in the `build/*source/file/subdirectory*/somefile.exe` - one can rename at their discression.
+   Executable files are built when the C++ file contains an `int main(` line. Nothing but whitespace is accepted before
+   `int`.
+9. `klb` now supports target designation, and running of tests. Use `-r` to be in *run mode*, which will execute all
+   currently active executable targets. `-r` is dangerous, but useful - run in conjunction with tests it will really
+   make the difference.
 
 ### Current status for **klb**
 
@@ -33,6 +38,9 @@ added as long as my audience really wants them. Here's how it works currently:
 - **klb** now honors some environment variables, documentation is on the roadmap, but nothing urgent.
 - Code now compiles with multiple parallel jobs. Use JOBS=\<number> in configuration file or when running **klb** - by
   default it will be 2.
+- Single targets can pe specified in the command line. You can specify the module name (*tests/kltext*) or the target
+  path (*build/tests/kltext.exe*) or the source path (*src/tests/kltext.cpp*). `klb` basically allows you to run a C++
+  file as long as it's under a folder named `src`.
 
 ## The KL Library
 
@@ -47,3 +55,18 @@ expressive API more than performance.
 The `kltime` offers a simplified `DateTime` that will save me from the insanity of working directly with `std::chrono`.
 
 Other tools will appear as needed for what I'm implementing.
+
+## File formats
+
+Support for several file formats will be implemented in time.
+
+- `codescanner` is a basic parser for source code that doesn't have all the algorithmic complexity of a normal C
+  preprocessor, but manages to generally find all the dependencies of a file (albeit sometimes too many, it doesn't know
+  yet about `#if`s).
+- `poorconfig` is a minimalistic and strict subset of YAML that will be the basis of configurability in KL related
+  tools.
+- `markwrite` is a somewhat different Markdown, that is work in progress and the main tool for publishing in the klblog
+  engine.
+- `textscanner` is a set of tools for what it seems that is called a *shift-reduce parser*. I might be very much in the
+  wrong, but this is my naïve method of writing my own text scanner. What is a bit different is that you can also save
+  locations in the middle of the parser, and restore them at will.
