@@ -49,7 +49,7 @@ static Text _normalize_path(const Text& filename) {
   uint32_t lastSlashPos = 0;
   bool cutNeeded = false;
   for (uint32_t i = 0; i < filename.size(); i++) {
-    if (filename[i] == '/') {
+    if (filename[i] == folder_separator[0]) {
       if (lastWasSlash) {
         cutNeeded = true;
       } else {
@@ -80,9 +80,9 @@ static Text _normalize_path(const Text& filename) {
 }
 
 FilePath::FilePath(const Text& path) : _fullName(_normalize_path(path)) {
-  _lastSlashPos = _fullName.lastPos('/');
+  _lastSlashPos = _fullName.lastPos(folder_separator[0]);
   _lastDotPos = _fullName.lastPos('.');
-  if (_lastDotPos.has_value() && (*_lastDotPos == 0 || _fullName[*_lastDotPos - 1] == '/')) {
+  if (_lastDotPos.has_value() && (*_lastDotPos == 0 || _fullName[*_lastDotPos - 1] == folder_separator[0])) {
     _lastDotPos = {};
   }
 }
@@ -116,10 +116,10 @@ Text FilePath::baseFolder(uint32_t levels) const {
     return ""_t;
   }
   if (levels < depth()) {
-    if (_fullName[0] == '/') {
+    if (_fullName[0] == folder_separator[0]) {
       levels++;
     }
-    auto pos = _fullName.pos('/', levels);
+    auto pos = _fullName.pos(folder_separator[0], levels);
     if (pos.has_value()) {
       return _fullName.subpos(0, *pos - 1);
     }
@@ -132,8 +132,8 @@ FilePath FilePath::remove_base_folder(uint32_t levels) const {
     return *this;
   }
   if (levels < depth()) {
-    Text p = _fullName[0] == '/' ? _fullName.skip(1) : _fullName;
-    auto pos = p.pos('/', levels);
+    Text p = _fullName[0] == folder_separator[0] ? _fullName.skip(1) : _fullName;
+    auto pos = p.pos(folder_separator[0], levels);
     if (pos.has_value()) {
       return p.subpos(*pos + 1, p.size());
     }
@@ -146,7 +146,9 @@ FilePath FilePath::replace_base_folder(const kl::Text& new_folder, uint32_t leve
   return FilePath(new_folder + folder_separator + fp._fullName);
 }
 
-uint32_t FilePath::depth() const { return _fullName.count('/') - (_fullName.startsWith("/") ? 1 : 0); }
+uint32_t FilePath::depth() const {
+  return _fullName.count(folder_separator[0]) - (_fullName.startsWith(folder_separator[0]) ? 1 : 0);
+}
 uint32_t FilePath::folderDepth() const {
   if (_fullName.size() == 0 || (_fullName.size() == 1 && _fullName[0] == '.')) {
     return 0;
@@ -200,10 +202,8 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
 
 void FileSystem::navigateTree(const Text& treeBase,
                               std::function<NavigateInstructions(const FileInfo& file)> processor) {
-  // let's make a dummy item
-  FileInfo dummy{.type = FileType::Directory, .lastWrite = DateTime::UnixEpoch, .path = FilePath(treeBase)};
   std::queue<FileInfo> to_process;
-  to_process.push(dummy);
+  to_process.push({.type = FileType::Directory, .lastWrite = DateTime::UnixEpoch, .path = FilePath(treeBase)});
   while (!to_process.empty()) {
     FileInfo fi = to_process.front();
     to_process.pop();
@@ -221,7 +221,7 @@ void FileSystem::navigateTree(const Text& treeBase,
 }
 
 Text FileSystem::getExecutablePath(const Text& exename) {
-  if (!exename.contains('/')) {
+  if (!exename.contains(folder_separator[0])) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
       FilePath fp(f + "/"_t + exename);
