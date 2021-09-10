@@ -74,6 +74,29 @@ private:
   Text _unreadContent; // we can do away with this.
 };
 
+struct Folder {
+  const Folder* _parent = nullptr;
+  kl::Text _name;
+  kl::FilePath _path;
+  kl::Dict<kl::Text, kl::ptr<Folder>> _folders;
+  kl::List<kl::FileInfo> _files;
+
+public:
+  Folder() = default;
+  Folder(const kl::Text& name, const kl::Text& path, const Folder* parent);
+  void addItem(const kl::FileInfo& file, const kl::Text& path);
+
+  kl::ptr<Folder> getFolder(const kl::Text& folder);
+  kl::List<kl::ptr<Folder>> getFolders() const;
+  kl::ptr<Folder> createFolder(const kl::FilePath& path);
+  const kl::FilePath& fullPath() const;
+  const kl::List<kl::FileInfo>& files() const;
+  bool hasFile(const kl::Text& file) const;
+  std::ostream& write(std::ostream& os) const;
+};
+
 } // namespace kl
 
 std::ostream& operator<<(std::ostream& os, const kl::FilePath& p);
+inline std::ostream& operator<<(std::ostream& os, const kl::ptr<kl::Folder> l);
+inline std::ostream& operator<<(std::ostream& os, const kl::Folder& l);

@@ -287,4 +287,65 @@ std::optional<char> FileReader::readChar() {
 
 bool FileReader::hasData() { return _unreadContent.size(); }
 
+Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
+    : _parent(parent), _name(name), _path(path) {}
+
+void Folder::addItem(const kl::FileInfo& fi, const kl::Text& fullPath) {
+  if (fi.path.folderName().size() == 0) {
+    if (fi.type == kl::FileType::Directory) {
+      _folders.add(fi.path.fullPath(), std::make_shared<Folder>(fi.path.fullPath(), fullPath, this));
+    } else {
+      _files.add(fi);
+    }
+  } else {
+    auto fi2 = fi;
+    auto baseFolder = fi.path.baseFolder();
+    CHECK(_folders.has(baseFolder), "Sanity check: File in folder", baseFolder, "added, but folder not recorded");
+    fi2.path = fi2.path.remove_base_folder();
+    _folders[baseFolder]->addItem(fi2, fullPath);
+  }
+}
+
+kl::ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
+kl::List<kl::ptr<Folder>> Folder::getFolders() const { return _folders.values(); }
+kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
+  if (fp.fullPath().size() == 0) {
+    return nullptr;
+  }
+  kl::ptr<Folder> where = nullptr;
+  kl::FilePath currentPath;
+  for (const auto& fld: fp.breadcrumbs()) {
+    currentPath = currentPath.add(fld);
+    Folder* ptr = where != nullptr ? where.get() : this;
+    where = ptr->getFolder(fld);
+    if (where == nullptr) {
+      where = std::make_shared<Folder>();
+      ptr->_folders.add(fld, where);
+    }
+  }
+  return where;
+}
+
+const kl::FilePath& Folder::fullPath() const { return _path; }
+const kl::List<kl::FileInfo>& Folder::files() const { return _files; }
+
+bool Folder::hasFile(const kl::Text& file) const {
+  return _files.any([file](const auto& f) { return f.path.fileName() == file; });
+}
+
+std::ostream& Folder::write(std::ostream& os) const {
+  os << "Folder: " << _name << " with ";
+  if (_parent) {
+    os << "parent: " << _parent->_name;
+  } else {
+    os << "no parent";
+  }
+  os << " FullPath: " << _path;
+  os << "\nFolders: " << _folders.keys();
+  os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileInfo& fi) { return fi.path.fileName(); });
+  return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const kl::FilePath& p) { return os << p.fullPath(); }
+inline std::ostream& operator<<(std::ostream& os, const kl::ptr<kl::Folder> l) { return l->write(os); }
+inline std::ostream& operator<<(std::ostream& os, const kl::Folder& l) { return l.write(os); }
