@@ -310,7 +310,7 @@ std::optional<uint32_t> Text::lastPos(char c) const {
   return {};
 }
 
-std::tuple<Text, Text> Text::splitPos(int32_t where) const {
+std::pair<Text, Text> Text::splitPos(int32_t where) const {
   int32_t maxn = size();
   if (where < 0) {
     where += maxn;
@@ -321,10 +321,10 @@ std::tuple<Text, Text> Text::splitPos(int32_t where) const {
   if (where > maxn) {
     where = maxn;
   }
-  return std::make_tuple(Text(*this, 0, where), Text(*this, where, maxn));
+  return {Text(*this, 0, where), Text(*this, where, maxn)};
 }
 
-std::tuple<Text, Text> Text::splitNextChar(char c, SplitDirection direction) const {
+std::pair<Text, Text> Text::splitNextChar(char c, SplitDirection direction) const {
   const char* ptr = _memblock.get();
   for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
     if (ptr[current_offset] == c) {
@@ -335,13 +335,13 @@ std::tuple<Text, Text> Text::splitNextChar(char c, SplitDirection direction) con
       if (direction == SplitDirection::Discard) {
         current_offset++;
       }
-      return std::make_tuple(first, Text::FromBuffer(_memblock, current_offset, _end));
+      return {first, Text::FromBuffer(_memblock, current_offset, _end)};
     }
   }
-  return std::make_tuple(*this, Text());
+  return {*this, Text()};
 }
 
-std::tuple<Text, Text> Text::splitNextLine() const {
+std::pair<Text, Text> Text::splitNextLine() const {
   const char* ptr = _memblock.get();
   for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
     if (ptr[current_offset] == '\n') {
@@ -350,17 +350,17 @@ std::tuple<Text, Text> Text::splitNextLine() const {
         current_offset++;
       }
       current_offset++;
-      return std::make_tuple(first, Text::FromBuffer(_memblock, current_offset, _end));
+      return {first, Text::FromBuffer(_memblock, current_offset, _end)};
     } else if (ptr[current_offset] == '\r') {
       auto first = Text::FromBuffer(_memblock, _start, current_offset);
       if (current_offset < _end - 1 && (ptr[current_offset + 1] == '\n')) {
         current_offset++;
       }
       current_offset++;
-      return std::make_tuple(first, Text::FromBuffer(_memblock, current_offset, _end));
+      return {first, Text::FromBuffer(_memblock, current_offset, _end)};
     }
   }
-  return std::make_tuple(*this, Text());
+  return {*this, Text()};
 }
 
 List<Text> Text::splitLines(SplitEmpty onEmpty) const {

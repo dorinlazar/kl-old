@@ -83,9 +83,9 @@ public:
   std::optional<uint32_t> pos(Text t, uint32_t occurence = 1) const;
   std::optional<uint32_t> lastPos(char c) const;
 
-  std::tuple<Text, Text> splitPos(int32_t where) const;
-  std::tuple<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
-  std::tuple<Text, Text> splitNextLine() const;
+  std::pair<Text, Text> splitPos(int32_t where) const;
+  std::pair<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
+  std::pair<Text, Text> splitNextLine() const;
   List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
   List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
   List<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
