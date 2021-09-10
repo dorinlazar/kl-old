@@ -50,12 +50,8 @@ void CommandParameters::_updateFlags() {
 void CommandParameters::_updateSysEnv(char** envp) {
   while (*envp != nullptr) {
     kl::Text txt(*envp);
-    auto pos = txt.pos('=');
-    if (pos.has_value()) {
-      environment.add(txt.sublen(0, *pos), txt.subpos((*pos) + 1, txt.size()));
-    } else {
-      environment.add(txt, ""_t);
-    }
+    auto [var, value] = txt.splitNextChar('=');
+    environment.add(var, value);
     envp++;
   }
 
