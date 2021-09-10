@@ -1,0 +1,10 @@
+# Let's keep it .yml for the sake of syntax highlights
+url: https://example.com
+copyright: "© Dorin Lazăr - toate drepturile rezervate"
+rssLimit: 20
+defaultLanguage: en
+title: "An example website"
+subtitle: "Proudly manufactured in Brașov, România"
+author:
+  name: "Dorin Lazăr"
+  bio: "Tall beardless dwarf, developer, podcaster"

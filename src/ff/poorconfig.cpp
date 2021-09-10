@@ -1,5 +1,6 @@
 #include "poorconfig.h"
 #include "textscanner.h"
+#include "kl/klfs.h"
 using namespace kl;
 
 class PoorConfigParser {
@@ -106,3 +107,5 @@ PValue PoorConfig::parse(const Text& fragment, char split) {
   PoorConfigParser parser(fragment, split);
   return parser.readMap();
 }
+
+PoorConfig::PoorConfig(const Text& filename) { _value = parse(FileReader(filename).readAll()); }
