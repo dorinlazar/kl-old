@@ -16,5 +16,6 @@ void Settings::parseCommandLine(int argc, char** argv, char** envp) {
   while (*envp != nullptr) {
     auto [var, value] = kl::Text(*envp).splitNextChar('=');
     environment.add(var, value);
+    envp++;
   }
 }
