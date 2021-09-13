@@ -36,7 +36,7 @@ void test_value_list() {
   CHECK(v[1].isScalar());
   CHECK(v[1].getValue() == "200"_t);
   CHECK(v[2].isList());
-  auto& list2 = *v.access(2);
+  auto& list2 = v[2];
   list2.add(kl::Value::createScalar("210"_t));
   list2.add(kl::Value::createScalar("220"_t));
   list2.add(kl::Value::createScalar("230"_t));
@@ -68,8 +68,8 @@ void test_value_map() {
   v.add("test"_t, kl::Value::createScalar("test_value"_t));
   v.add("list"_t, kl::Value::createList());
   v.add("map"_t, kl::Value::createMap());
-  auto& lst = *v.access("list"_t);
-  auto& m = *v.access("map"_t);
+  auto& lst = v["list"_t];
+  auto& m = v["map"_t];
   lst.add("100"_t);
   lst.add("200"_t);
   lst.add("300"_t);

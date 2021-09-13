@@ -22,18 +22,10 @@ private:
 public:
   Value(ValueType vt) {
     switch (vt) {
-    case ValueType::Null:
-      _value = NullValue();
-      break;
-    case ValueType::Scalar:
-      _value = Text();
-      break;
-    case ValueType::Map:
-      _value = MapValue();
-      break;
-    case ValueType::List:
-      _value = ListValue();
-      break;
+    case ValueType::Null: _value = NullValue(); break;
+    case ValueType::Scalar: _value = Text(); break;
+    case ValueType::Map: _value = MapValue(); break;
+    case ValueType::List: _value = ListValue(); break;
     }
   }
 
@@ -83,10 +75,8 @@ public:
         nullptr, [](Text& textv) { textv = ""_t; }, [](MapValue& mapv) { mapv.clear(); },
         [](ListValue& listv) { listv.clear(); });
   }
-  const Value& operator[](int index) const { return *asList()[index]; }
-  const Value& operator[](const Text& key) const { return *(asMap()[key]); }
-  PValue access(int index) { return asList()[index]; }
-  PValue access(const Text& key) { return asMap()[key]; }
+  Value& operator[](int index) const { return *asList()[index]; }
+  Value& operator[](const Text& key) const { return *(asMap()[key]); }
   size_t size() const {
     if (isNull()) {
       return 0;

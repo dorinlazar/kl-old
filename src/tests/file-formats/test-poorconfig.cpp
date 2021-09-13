@@ -139,6 +139,8 @@ a-list: [
 ]
 empty: []
 last: ["value"])");
+  CHECKST(value->isMap());
+  CHECKST(value->size() == 6);
   auto map = value->asMap();
   CHECKST(map.size() == 6);
   CHECKST(map.has("url"));
@@ -148,7 +150,7 @@ last: ["value"])");
   CHECKST(map.has("empty"));
   CHECKST(map.has("last"));
 
-  CHECKST(map["url"]->getValue() == "https://example.com");
+  CHECKST((*value)["url"].getValue() == "https://example.com");
 
   CHECKST(map["names"]->isList());
   const auto& list1 = map["names"]->asList();
