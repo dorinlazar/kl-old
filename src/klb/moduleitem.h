@@ -11,7 +11,7 @@ class ModuleItem {
   void _updateModuleType();
 
 public:
-  ModuleItem(const kl::FileInfo& fi);
+  ModuleItem(const kl::FileSystemEntryInfo& fi);
   ModuleItem(const kl::FilePath& fullPath, kl::DateTime timestamp);
   kl::Text extension() const;
   ModuleItemType type() const;

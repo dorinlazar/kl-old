@@ -8,7 +8,7 @@ Module::Module(ModuleCollection* parent, const kl::Text& seed) : _name(seed), _p
   _buildPath = CMD.buildFolder.add(_name).replace_extension(""_t);
 }
 
-void Module::addFile(const kl::FileInfo& fi) {
+void Module::addFile(const kl::FileSystemEntryInfo& fi) {
   ModuleItem mi(fi);
   switch (mi.type()) {
   case ModuleItemType::Header: _header = mi; break;

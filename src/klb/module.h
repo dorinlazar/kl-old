@@ -9,7 +9,7 @@ struct Module {
 
 public:
   Module(ModuleCollection* container, const kl::Text& seed);
-  void addFile(const kl::FileInfo& fi);
+  void addFile(const kl::FileSystemEntryInfo& fi);
   void readDirectRequirements();
   void updateHeaderDependencies();
   void updateModuleDependencies();

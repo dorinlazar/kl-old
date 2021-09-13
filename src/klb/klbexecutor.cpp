@@ -56,7 +56,7 @@ public:
         auto objects = getDependentObjects(mod);
         auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes.get(o); })
                             .select([](const kl::ExecutionNode* t) { return t != nullptr; });
-        auto cmdLine = _toolchain->linkCmdLine(objects, mod->executablePath(), CMD.linkFlags);
+        auto cmdLine = _toolchain->linkCmdLine(objects, mod->executablePath(), {});
         auto node = _horde.addNode(cmdLine, depNodes);
         _execNodes.add(mod->executablePath(), node);
       } else if (CMD.verbose) {

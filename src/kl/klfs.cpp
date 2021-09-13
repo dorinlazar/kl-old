@@ -165,8 +165,8 @@ FilePath FilePath::add(const kl::Text& component) const {
   return FilePath(_fullName + folder_separator + component);
 }
 
-std::vector<FileInfo> _get_directory_entries(const Text& folder) {
-  std::vector<FileInfo> res;
+std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
+  std::vector<FileSystemEntryInfo> res;
   char buffer[1024];
   folder.fill_c_buffer(buffer, 1024);
   DIR* dir = opendir(buffer);
@@ -191,7 +191,7 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
           continue;
         }
         DateTime lastWrite(statbuf.st_mtim.tv_sec, statbuf.st_mtim.tv_nsec);
-        FileInfo fi{.type = ft, .lastWrite = lastWrite, .path = FilePath(full_path)};
+        FileSystemEntryInfo fi{.type = ft, .lastWrite = lastWrite, .path = FilePath(full_path)};
         res.emplace_back(fi);
       }
     }
@@ -201,11 +201,11 @@ std::vector<FileInfo> _get_directory_entries(const Text& folder) {
 }
 
 void FileSystem::navigateTree(const Text& treeBase,
-                              std::function<NavigateInstructions(const FileInfo& file)> processor) {
-  std::queue<FileInfo> to_process;
+                              std::function<NavigateInstructions(const FileSystemEntryInfo& file)> processor) {
+  std::queue<FileSystemEntryInfo> to_process;
   to_process.push({.type = FileType::Directory, .lastWrite = DateTime::UnixEpoch, .path = FilePath(treeBase)});
   while (!to_process.empty()) {
-    FileInfo fi = to_process.front();
+    FileSystemEntryInfo fi = to_process.front();
     to_process.pop();
     auto entries = _get_directory_entries(fi.path.fullPath());
     for (const auto& entry: entries) {
@@ -290,7 +290,7 @@ bool FileReader::hasData() { return _unreadContent.size(); }
 Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
     : _parent(parent), _name(name), _path(path) {}
 
-void Folder::addItem(const kl::FileInfo& fi, const kl::Text& fullPath) {
+void Folder::addItem(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath) {
   if (fi.path.folderName().size() == 0) {
     if (fi.type == kl::FileType::Directory) {
       _folders.add(fi.path.fullPath(), std::make_shared<Folder>(fi.path.fullPath(), fullPath, this));
@@ -327,7 +327,7 @@ kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
 }
 
 const kl::FilePath& Folder::fullPath() const { return _path; }
-const kl::List<kl::FileInfo>& Folder::files() const { return _files; }
+const kl::List<kl::FileSystemEntryInfo>& Folder::files() const { return _files; }
 
 bool Folder::hasFile(const kl::Text& file) const {
   return _files.any([file](const auto& f) { return f.path.fileName() == file; });
@@ -342,7 +342,7 @@ std::ostream& Folder::write(std::ostream& os) const {
   }
   os << " FullPath: " << _path;
   os << "\nFolders: " << _folders.keys();
-  os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileInfo& fi) { return fi.path.fileName(); });
+  os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileSystemEntryInfo& fi) { return fi.path.fileName(); });
   return os;
 }
 

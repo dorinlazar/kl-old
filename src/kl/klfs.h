@@ -36,7 +36,7 @@ public:
 };
 
 enum class FileType { Directory, File };
-struct FileInfo {
+struct FileSystemEntryInfo {
   FileType type;
   DateTime lastWrite;
   FilePath path;
@@ -51,7 +51,7 @@ struct FileSystem {
   static bool isFile(const Text& path);
   static bool exists(const Text& path);
 
-  static void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileInfo& file)>);
+  static void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileSystemEntryInfo& file)>);
 };
 
 struct InputSource {
@@ -79,18 +79,18 @@ struct Folder {
   kl::Text _name;
   kl::FilePath _path;
   kl::Dict<kl::Text, kl::ptr<Folder>> _folders;
-  kl::List<kl::FileInfo> _files;
+  kl::List<kl::FileSystemEntryInfo> _files;
 
 public:
   Folder() = default;
   Folder(const kl::Text& name, const kl::Text& path, const Folder* parent);
-  void addItem(const kl::FileInfo& file, const kl::Text& path);
+  void addItem(const kl::FileSystemEntryInfo& file, const kl::Text& path);
 
   kl::ptr<Folder> getFolder(const kl::Text& folder);
   kl::List<kl::ptr<Folder>> getFolders() const;
   kl::ptr<Folder> createFolder(const kl::FilePath& path);
   const kl::FilePath& fullPath() const;
-  const kl::List<kl::FileInfo>& files() const;
+  const kl::List<kl::FileSystemEntryInfo>& files() const;
   bool hasFile(const kl::Text& file) const;
   std::ostream& write(std::ostream& os) const;
 };
