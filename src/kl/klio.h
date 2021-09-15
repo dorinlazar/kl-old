@@ -92,10 +92,6 @@ public: // capabilities
 public: // properties
   size_t size() override final;
   size_t position() override final;
-  size_t readTimeout() override final;
-  void setReadTimeout(size_t) override final;
-  size_t writeTimeout() override final;
-  void setWriteTimeout(size_t) override final;
 
 public: // operations
   size_t read(std::span<uint8_t> where) override final;

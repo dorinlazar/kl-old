@@ -48,7 +48,7 @@ size_t StreamReader::read(std::span<uint8_t> where) {
 
 Text StreamReader::readLine() {
   TextChain tc;
-  while (!_stream->endOfStream()) {
+  while (_offset < _readSize || !_stream->endOfStream()) {
     if (_offset >= _readSize) {
       _offset = 0;
       _readSize = _stream->read(_buffer);
