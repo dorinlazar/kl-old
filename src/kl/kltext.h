@@ -31,7 +31,7 @@ public:
   Text(char c);
   Text(const std::string& s);
   Text(const char* ptr);
-  Text(const char* ptr, uint32_t max);
+  Text(const char* ptr, uint32_t size);
   Text(const Text& t, uint32_t start, uint32_t length);
   Text& operator=(const Text& v);
   static Text FromBuffer(std::shared_ptr<char> p, uint32_t start, uint32_t end);

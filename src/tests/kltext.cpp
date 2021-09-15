@@ -5,46 +5,51 @@ using namespace std::literals;
 void test_text_construction() {
   Text txt("Hello world");
   auto t2 = Text(txt, 4, 20);
-  CHECK(t2.toString() == "o world"s, "Text(txt, 4, 20)");
-  CHECK(t2.size() == 7);
+  CHECKST(t2.toString() == "o world"s);
+  CHECKST(t2.size() == 7);
 
   Text tnull(nullptr, 2, 4);
-  CHECK(tnull.size() == 0);
-  CHECK(tnull.toString() == ""s, "null is empty");
+  CHECKST(tnull.size() == 0);
+  CHECKST(tnull.toString() == ""s);
   auto tn2 = Text(tnull, 2, 4);
-  CHECK(tn2.size() == 0);
-  CHECK(tn2.toString() == ""s, "null is empty");
+  CHECKST(tn2.size() == 0);
+  CHECKST(tn2.toString() == ""s);
 
   Text tempty(""s);
-  CHECK(tempty.size() == 0);
-  CHECK(tempty.toString() == ""s);
+  CHECKST(tempty.size() == 0);
+  CHECKST(tempty.toString() == ""s);
 
   Text t1("Hello World", 2);
-  CHECK(t1.size() == 2);
-  CHECK(t1.toString() == "He"s);
+  CHECKST(t1.size() == 2);
+  CHECKST(t1.toString() == "He"s);
 
-  Text t3("Hello World", 200);
-  CHECK(t3.size() == 11);
-  CHECK(t3.toString() == "Hello World"s);
+  Text t3("Hello World\0", 12);
+  CHECKST(t3.size() == 12);
+  CHECKST(t3[11] == '\0');
+
+  Text t4("Hello World\0Other World", 23);
+  CHECKST(t4.size() == 23);
+  CHECKST(t4[11] == '\0');
+  CHECKST(t4.subpos(12, 24) == "Other World");
 
   log("Text construction: [OK]");
 }
 
 void test_trimming() {
   Text txt(" \t hello   \n ");
-  CHECK(txt.trim().toString() == "hello"s);
-  CHECK(txt.trimLeft().toString() == "hello   \n "s);
-  CHECK(txt.trimRight().toString() == " \t hello"s);
+  CHECKST(txt.trim().toString() == "hello"s);
+  CHECKST(txt.trimLeft().toString() == "hello   \n "s);
+  CHECKST(txt.trimRight().toString() == " \t hello"s);
 
   Text txt2("hello");
-  CHECK(txt2.trim().toString() == "hello"s);
-  CHECK(txt2.trimLeft().toString() == "hello"s);
-  CHECK(txt2.trimRight().toString() == "hello"s);
+  CHECKST(txt2.trim().toString() == "hello"s);
+  CHECKST(txt2.trimLeft().toString() == "hello"s);
+  CHECKST(txt2.trimRight().toString() == "hello"s);
 
   Text txt3;
-  CHECK(txt3.trim().toString() == ""s);
-  CHECK(txt3.trimLeft().toString() == ""s);
-  CHECK(txt3.trimRight().toString() == ""s);
+  CHECKST(txt3.trim().toString() == ""s);
+  CHECKST(txt3.trimLeft().toString() == ""s);
+  CHECKST(txt3.trimRight().toString() == ""s);
 
   log("trimming tests [OK]");
 }

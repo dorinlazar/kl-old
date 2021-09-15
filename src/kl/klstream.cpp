@@ -20,3 +20,40 @@ void Stream::seek(size_t offset) { throw OperationNotSupported("Stream::seek"_t,
 bool Stream::dataAvailable() { throw OperationNotSupported("Stream::dataAvailable"_t, s_notImplemented); }
 void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImplemented); }
 void Stream::close() { throw OperationNotSupported("Stream::close"_t, s_notImplemented); }
+
+StreamReader::StreamReader(Stream* stream) : _stream(stream) {}
+Stream* StreamReader::stream() const { return _stream; }
+size_t StreamReader::read(std::span<uint8_t> where) {
+  if (_offset >= _readSize) {
+    return _stream->read(where);
+  }
+  auto bufsize = std::min(_readSize - _offset, where.size());
+  _offset += bufsize;
+  std::copy(_buffer.begin() + _offset, _buffer.begin() + _readSize, where);
+  if (bufsize < where.size()) {
+    return bufsize + _stream->read(where.subspan(bufsize));
+  }
+  return bufsize;
+}
+
+Text StreamReader::readLine() {
+  TextChain tc;
+  while (!_stream->endOfStream()) {
+    if (_offset >= _readSize) {
+      _offset = 0;
+      _readSize = _stream->read(_buffer);
+    }
+    auto _startOffset = _offset;
+    for (; _offset < _readSize; _offset++) {
+      if (_buffer[_offset] == '\n') { // TODO identify newlines based on encoding.
+        tc.add(Text((const char*)_buffer.begin() + _startOffset, _offset - _startOffset));
+        _offset++;
+        return tc.toText();
+      }
+    }
+    tc.add(Text((const char*)_buffer.begin() + _startOffset, _offset - _startOffset));
+  }
+  return tc.toText();
+}
+Text StreamReader::readAll() {}
+bool StreamReader::endOfStream() { return _stream->endOfStream(); }

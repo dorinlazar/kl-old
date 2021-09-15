@@ -29,9 +29,9 @@ Text::Text(const char* ptr) {
   }
 }
 
-Text::Text(const char* ptr, uint32_t max) {
+Text::Text(const char* ptr, uint32_t size) {
   if (ptr) {
-    _end = std::min((uint32_t)std::strlen(ptr), max);
+    _end = size;
     if (_end > 0) {
       // TODO replace as soon as gcc implements with make_shared_for_overwrite
       _memblock = std::shared_ptr<char>((char*)malloc(_end), free);

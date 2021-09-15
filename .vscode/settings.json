@@ -65,7 +65,8 @@
     "filesystem": "cpp",
     "ios": "cpp",
     "locale": "cpp",
-    "queue": "cpp"
+    "queue": "cpp",
+    "span": "cpp"
   },
   "C_Cpp.clang_format_path": "/usr/bin/clang-format",
   "C_Cpp.default.cppStandard": "c++20",

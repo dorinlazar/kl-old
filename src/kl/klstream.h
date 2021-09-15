@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <vector>
 #include <memory>
 #include <span>
 #include "kltext.h"
@@ -30,29 +31,38 @@ public: // operations
 
   virtual void seek(size_t offset);
   virtual bool dataAvailable();
+  virtual bool endOfStream();
   virtual void flush();
 
   virtual void close();
 };
 
+const size_t BASE_BUFFER_SIZE = 1024;
+const size_t STREAM_BUFFER_SIZE =
+    BASE_BUFFER_SIZE - sizeof(std::array<uint8_t, 16>) + 16 - sizeof(Stream*) - 2 * sizeof(size_t);
+
 class StreamReader {
-  struct StreamReaderInternals;
-  std::unique_ptr<StreamReaderInternals> _impl;
+  std::array<uint8_t, STREAM_BUFFER_SIZE> _buffer;
+  Stream* _stream;
+  size_t _offset, _readSize;
 
 public:
   StreamReader(Stream* stream);
+  Stream* stream() const;
   size_t read(std::span<uint8_t> where);
   Text readLine();
   Text readAll();
   bool endOfStream();
 };
 
+static_assert(sizeof(StreamReader) == BASE_BUFFER_SIZE);
+
 class StreamWriter {
-  struct StreamWriterInternals;
-  std::unique_ptr<StreamWriterInternals> _impl;
+  Stream* _stream;
 
 public:
   StreamWriter(Stream* stream);
+  Stream* stream() const;
   void write(std::span<uint8_t> what);
   void write(const Text& what);
   void writeLine(const Text& what);
