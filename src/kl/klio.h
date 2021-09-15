@@ -11,6 +11,9 @@ namespace kl {
 
 // Inspired by System.IO.Stream: https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0
 class Stream {
+public:
+  ~Stream();
+
 public: // capabilities
   virtual bool canRead();
   virtual bool canWrite();
@@ -18,7 +21,7 @@ public: // capabilities
   virtual bool canTimeout();
 
 public: // properties
-  virtual size_t length();
+  virtual size_t size();
   virtual size_t position();
   virtual size_t readTimeout();
   virtual void setReadTimeout(size_t);
@@ -69,6 +72,42 @@ public:
   void writeLine(const Text& what);
   void write(const TextChain& what);
   void flush();
+};
+
+enum class FileOpenMode { ReadOnly, WriteOnly, ReadWrite, AppendRW, TruncateRW };
+
+class FileStream : public Stream {
+  int _fd = -1;
+  FileOpenMode _mode;
+  bool _regular;
+
+public:
+  FileStream(const Text& filename, FileOpenMode mode);
+
+public: // capabilities
+  bool canRead() override final;
+  bool canWrite() override final;
+  bool canSeek() override final;
+
+public: // properties
+  size_t size() override final;
+  size_t position() override final;
+  size_t readTimeout() override final;
+  void setReadTimeout(size_t) override final;
+  size_t writeTimeout() override final;
+  void setWriteTimeout(size_t) override final;
+
+public: // operations
+  size_t read(std::span<uint8_t> where) override final;
+  void write(std::span<uint8_t> what) override final;
+  void write(const List<std::span<uint8_t>>& what) override final;
+
+  void seek(size_t offset) override final;
+  bool dataAvailable() override final;
+  bool endOfStream() override final;
+  void flush() override final;
+
+  void close() override final;
 };
 
 } // namespace kl

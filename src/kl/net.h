@@ -1,6 +1,6 @@
 #pragma once
-#include "klstream.h"
+#include "klio.h"
 
 namespace kl {
-class Socket : public Stream {};
+// class Socket : public Stream {};
 } // namespace kl

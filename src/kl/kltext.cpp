@@ -648,7 +648,7 @@ std::size_t std::hash<kl::Text>::operator()(const kl::Text& s) const noexcept {
   return std::hash<std::string_view>{}(s.toView());
 }
 
-std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), size()}; }
+std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), (uint8_t*)end()}; }
 Text Text::skipBOM() const {
   if (size() >= 3) {
     auto buf = begin();

@@ -10,4 +10,13 @@ public:
   OperationNotSupported(const Text& op, const Text& reason);
 };
 
+class IOException {
+  Text _why;
+
+public:
+  IOException(const Text& why);
+  const Text& what();
+  static IOException currentStandardError();
+};
+
 } // namespace kl
