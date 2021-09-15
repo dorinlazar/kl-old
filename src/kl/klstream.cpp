@@ -16,12 +16,15 @@ size_t Stream::writeTimeout() { throw OperationNotSupported("Stream::writeTimeou
 void Stream::setWriteTimeout(size_t) { throw OperationNotSupported("Stream::setWriteTimeout"_t, s_notImplemented); }
 size_t Stream::read(std::span<uint8_t> where) { throw OperationNotSupported("Stream::read"_t, s_notImplemented); }
 void Stream::write(std::span<uint8_t> what) { throw OperationNotSupported("Stream::write"_t, s_notImplemented); }
+void Stream::write(const List<std::span<uint8_t>>& what) {
+  throw OperationNotSupported("Stream::write"_t, s_notImplemented);
+}
 void Stream::seek(size_t offset) { throw OperationNotSupported("Stream::seek"_t, s_notImplemented); }
 bool Stream::dataAvailable() { throw OperationNotSupported("Stream::dataAvailable"_t, s_notImplemented); }
 void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImplemented); }
 void Stream::close() { throw OperationNotSupported("Stream::close"_t, s_notImplemented); }
 
-StreamReader::StreamReader(Stream* stream) : _stream(stream) {}
+StreamReader::StreamReader(Stream* stream) : _stream(stream), _offset(0), _readSize(0) {}
 Stream* StreamReader::stream() const { return _stream; }
 size_t StreamReader::read(std::span<uint8_t> where) {
   if (_offset >= _readSize) {
@@ -70,3 +73,16 @@ Text StreamReader::readAll() {
 }
 
 bool StreamReader::endOfStream() { return _stream->endOfStream(); }
+
+StreamWriter::StreamWriter(Stream* stream) : _stream(stream) {}
+Stream* StreamWriter::stream() const { return _stream; }
+void StreamWriter::write(std::span<uint8_t> what) { _stream->write(what); }
+void StreamWriter::write(const Text& what) { _stream->write(what.toRawData()); }
+void StreamWriter::writeLine(const Text& what) {
+  static char eol[] = "\n";
+  _stream->write({what.toRawData(), {std::span<uint8_t>((uint8_t*)&eol[0], 1)}});
+}
+void StreamWriter::write(const TextChain& what) {
+  _stream->write(what.chain().transform<std::span<uint8_t>>([](const Text& t) { return t.toRawData(); }));
+}
+void StreamWriter::flush() { _stream->flush(); }

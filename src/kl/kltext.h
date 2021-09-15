@@ -9,6 +9,7 @@
 #include <ostream>
 #include <string_view>
 #include <vector>
+#include <span>
 
 namespace kl {
 
@@ -66,11 +67,13 @@ public:
 
   std::string toString() const;
   std::string_view toView() const;
+  std::span<uint8_t> toRawData() const;
   int64_t toInt() const;
 
   bool contains(char c) const;
   Text skip(const Text& skippables) const;
   Text skip(uint32_t n) const;
+  Text skipBOM() const;
 
   // substring position based. The string will contain the character from ending position too.
   Text subpos(uint32_t start, uint32_t end) const;

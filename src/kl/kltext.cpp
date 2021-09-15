@@ -647,3 +647,14 @@ void TextChain::clear() {
 std::size_t std::hash<kl::Text>::operator()(const kl::Text& s) const noexcept {
   return std::hash<std::string_view>{}(s.toView());
 }
+
+std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), size()}; }
+Text Text::skipBOM() const {
+  if (size() >= 3) {
+    auto buf = begin();
+    if (buf[0] == (char)0xEF && buf[1] == (char)0xBB && buf[2] == (char)0xBF) {
+      return skip(3);
+    }
+  }
+  return *this;
+}

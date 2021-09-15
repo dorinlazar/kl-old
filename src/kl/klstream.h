@@ -28,6 +28,7 @@ public: // properties
 public: // operations
   virtual size_t read(std::span<uint8_t> where);
   virtual void write(std::span<uint8_t> what);
+  virtual void write(const List<std::span<uint8_t>>& what);
 
   virtual void seek(size_t offset);
   virtual bool dataAvailable();
@@ -68,7 +69,6 @@ public:
   void writeLine(const Text& what);
   void write(const TextChain& what);
   void flush();
-  bool endOfStream();
 };
 
 } // namespace kl
