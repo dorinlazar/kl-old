@@ -68,7 +68,7 @@ Text StreamReader::readLine() {
 
 Text StreamReader::readAll() {
   TextChain tc;
-  while (!_stream->endOfStream()) {
+  while (_offset < _readSize || !_stream->endOfStream()) {
     if (_offset >= _readSize) {
       _offset = 0;
       _readSize = _stream->read(_buffer);
