@@ -55,5 +55,18 @@ Text StreamReader::readLine() {
   }
   return tc.toText();
 }
-Text StreamReader::readAll() {}
+
+Text StreamReader::readAll() {
+  TextChain tc;
+  while (!_stream->endOfStream()) {
+    if (_offset >= _readSize) {
+      _offset = 0;
+      _readSize = _stream->read(_buffer);
+    }
+    tc.add(Text((const char*)_buffer.begin() + _offset, _readSize - _offset));
+    _offset = _readSize;
+  }
+  return tc.toText();
+}
+
 bool StreamReader::endOfStream() { return _stream->endOfStream(); }

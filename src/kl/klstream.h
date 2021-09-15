@@ -42,9 +42,9 @@ const size_t STREAM_BUFFER_SIZE =
     BASE_BUFFER_SIZE - sizeof(std::array<uint8_t, 16>) + 16 - sizeof(Stream*) - 2 * sizeof(size_t);
 
 class StreamReader {
-  std::array<uint8_t, STREAM_BUFFER_SIZE> _buffer;
   Stream* _stream;
   size_t _offset, _readSize;
+  std::array<uint8_t, STREAM_BUFFER_SIZE> _buffer;
 
 public:
   StreamReader(Stream* stream);
