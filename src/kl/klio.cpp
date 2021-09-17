@@ -17,10 +17,6 @@ bool Stream::canTimeout() { return false; }
 
 size_t Stream::size() { throw OperationNotSupported("Stream::size"_t, s_notImplemented); }
 size_t Stream::position() { throw OperationNotSupported("Stream::position"_t, s_notImplemented); }
-size_t Stream::readTimeout() { throw OperationNotSupported("Stream::readTimeout"_t, s_notImplemented); }
-void Stream::setReadTimeout(size_t) { throw OperationNotSupported("Stream::setReadTimeout"_t, s_notImplemented); }
-size_t Stream::writeTimeout() { throw OperationNotSupported("Stream::writeTimeout"_t, s_notImplemented); }
-void Stream::setWriteTimeout(size_t) { throw OperationNotSupported("Stream::setWriteTimeout"_t, s_notImplemented); }
 size_t Stream::read(std::span<uint8_t>) { throw OperationNotSupported("Stream::read"_t, s_notImplemented); }
 void Stream::write(std::span<uint8_t>) { throw OperationNotSupported("Stream::write"_t, s_notImplemented); }
 void Stream::write(const List<std::span<uint8_t>>&) {

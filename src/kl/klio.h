@@ -12,7 +12,7 @@ namespace kl {
 // Inspired by System.IO.Stream: https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0
 class Stream {
 public:
-  ~Stream();
+  virtual ~Stream();
 
 public: // capabilities
   virtual bool canRead();
@@ -23,10 +23,6 @@ public: // capabilities
 public: // properties
   virtual size_t size();
   virtual size_t position();
-  virtual size_t readTimeout();
-  virtual void setReadTimeout(size_t);
-  virtual size_t writeTimeout();
-  virtual void setWriteTimeout(size_t);
 
 public: // operations
   virtual size_t read(std::span<uint8_t> where);
@@ -41,7 +37,7 @@ public: // operations
   virtual void close();
 };
 
-const size_t BASE_BUFFER_SIZE = 1024;
+const size_t BASE_BUFFER_SIZE = 4096;
 const size_t STREAM_BUFFER_SIZE =
     BASE_BUFFER_SIZE - sizeof(std::array<uint8_t, 16>) + 16 - sizeof(Stream*) - 2 * sizeof(size_t);
 
