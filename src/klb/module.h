@@ -6,9 +6,8 @@
 struct ModuleCollection;
 
 struct Module {
-
-public:
   Module(ModuleCollection* container, const kl::Text& seed);
+  ~Module();
   void addFile(const kl::FileSystemEntryInfo& fi);
   void readDirectRequirements();
   void updateHeaderDependencies();
@@ -36,21 +35,6 @@ private:
   void _scanSource();
   void _scanHeader();
 
-  kl::Text _name;
-  ModuleCollection* _parent;
-  bool _hasMain;
-  kl::List<kl::Text> _headerLocalIncludes;
-  kl::List<kl::Text> _headerSysIncludes;
-  kl::List<kl::Text> _localIncludes;
-  kl::List<kl::Text> _systemIncludes;
-  kl::List<Module*> _requiredModules;
-  kl::List<kl::Text> _resolvedLocalHeaderDeps;
-
-  kl::FilePath _buildPath;
-  kl::FilePath _sourcePath;
-
-  std::optional<ModuleItem> _header;
-  std::optional<ModuleItem> _source;
-  std::optional<ModuleItem> _object;
-  std::optional<ModuleItem> _executable;
+  struct ModuleInternals;
+  kl::uptr<ModuleInternals> d;
 };
