@@ -1,5 +1,5 @@
 #include "klvalue.h"
-
+#include "klfs.h"
 using namespace kl;
 
 Value::Value(ValueType vt) {
@@ -54,6 +54,9 @@ void Value::clear() {
 }
 Value& Value::operator[](int index) const { return *asList()[index]; }
 Value& Value::operator[](const Text& key) const { return *(asMap()[key]); }
+PValue Value::get(int index) const { return asList()[index]; }
+PValue Value::get(const Text& key) const { return asMap()[key]; }
+
 size_t Value::size() const {
   if (isNull()) {
     return 0;
@@ -127,4 +130,23 @@ TextChain Value::toString() const {
   return tc;
 }
 
-std::optional<Text> Value::getOpt(const kl::Text&) { return {}; }
+std::optional<Text> Value::getOpt(const kl::Text& path) {
+  Value* v = this;
+  for (const auto& val: kl::FilePath(path).breadcrumbs()) {
+    if (v->isMap()) {
+      auto& map = v->asMap();
+      v = map.get(val).get();
+    } else {
+      v = nullptr;
+    }
+    if (v == nullptr) {
+      break;
+    }
+  }
+  if (v != nullptr && v->isScalar()) {
+    return v->getValue();
+  }
+  return {};
+}
+
+bool operator==(const kl::Value& v, const kl::Text& t) { return v.isScalar() && v.getValue() == t; }

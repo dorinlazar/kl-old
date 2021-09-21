@@ -55,6 +55,8 @@ public:
   void clear();
   Value& operator[](int index) const;
   Value& operator[](const Text& key) const;
+  PValue get(int index) const;
+  PValue get(const Text& key) const;
   size_t size() const;
   std::optional<Text> getOpt(const kl::Text& path);
 
@@ -70,4 +72,4 @@ using NullValue = Value::NullValue;
 
 } // namespace kl
 
-inline bool operator==(const kl::Value& v, const kl::Text& t) { return v.isScalar() && v.getValue() == t; }
+bool operator==(const kl::Value& v, const kl::Text& t);

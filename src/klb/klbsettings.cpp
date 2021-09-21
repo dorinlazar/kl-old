@@ -37,7 +37,7 @@ void CommandParameters::_updateFlags() {
   if (tmp.has_value()) {
     nJobs = tmp->toInt();
   } else {
-    tmp = configurationFile->getOpt("JOBS");
+    tmp = configurationFile->getOpt("build/jobs");
     if (tmp.has_value()) {
       nJobs = tmp->toInt();
     }
