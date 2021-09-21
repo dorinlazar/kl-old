@@ -29,7 +29,7 @@ void CommandParameters::_updateFlags() {
   if (link.has_value()) {
     linkFlags = link->splitByChar(' ');
   }
-  if (environment.getOpt("VERBOSE").has_value() || configurationFile->getOpt("VERBOSE").has_value()) {
+  if (environment.getOpt("VERBOSE").has_value() || configurationFile->getOpt("verbose").has_value()) {
     verbose = true;
   }
 
@@ -65,7 +65,7 @@ void CommandParameters::_readDepotFile() {
   try {
     auto cfg = kl::FileReader(".depot.conf").readAll();
 
-    configurationFile = kl::PoorConfig::parse(cfg, '=');
+    configurationFile = kl::PoorConfig::parse(cfg);
   } catch (...) {
     if (verbose) {
       kl::log("No valid .depot.conf exists. Using defaults.");

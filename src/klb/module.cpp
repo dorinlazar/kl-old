@@ -120,6 +120,7 @@ void Module::updateHeaderDependencies() {
     auto deph = processingQueue.pop();
     resolved.add(deph);
     auto mod = d->parent->getModule(""_t, deph);
+    CHECK(mod != nullptr, "Sanity check failed: search for module for", deph, "failed. ");
     CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
     if (mod->d->header->recursiveLocalHeaderDeps.size() > 0) {
       resolved.add(mod->d->header->recursiveLocalHeaderDeps);
@@ -145,6 +146,7 @@ void Module::updateModuleDependencies() {
     kl::Set<kl::Text> depHeaders;
     for (const auto& inc: d->source->localIncludes) {
       auto mod = d->parent->getModule(inc);
+      CHECK(mod != nullptr, "Sanity check failed: search for module for", inc, "failed. ");
       CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
       depHeaders.add(mod->d->header->recursiveLocalHeaderDeps);
     }

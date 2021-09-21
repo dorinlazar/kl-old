@@ -26,6 +26,7 @@ void Stream::seek(size_t) { throw OperationNotSupported("Stream::seek"_t, s_notI
 bool Stream::dataAvailable() { throw OperationNotSupported("Stream::dataAvailable"_t, s_notImplemented); }
 void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImplemented); }
 void Stream::close() {}
+bool Stream::endOfStream() { return false; }
 
 StreamReader::StreamReader(Stream* stream) : _stream(stream), _offset(0), _readSize(0) {}
 Stream* StreamReader::stream() const { return _stream; }
