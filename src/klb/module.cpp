@@ -6,7 +6,6 @@
 struct SourceFile {
   kl::List<kl::Text> localIncludes;
   kl::List<kl::Text> systemIncludes;
-  kl::List<Module*> requiredModules;
   bool hasMain = false;
   ModuleItem modItem;
 
@@ -17,10 +16,10 @@ public:
 };
 
 struct HeaderFile {
-  kl::List<kl::Text> headerLocalIncludes;
-  kl::List<kl::Text> headerSysIncludes;
-  kl::List<kl::Text> resolvedLocalHeaderDeps;
-  kl::List<kl::Text> resolvedSystemHeaderDeps;
+  kl::List<kl::Text> localIncludes;
+  kl::List<kl::Text> systemIncludes;
+  kl::List<kl::Text> recursiveLocalHeaderDeps;
+  kl::List<kl::Text> recursiveSystemHeaderDeps;
   ModuleItem modItem;
 
 public:
@@ -34,6 +33,8 @@ struct Module::ModuleInternals {
   ModuleCollection* parent;
   kl::FilePath buildPath;
   kl::FilePath sourcePath;
+
+  kl::List<Module*> requiredModules;
 
   std::optional<ModuleItem> object;
   std::optional<ModuleItem> executable;
@@ -79,9 +80,9 @@ void Module::_scanHeader() {
   }
 
   kl::SourceCodeScanner scanner(headerPath());
-  d->header->headerSysIncludes =
+  d->header->systemIncludes =
       scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); });
-  d->header->headerLocalIncludes = scanner.localIncludes().transform<kl::Text>(
+  d->header->localIncludes = scanner.localIncludes().transform<kl::Text>(
       [this](const kl::Text& tr) { return d->parent->resolvePath(tr.copy(), this).fullPath(); });
 }
 
@@ -120,23 +121,23 @@ void Module::updateHeaderDependencies() {
     resolved.add(deph);
     auto mod = d->parent->getModule(""_t, deph);
     CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
-    if (mod->d->header->resolvedLocalHeaderDeps.size() > 0) {
-      resolved.add(mod->d->header->resolvedLocalHeaderDeps);
+    if (mod->d->header->recursiveLocalHeaderDeps.size() > 0) {
+      resolved.add(mod->d->header->recursiveLocalHeaderDeps);
     } else {
-      for (const auto& h: mod->d->header->headerLocalIncludes) {
+      for (const auto& h: mod->d->header->localIncludes) {
         if (!resolved.has(h) && !processingQueue.has(h)) {
           processingQueue.push(h);
         }
       }
     }
-    if (mod->d->header->resolvedSystemHeaderDeps.size() > 0) {
-      resolvedSystem.add(mod->d->header->resolvedSystemHeaderDeps);
+    if (mod->d->header->recursiveSystemHeaderDeps.size() > 0) {
+      resolvedSystem.add(mod->d->header->recursiveSystemHeaderDeps);
     } else {
-      resolvedSystem.add(mod->d->header->headerSysIncludes);
+      resolvedSystem.add(mod->d->header->systemIncludes);
     }
   }
-  d->header->resolvedLocalHeaderDeps = resolved.toList();
-  d->header->resolvedSystemHeaderDeps = resolvedSystem.toList();
+  d->header->recursiveLocalHeaderDeps = resolved.toList();
+  d->header->recursiveSystemHeaderDeps = resolvedSystem.toList();
 }
 
 void Module::updateModuleDependencies() {
@@ -145,10 +146,10 @@ void Module::updateModuleDependencies() {
     for (const auto& inc: d->source->localIncludes) {
       auto mod = d->parent->getModule(inc);
       CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
-      depHeaders.add(mod->d->header->resolvedLocalHeaderDeps);
+      depHeaders.add(mod->d->header->recursiveLocalHeaderDeps);
     }
 
-    d->source->requiredModules = depHeaders.toList().transform<Module*>(
+    d->requiredModules = depHeaders.toList().transform<Module*>(
         [this](const kl::Text& include) { return d->parent->getModule(include).get(); });
   }
 }
@@ -175,7 +176,7 @@ bool Module::requiresBuild() const {
   if (d->source->timestamp() > dt) {
     return true;
   }
-  for (const auto& hmod: d->source->requiredModules) {
+  for (const auto& hmod: d->requiredModules) {
     CHECK(hmod != nullptr);
     const auto& hmodheader = hmod->d->header;
     if (hmodheader.has_value() && hmodheader->timestamp() > dt) {
@@ -197,7 +198,7 @@ bool Module::requiresLink() const {
   if (d->object->timestamp() > dt) {
     return true;
   }
-  for (const auto& hmod: d->source->requiredModules) {
+  for (const auto& hmod: d->requiredModules) {
     const auto& hmodobject = hmod->d->object;
     if (hmodobject.has_value() && hmodobject->timestamp() > dt) {
       return true;
@@ -243,27 +244,20 @@ void Module::recurseModuleDependencies() {
   while (!processingQueue.empty()) {
     auto mod = processingQueue.pop();
     modules.add(mod);
-    if (mod->d->source.has_value()) {
-      for (auto m: mod->d->source->requiredModules) {
-        if (!modules.has(m) && !processingQueue.has(m)) {
-          processingQueue.push(m);
-        }
+    for (auto m: mod->d->requiredModules) {
+      if (!modules.has(m) && !processingQueue.has(m)) {
+        processingQueue.push(m);
       }
     }
   }
-  d->source->requiredModules = modules.toList();
+  d->requiredModules = modules.toList();
 }
 
-const kl::List<Module*>& Module::requiredModules() const {
-  static kl::List<Module*> empty; // TODO this is an awful trick. Fix this.
-  return d->source.has_value() ? d->source->requiredModules : empty;
-}
+const kl::List<Module*>& Module::requiredModules() const { return d->requiredModules; }
 kl::List<kl::Text> Module::includeFolders() const {
   kl::Set<kl::Text> inc;
-  if (d->source.has_value()) {
-    for (const auto& mod: d->source->requiredModules) {
-      inc.add(CMD.sourceFolder.add(mod->name()).folderName());
-    }
+  for (const auto& mod: d->requiredModules) {
+    inc.add(CMD.sourceFolder.add(mod->name()).folderName());
   }
   return inc.toList();
 }
