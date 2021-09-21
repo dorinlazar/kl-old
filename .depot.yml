@@ -1,9 +1,9 @@
 toolchain: gcc # GCC is default
-compileflags: "-std=c++20 -g3 -O2 -flto -Werror"
-linkflags: "-flto -Werror -ltcmalloc"
+CXXFLAGS: "-std=c++20 -g3 -O2 -flto -Werror"
+LDFLAGS: "-flto -Werror -ltcmalloc"
 build:
   jobs: 6 # default is 2
 system:
   openssl: # a package name, doesn't matter but should be unique.
     header: ssl/ # since it ends with a slash, accept all #include <ssl/*>
-    pkg-config: openssl # alternatively we can add compileflags and linkflags
+    pkg-config: openssl # alternatively we can add CXXFLAGS and LDFLAGS

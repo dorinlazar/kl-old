@@ -1,6 +1,7 @@
 #pragma once
 #include "kl/kltext.h"
 #include "kl/klfs.h"
+#include "kl/klvalue.h"
 
 struct CommandParameters {
   bool verbose = false;
@@ -15,7 +16,7 @@ struct CommandParameters {
 
   kl::List<kl::Text> arguments;
   kl::Dict<kl::Text, kl::Text> environment;
-  kl::Dict<kl::Text, kl::Text> configurationFile;
+  kl::PValue configurationFile;
 
   kl::List<kl::Text> targets;
 
