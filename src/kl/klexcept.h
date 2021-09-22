@@ -10,6 +10,11 @@ public:
   OperationNotSupported(const Text& op, const Text& reason);
 };
 
+class InvalidInputData : public std::logic_error {
+public:
+  InvalidInputData(const Text& what, const Text& expected);
+};
+
 class IOException {
   Text _why;
 

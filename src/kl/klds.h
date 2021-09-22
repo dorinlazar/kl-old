@@ -110,6 +110,7 @@ public:
     }
     return res;
   }
+  T& last() { return _vec.back(); }
 };
 
 template <typename T1, typename T2>
