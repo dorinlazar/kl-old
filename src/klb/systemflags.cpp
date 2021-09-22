@@ -68,7 +68,9 @@ struct SystemFlags::SFImpl {
   List<Rule> rules;
 
   SFImpl(Value* settings) {
-    CHECK(settings->isMap(), "Expecting settings for system flags to be a map");
+    if (settings == nullptr || !settings->isMap()) {
+      return;
+    }
 
     for (const auto& [name, description]: settings->asMap()) {
       if (CMD.verbose) {
@@ -112,5 +114,6 @@ struct SystemFlags::SFImpl {
 };
 
 SystemFlags::SystemFlags(Value* val) { d = std::make_unique<SFImpl>(val); }
+SystemFlags::~SystemFlags() {}
 List<Text> SystemFlags::cxxflags(const List<Text>& headers) { return d->cxxflags(headers); }
 List<Text> SystemFlags::ldflags(const List<Text>& headers) { return d->ldflags(headers); }

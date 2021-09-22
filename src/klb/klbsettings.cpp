@@ -45,6 +45,13 @@ void CommandParameters::_updateFlags() {
   if (nJobs.has_value() && (*nJobs > processorCount * 2)) {
     nJobs = processorCount * 2;
   }
+
+  kl::Value* sysflagsettings = nullptr;
+  if (configurationFile->asMap().has("system"_t)) {
+    sysflagsettings = configurationFile->get("system"_t).get();
+  }
+
+  sysFlags = std::make_unique<SystemFlags>(sysflagsettings);
 }
 
 void CommandParameters::_updateSysEnv(char** envp) {

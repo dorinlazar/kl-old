@@ -2,6 +2,7 @@
 #include "kl/kltext.h"
 #include "kl/klfs.h"
 #include "kl/klvalue.h"
+#include "systemflags.h"
 
 struct CommandParameters {
   bool verbose = false;
@@ -13,6 +14,7 @@ struct CommandParameters {
   kl::List<kl::Text> cxxFlags;
   kl::List<kl::Text> cFlags;
   kl::List<kl::Text> linkFlags;
+  kl::uptr<SystemFlags> sysFlags;
 
   kl::List<kl::Text> arguments;
   kl::Dict<kl::Text, kl::Text> environment;
