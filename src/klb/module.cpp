@@ -143,16 +143,20 @@ void Module::updateHeaderDependencies() {
 
 void Module::updateModuleDependencies() {
   if (d->source.has_value()) {
+    kl::Set<kl::Text> depSysHeaders;
+    depSysHeaders.add(d->source->systemIncludes);
     kl::Set<kl::Text> depHeaders;
     for (const auto& inc: d->source->localIncludes) {
       auto mod = d->parent->getModule(inc);
       CHECK(mod != nullptr, "Sanity check failed: search for module for", inc, "failed. ");
       CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
       depHeaders.add(mod->d->header->recursiveLocalHeaderDeps);
+      depSysHeaders.add(mod->d->header->recursiveSystemHeaderDeps);
     }
 
     d->requiredModules = depHeaders.toList().transform<Module*>(
         [this](const kl::Text& include) { return d->parent->getModule(include).get(); });
+    d->source->systemIncludes = depSysHeaders.toList();
   }
 }
 
@@ -229,7 +233,7 @@ kl::Text Module::executablePath() const {
   return d->buildPath.replace_extension(ext).fullPath();
 }
 
-kl::Text Module::buildFolder() const { return d->buildPath.fullPath(); }
+kl::Text Module::buildFolder() const { return d->buildPath.folderName(); }
 
 bool Module::hasSource() const { return d->source.has_value(); }
 
@@ -262,4 +266,21 @@ kl::List<kl::Text> Module::includeFolders() const {
     inc.add(CMD.sourceFolder.add(mod->name()).folderName());
   }
   return inc.toList();
+}
+
+kl::List<kl::Text> Module::recursiveSystemHeaders() const {
+  kl::Set<kl::Text> inc;
+  for (const auto& mod: d->requiredModules) {
+    if (mod->d->source.has_value()) {
+      inc.add(mod->d->source->systemIncludes);
+    }
+  }
+  return inc.toList();
+}
+
+kl::List<kl::Text> Module::sourceSystemHeaders() const {
+  if (d->source.has_value()) {
+    return d->source->systemIncludes;
+  }
+  return {};
 }

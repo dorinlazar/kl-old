@@ -25,6 +25,8 @@ public:
   const kl::Text& name() const;
   const kl::List<Module*>& requiredModules() const;
   kl::List<kl::Text> includeFolders() const;
+  kl::List<kl::Text> recursiveSystemHeaders() const;
+  kl::List<kl::Text> sourceSystemHeaders() const;
 
   bool requiresBuild() const;
   bool requiresLink() const;

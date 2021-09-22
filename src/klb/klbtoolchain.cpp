@@ -12,43 +12,23 @@ Gcc::Gcc() {
 }
 
 kl::List<kl::Text> Gcc::buildCmdLine(const kl::Text& source, const kl::Text& destination,
-                                     const kl::List<kl::Text>& include) {
+                                     const kl::List<kl::Text>& include, const kl::List<kl::Text>& extraflags) {
   kl::List<kl::Text> command = _cppCompileBase;
   command.add("-o"_t);
   command.add(destination);
   command.add(source);
   command.add("-I"_t + CMD.sourceFolder.fullPath());
   command.add(include.transform<kl::Text>([](const kl::Text& t) { return "-I"_t + t; }));
+  command.add(extraflags);
   return command;
 }
 
 kl::List<kl::Text> Gcc::linkCmdLine(const kl::List<kl::Text>& objects, const kl::Text& executable,
-                                    const kl::List<kl::Text>& libraries) {
+                                    const kl::List<kl::Text>& ldflags) {
   kl::List<kl::Text> command = _linkBase;
   command.add("-o"_t);
   command.add(executable);
   command.add(objects);
-  command.add(libraries);
+  command.add(ldflags);
   return command;
-}
-
-bool Gcc::build(const kl::Text& source, const kl::Text& destination, const kl::List<kl::Text>& include) {
-  if (CMD.verbose) {
-    kl::log("Building", destination, "from", source);
-  }
-  kl::List<kl::Text> command = buildCmdLine(source, destination, include);
-  kl::log("> ", kl::TextChain(command).join(' '));
-  kl::Process p(command);
-  return p.run() == 0;
-}
-
-bool Gcc::link(const kl::List<kl::Text>& objects, const kl::Text& executable, const kl::List<kl::Text>& libraries) {
-  if (CMD.verbose) {
-    kl::log("Linking", executable, "from", objects);
-  }
-  kl::List<kl::Text> command = linkCmdLine(objects, executable, libraries);
-
-  kl::log("> ", kl::TextChain(command).join(' '));
-  kl::Process p(command);
-  return p.run() == 0;
 }

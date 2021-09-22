@@ -35,6 +35,7 @@ struct SourceCodeScannerImpl {
       if (_scanner.topChar() == '"') {
         _local.add(_scanner.readQuotedString());
       } else if (_scanner.topChar() == '<') {
+        _scanner.expect('<');
         _system.add(_scanner.readUntil('>'));
       }
     }

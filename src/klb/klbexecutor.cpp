@@ -46,7 +46,8 @@ public:
     if (t == ExecStepType::Build) {
       if (mod->requiresBuild()) {
         _buildFolders.add(mod->buildFolder());
-        auto cmdLine = _toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders());
+        auto cmdLine = _toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
+                                                CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
         auto node = _horde.addNode(cmdLine, {});
         _execNodes.add(mod->objectPath(), node);
         mod->updateObjectTimestamp(kl::DateTime::MAX);
@@ -56,7 +57,8 @@ public:
         auto objects = getDependentObjects(mod);
         auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes.get(o); })
                             .select([](const kl::ExecutionNode* t) { return t != nullptr; });
-        auto cmdLine = _toolchain->linkCmdLine(objects, mod->executablePath(), {});
+        auto cmdLine = _toolchain->linkCmdLine(objects, mod->executablePath(),
+                                               CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
         auto node = _horde.addNode(cmdLine, depNodes);
         _execNodes.add(mod->executablePath(), node);
       } else if (CMD.verbose) {
