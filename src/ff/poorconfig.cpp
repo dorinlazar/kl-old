@@ -4,9 +4,10 @@
 using namespace kl;
 
 class PoorConfigParser {
-  TextScanner _scanner;
+  TextScanner& _scanner;
   char _split;
   const char _comment = '#';
+  bool _preamble = false;
 
   bool _uselessLine() {
     auto startOfLine = _scanner.location();
@@ -29,7 +30,12 @@ class PoorConfigParser {
   }
 
 public:
-  PoorConfigParser(const Text& fragment, char split) : _scanner(fragment), _split(split) {}
+  PoorConfigParser(TextScanner& scanner, char split) : _scanner(scanner), _split(split) {
+    if (_scanner.startsWith("---\n"_t)) {
+      _scanner.readLine();
+      _preamble = true;
+    }
+  }
 
   PValue readArray() {
     auto value = Value::createList();
@@ -63,6 +69,16 @@ public:
     while (!_scanner.empty()) {
       if (_uselessLine()) {
         continue;
+      }
+      if (_preamble && _scanner.startsWith("---")) {
+        if (minIndent == 0) {
+          _scanner.skip(3);
+          auto loc = _scanner.location();
+          if (_scanner.readLine().trim().size() != 0) {
+            _scanner.restoreLocation(loc);
+          }
+        }
+        break;
       }
       if (!indentLevel.has_value()) {
         indentLevel = _scanner.getIndentationLevel();
@@ -104,7 +120,13 @@ public:
 };
 
 PValue PoorConfig::parse(const Text& fragment, char split) {
-  PoorConfigParser parser(fragment, split);
+  TextScanner scanner(fragment);
+  PoorConfigParser parser(scanner, split);
+  return parser.readMap();
+}
+
+PValue PoorConfig::parse(TextScanner& scanner, char split) {
+  PoorConfigParser parser(scanner, split);
   return parser.readMap();
 }
 

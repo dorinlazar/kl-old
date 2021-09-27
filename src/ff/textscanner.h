@@ -40,6 +40,8 @@ public:
   Text remainder() const;
   void expect(char character);
   void expectws(char character, NewLineHandling handling = NewLineHandling::Keep);
+  bool startsWith(const Text& txt);
+  void skip(uint32_t nChars);
   uint32_t getIndentationLevel() const;
 
 public:

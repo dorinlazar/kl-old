@@ -12,5 +12,6 @@ public:
 
 public:
   static PValue parse(const Text& fragment, char split = ':');
+  static PValue parse(TextScanner& scanner, char split = ':');
 };
 } // namespace kl

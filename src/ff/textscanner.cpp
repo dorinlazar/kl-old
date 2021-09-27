@@ -177,6 +177,27 @@ void TextScanner::expectws(char character, NewLineHandling handling) {
   expect(character);
 }
 
+bool TextScanner::startsWith(const Text& what) { return remainder().startsWith(what); }
+void TextScanner::skip(uint32_t nChars) {
+  if (nChars < 32) {
+    for (uint32_t i = 0; i < nChars; i++) {
+      advance();
+    }
+  } else {
+    auto sub = remainder().sublen(0, nChars);
+    auto nLines = sub.count('\n');
+    loc._offset += sub.size();
+    loc._current += sub.size();
+    loc._dataLeft -= sub.size();
+    if (nLines == 0) {
+      loc._column += sub.size();
+    } else {
+      loc._line += nLines;
+      loc._column = 1 + (sub.size() - *sub.pos('\n', nLines));
+    }
+  }
+}
+
 void TextScanner::error(const Text& why) const { throw ParsingError(why, loc._line, loc._column); }
 
 const TextScanner::DataLocation& TextScanner::location() const { return loc; }
