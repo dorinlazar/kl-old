@@ -70,7 +70,7 @@ public:
       if (_uselessLine()) {
         continue;
       }
-      if (_preamble && _scanner.startsWith("---")) {
+      if (_preamble && (_scanner.startsWith("---") || _scanner.startsWith("..."))) {
         if (minIndent == 0) {
           _scanner.skip(3);
           auto loc = _scanner.location();
