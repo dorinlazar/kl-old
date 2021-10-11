@@ -234,26 +234,26 @@ deeper:)");
 url: "https://example.com"
 names: ["name01", "name02"]
 ...
-deeper:)");
+test01:)");
   value = kl::PoorConfig::parse(scanner1);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner1.startsWith("deeper:"_t));
+  CHECKST(scanner1.startsWith("test01:"_t));
 
   kl::TextScanner scanner2(R"(---
 url: "https://example.com"
 names: ["name01", "name02"]
-...deeper:)");
+...test2:)");
   value = kl::PoorConfig::parse(scanner2);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner2.startsWith("deeper:"_t));
+  CHECKST(scanner2.startsWith("test2:"_t));
 
   kl::TextScanner scanner3(R"(---
 url: "https://example.com"
 names: ["name01", "name02"]
----deeper:)");
+---test3:)");
   value = kl::PoorConfig::parse(scanner3);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner3.startsWith("deeper:"_t));
+  CHECKST(scanner3.startsWith("test3:"_t));
 
   kl::log("POORCONFIG Multicontent partial test [OK]");
 }
