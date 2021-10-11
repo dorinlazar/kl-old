@@ -1,5 +1,7 @@
 #pragma once
 #include "kl.h"
+#include "kltext.h"
+
 #include <array>
 #include <compare>
 #include <cstdint>
@@ -64,6 +66,7 @@ public:
   TimeOfDay timeOfDay() const;
   Date date() const;
   static DateTime fromTicks(int64_t ticks);
+  static DateTime parseISO8601(const kl::Text& src);
 
 public:
   DateTime() = default;

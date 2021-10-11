@@ -5,10 +5,11 @@
 #include "kl/klds.h"
 #include "kl/kltext.h"
 #include "kl/kltime.h"
+#include "kl/klvalue.h"
+#include "textscanner.h"
 #include <variant>
 
-namespace kl::mw {
-using namespace kl;
+namespace kl {
 
 struct ContentBlock {};
 
@@ -34,14 +35,6 @@ struct Paragraph : public ContentBlock {};
 
 struct ListView : public ContentBlock {};
 
-struct DocumentMetadata {
-  Text _title;
-  DateTime _publish;
-  DateTime _lastUpdate;
-  PList<Author> _authors;
-  Url _featuredImage;
-};
-
 struct Chapter {
   Text _title;
   Text _shortname;
@@ -49,12 +42,36 @@ struct Chapter {
   PList<Chapter> _subchapters;
 };
 
-struct Document {
-  DocumentMetadata _metadata;
+struct DocumentMetadata {
+  Text _title;
+  DateTime _publish;
+  DateTime _lastUpdate;
+  PList<Author> _authors;
+  Url _featuredImage;
+  PValue _properties;
+
+public:
+  void update(TextScanner& scanner);
+};
+
+struct DocumentContent {
+  Text _baseContent;
   PList<ContentBlock> _preamble;
   PList<Chapter> _chapters;
   PList<Link> _links;
   PList<Citation> _citations;
   PList<Footnote> _footnotes;
+
+public:
+  void update(TextScanner& scanner);
 };
-} // namespace kl::mw
+
+struct Document {
+  DocumentMetadata _metadata;
+  DocumentContent _content;
+
+public:
+  Document(const Text& content);
+};
+
+} // namespace kl
