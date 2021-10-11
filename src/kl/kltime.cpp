@@ -1,6 +1,7 @@
 #include "kltime.h"
 #include <algorithm>
 #include <chrono>
+#include "ff/textscanner.h"
 //#include <format>
 
 using namespace kl;
@@ -151,4 +152,126 @@ std::ostream& operator<<(std::ostream& os, TimeSpan t) {
   char buffer[128];
   sprintf(buffer, "%02d:%02d.%03d", minutes, seconds, millis);
   return os << buffer;
+}
+
+inline std::tuple<uint32_t, uint32_t, uint32_t> _readDate(TextScanner& sc) {
+  uint32_t year = sc.readDigit() * 1000;
+  year += sc.readDigit() * 100;
+  year += sc.readDigit() * 10;
+  year += sc.readDigit();
+
+  bool hasSplitter = sc.topChar() == '-';
+
+  if (hasSplitter) {
+    sc.expect('-');
+  }
+
+  uint32_t month = sc.readDigit() * 10;
+  month += sc.readDigit();
+
+  if (hasSplitter) {
+    sc.expect('-');
+  }
+
+  uint32_t day = sc.readDigit() * 10;
+  day += sc.readDigit();
+  return {year, month, day};
+}
+
+inline std::tuple<uint32_t, uint32_t, uint32_t, uint64_t> _readTime(TextScanner& sc) {
+  uint32_t hh = 0, mm = 0, ss = 0;
+  uint64_t ff = 0;
+
+  if (sc.empty()) {
+    return {hh, mm, ss, ff};
+  }
+
+  if (sc.topChar() == 'T' || sc.topChar() == ' ') [[likely]] {
+    sc.readChar();
+  } else {
+    sc.error("Expected Date-Time split");
+  }
+  hh += sc.readDigit() * 10;
+  hh += sc.readDigit();
+
+  if (sc.empty()) {
+    return {hh, mm, ss, ff};
+  }
+  bool hasSplitter = sc.topChar() == ':';
+  if (hasSplitter) {
+    sc.expect(':');
+  } else if (sc.topChar() == '+' || sc.topChar() == '-' || sc.topChar() == 'Z') {
+    return {hh, mm, ss, ff};
+  }
+
+  mm += sc.readDigit() * 10;
+  mm += sc.readDigit();
+  if (sc.empty() || sc.topChar() == '+' || sc.topChar() == '-' || sc.topChar() == 'Z') {
+    return {hh, mm, ss, ff};
+  }
+  if (hasSplitter) {
+    sc.expect(':');
+  }
+
+  ss += sc.readDigit() * 10;
+  ss += sc.readDigit();
+  if (sc.empty() || sc.topChar() == '+' || sc.topChar() == '-' || sc.topChar() == 'Z') {
+    return {hh, mm, ss, ff};
+  }
+
+  sc.expect('.');
+  ff += sc.readDigit() * 100;
+  ff += sc.readDigit() * 10;
+  ff += sc.readDigit();
+  if (!sc.empty() && sc.topChar() >= '0' && sc.topChar() <= '9') {
+    ff *= 1000;
+    ff += sc.readDigit() * 100;
+    ff += sc.readDigit() * 10;
+    ff += sc.readDigit();
+    ff *= 1000;
+  } else {
+    ff *= 1'000'000;
+  }
+  return {hh, mm, ss, ff};
+}
+
+std::tuple<bool, uint32_t, uint32_t> _readTimeZone(TextScanner& sc) {
+  int32_t tshours = 0, tsminutes = 0;
+  bool plus = false;
+  if (!sc.empty()) {
+    if (sc.topChar() == '+' || sc.topChar() == '-') {
+      plus = sc.readChar().character == '+';
+      tshours += sc.readDigit() * 10;
+      tshours += sc.readDigit();
+      sc.expect(':');
+      tsminutes += sc.readDigit() * 10;
+      tsminutes += sc.readDigit();
+    } else {
+      sc.expect('Z');
+    }
+  }
+  return {plus, tshours, tsminutes};
+}
+
+// Limited date parsing.
+// Allowed formats:
+// YYYY-?MM-?DD[T ]hh:mm:ss.fff{fff}?
+DateTime DateTime::parse(const Text& src) {
+  if (src.size() < 8) [[unlikely]] {
+    throw InvalidInputData(src, "A valid date has at least 8 characters"_t);
+  }
+  TextScanner sc(src);
+  auto [year, month, day] = _readDate(sc);
+  auto [hh, mm, ss, ff] = _readTime(sc);
+  auto [plus, tshours, tsminutes] = _readTimeZone(sc);
+
+  DateTime dt(year, month, day, hh, mm, ss, ff);
+  if (tshours || tsminutes) {
+    auto ts = TimeSpan::fromMinutes(tshours * 60 + tsminutes);
+    if (plus) {
+      return dt - ts; // timezones with + are behind UTC
+    }
+    return dt + ts;
+  }
+  return dt;
 }

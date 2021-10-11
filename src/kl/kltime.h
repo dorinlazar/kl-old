@@ -1,6 +1,7 @@
 #pragma once
 #include "kl.h"
 #include "kltext.h"
+#include "klexcept.h"
 
 #include <array>
 #include <compare>
@@ -56,7 +57,6 @@ struct TimeSpan {
 
 // Interface inspired after the C# Datetime
 class DateTime {
-private:
   // One Tick represents 100 nanoseconds.
   int64_t _ticks = 0;
 
@@ -66,7 +66,7 @@ public:
   TimeOfDay timeOfDay() const;
   Date date() const;
   static DateTime fromTicks(int64_t ticks);
-  static DateTime parseISO8601(const kl::Text& src);
+  static DateTime parse(const kl::Text& src);
 
 public:
   DateTime() = default;
@@ -81,6 +81,7 @@ public:
   DateTime operator-(TimeSpan ts);
   DateTime operator+(TimeSpan ts);
   std::strong_ordering operator<=>(const DateTime& other) const;
+  friend auto operator<=>(const DateTime&, const DateTime&) = default;
 
   static const DateTime UnixEpoch;
   static const DateTime MAX;

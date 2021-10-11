@@ -54,14 +54,14 @@ void TextScanner::advance() {
 bool TextScanner::empty() const { return loc._dataLeft == 0; }
 
 char TextScanner::topChar() const {
-  if (empty()) {
+  if (empty()) [[unlikely]] {
     error("Requesting data from empty container");
   }
   return *loc._current;
 }
 
 ParsedCharacter TextScanner::readChar() {
-  if (empty()) {
+  if (empty()) [[unlikely]] {
     error("Reading from empty data");
   }
   ParsedCharacter result{.character = *loc._current};
@@ -70,7 +70,7 @@ ParsedCharacter TextScanner::readChar() {
 }
 
 ParsedCharacter TextScanner::readCharEscaped() {
-  if (empty()) {
+  if (empty()) [[unlikely]] {
     error("Reading from empty data");
   }
   ParsedCharacter result{.character = *loc._current};
@@ -97,7 +97,7 @@ ParsedCharacter TextScanner::readCharEscaped() {
 }
 
 Text TextScanner::readQuotedString() {
-  if (empty() || *loc._current != '"') {
+  if (empty() || *loc._current != '"') [[unlikely]] {
     error("Unexpected character");
   }
   advance();
@@ -158,7 +158,7 @@ Text TextScanner::readLine() {
 }
 
 Text TextScanner::remainder() const {
-  if (empty()) {
+  if (empty()) [[unlikely]] {
     return ""_t;
   }
   return _originalSource.skip(loc._offset);
@@ -210,4 +210,16 @@ uint32_t TextScanner::getIndentationLevel() const {
     }
   }
   return loc._dataLeft;
+}
+
+uint32_t TextScanner::readDigit() {
+  if (empty()) [[unlikely]] {
+    error("Reading from empty data");
+  }
+  char c = *loc._current;
+  if (c < '0' || c > '9') [[unlikely]] {
+    error("Expected a digit");
+  }
+  advance();
+  return c - '0';
 }

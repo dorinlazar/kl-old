@@ -18,11 +18,11 @@ void DocumentMetadata::update(TextScanner& scanner) {
   }
   auto pubTime = _properties->getOpt("date");
   if (pubTime.has_value()) {
-    _publish = DateTime::parseISO8601(*pubTime);
+    _publish = DateTime::parse(*pubTime);
   }
   _lastUpdate = _publish;
   pubTime = _properties->getOpt("updated");
   if (pubTime.has_value()) {
-    _lastUpdate = DateTime::parseISO8601(*pubTime);
+    _lastUpdate = DateTime::parse(*pubTime);
   }
 }

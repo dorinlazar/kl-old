@@ -1,5 +1,6 @@
 #include "kl/kl.h"
 #include "kl/kltime.h"
+#include "timecounter.h"
 
 void sanity_checks() {
   CHECKST((25 * kl::TimeLimits::DAYS_IN_400_YEARS - 366) * kl::TimeLimits::TICKS_PER_DAY ==
@@ -75,12 +76,48 @@ void test_date_time() {
   kl::log("Basic DateTime tests [OK]");
 }
 
+void test_parsing() {
+  auto dt = kl::DateTime::parse("2019-03-03T10:21Z");
+  CHECKST(dt == kl::DateTime(2019, 03, 03, 10, 21));
+  dt = kl::DateTime::parse("2019-03-03T10:21");
+  CHECKST(dt == kl::DateTime(2019, 03, 03, 10, 21));
+  dt = kl::DateTime::parse("2020-03-03 10:21");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 10, 21));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 10, 21, 14));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781321");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 10, 21, 14, 781'321'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 10, 21, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781Z");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 10, 21, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781+02:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 8, 21, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781+03:21");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 7, 00, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781+03:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 7, 21, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781-02:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 12, 21, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781-03:21");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 13, 42, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14.781-03:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 13, 21, 14, 781'000'000));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14-03:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 13, 21, 14));
+  dt = kl::DateTime::parse("2020-03-03 10:21:14+03:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 7, 21, 14));
+  dt = kl::DateTime::parse("2020-03-03 10:21-03:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 13, 21));
+  dt = kl::DateTime::parse("2020-03-03 10:21+03:00");
+  CHECKST(dt == kl::DateTime(2020, 03, 03, 7, 21));
+  kl::log("[Date/Time] Basic DateTime::parse tests [OK]");
+}
+
 int main() {
-  auto start = kl::DateTime::now();
-  sanity_checks();
+  TimeCounter cnt("testing date/time");
   test_date_time();
   test_ticks();
-  auto end = kl::DateTime::now();
-  kl::log("Time spent testing:", end - start, "or, in reverse", start - end);
+  test_parsing();
   return 0;
 }
