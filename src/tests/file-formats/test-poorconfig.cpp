@@ -188,6 +188,76 @@ last: ["value"])");
   kl::log("POORCONFIG Basic List tests [OK]");
 }
 
+void test_partial_content() {
+  auto value = kl::PoorConfig::parse(R"(---
+url: "https://example.com"
+names: ["name01", "name02"]
+---
+deeper:
+  x: y
+  y: ["hello", "world"
+, "mean", "world"
+] #discardable junk
+  z: we keep having this conversation
+a-list: [
+  "hello",
+  "dear",
+  "listeners"
+]
+empty: []
+last: ["value"])");
+  CHECKST(value->isMap());
+  CHECKST(value->size() == 2);
+  auto map = value->asMap();
+  CHECKST(map.size() == 2);
+  CHECKST(map.has("url"));
+  CHECKST(map.has("names"));
+
+  CHECKST((*value)["url"].getValue() == "https://example.com");
+
+  CHECKST(map["names"]->isList());
+  const auto& list1 = map["names"]->asList();
+  CHECKST(list1.size() == 2);
+  CHECKST(list1[0]->getValue() == "name01");
+  CHECKST(list1[1]->getValue() == "name02");
+
+  kl::TextScanner scanner(R"(---
+url: "https://example.com"
+names: ["name01", "name02"]
+---
+deeper:)");
+  value = kl::PoorConfig::parse(scanner);
+  CHECKST((*value)["url"].getValue() == "https://example.com");
+  CHECKST(scanner.startsWith("deeper:"_t));
+
+  kl::TextScanner scanner1(R"(---
+url: "https://example.com"
+names: ["name01", "name02"]
+...
+deeper:)");
+  value = kl::PoorConfig::parse(scanner1);
+  CHECKST((*value)["url"].getValue() == "https://example.com");
+  CHECKST(scanner1.startsWith("deeper:"_t));
+
+  kl::TextScanner scanner2(R"(---
+url: "https://example.com"
+names: ["name01", "name02"]
+...deeper:)");
+  value = kl::PoorConfig::parse(scanner2);
+  CHECKST((*value)["url"].getValue() == "https://example.com");
+  CHECKST(scanner2.startsWith("deeper:"_t));
+
+  kl::TextScanner scanner3(R"(---
+url: "https://example.com"
+names: ["name01", "name02"]
+---deeper:)");
+  value = kl::PoorConfig::parse(scanner3);
+  CHECKST((*value)["url"].getValue() == "https://example.com");
+  CHECKST(scanner3.startsWith("deeper:"_t));
+
+  kl::log("POORCONFIG Multicontent partial test [OK]");
+}
+
 void test_invalid_config_01() {
   try {
     auto value = kl::PoorConfig::parse("\nurl\nname: example.com\n");
@@ -206,4 +276,5 @@ int main() {
   test_invalid_config_01();
   test_comments();
   test_list();
+  test_partial_content();
 }
