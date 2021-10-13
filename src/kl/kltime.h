@@ -58,7 +58,7 @@ struct TimeSpan {
 // Interface inspired after the C# Datetime
 class DateTime {
   // One Tick represents 100 nanoseconds.
-  int64_t _ticks = 0;
+  int64_t _ticks = TimeLimits::MIN_TICKS;
 
 public:
   int64_t ticks() const;
@@ -80,8 +80,9 @@ public:
   TimeSpan operator-(const DateTime d);
   DateTime operator-(TimeSpan ts);
   DateTime operator+(TimeSpan ts);
-  std::strong_ordering operator<=>(const DateTime& other) const;
-  friend auto operator<=>(const DateTime&, const DateTime&) = default;
+  friend std::strong_ordering operator<=>(const kl::DateTime& x, const kl::DateTime& y) = default;
+  friend bool operator==(const kl::DateTime& x, const kl::DateTime& y) = default;
+  friend bool operator!=(const kl::DateTime& x, const kl::DateTime& y) = default;
 
   static const DateTime UnixEpoch;
   static const DateTime MAX;

@@ -47,6 +47,7 @@ public:
 public:
   void setValue(const Text& txt);
   Text getValue() const;
+  List<Text> getArrayValue() const;
 
   void add(PValue v);
   void add(const Text& txt, PValue v);
@@ -57,6 +58,7 @@ public:
   Value& operator[](const Text& key) const;
   PValue get(int index) const;
   PValue get(const Text& key) const;
+  bool has(const Text& key) const;
   size_t size() const;
   std::optional<Text> getOpt(const kl::Text& path);
 

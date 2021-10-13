@@ -115,8 +115,6 @@ TimeSpan DateTime::operator-(const DateTime d) { return {.ticks = _ticks - d._ti
 DateTime DateTime::operator-(TimeSpan ts) { return fromTicks(_ticks - ts.ticks); }
 DateTime DateTime::operator+(TimeSpan ts) { return fromTicks(_ticks + ts.ticks); }
 
-std::strong_ordering DateTime::operator<=>(const DateTime& other) const { return _ticks <=> other._ticks; };
-
 std::ostream& operator<<(std::ostream& os, kl::DateTime t) {
   auto date = t.date();
   auto time = t.timeOfDay();

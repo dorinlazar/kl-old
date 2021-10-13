@@ -42,6 +42,12 @@ Text Value::asScalar() const { return std::get<(int)ValueType::Scalar>(_value); 
 ValueType Value::type() const { return ValueType(_value.index()); }
 void Value::setValue(const Text& txt) { _value = txt; }
 Text Value::getValue() const { return asScalar(); }
+List<Text> Value::getArrayValue() const {
+  if (isScalar()) {
+    return {asScalar()};
+  }
+  return asList().transform<Text>([](const PValue& p) { return p->asScalar(); });
+}
 
 void Value::add(PValue v) { asList().add(v); }
 void Value::add(const Text& txt, PValue v) { asMap().add(txt, v); }
@@ -56,6 +62,7 @@ Value& Value::operator[](int index) const { return *asList()[index]; }
 Value& Value::operator[](const Text& key) const { return *(asMap()[key]); }
 PValue Value::get(int index) const { return asList()[index]; }
 PValue Value::get(const Text& key) const { return asMap()[key]; }
+bool Value::has(const Text& key) const { return asMap().has(key); }
 
 size_t Value::size() const {
   if (isNull()) {
