@@ -1,5 +1,5 @@
 #include "markwrite.h"
-#include "poorconfig.h"
+#include "ff/poorconfig.h"
 using namespace kl;
 
 Document::Document(const Text& content) {
