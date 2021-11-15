@@ -47,7 +47,7 @@ void CommandParameters::_updateFlags() {
   }
 
   kl::Value* sysflagsettings = nullptr;
-  if (configurationFile->asMap().has("system"_t)) {
+  if (configurationFile->has("system"_t)) {
     sysflagsettings = configurationFile->get("system"_t).get();
   }
 

@@ -62,7 +62,7 @@ Value& Value::operator[](int index) const { return *asList()[index]; }
 Value& Value::operator[](const Text& key) const { return *(asMap()[key]); }
 PValue Value::get(int index) const { return asList()[index]; }
 PValue Value::get(const Text& key) const { return asMap()[key]; }
-bool Value::has(const Text& key) const { return asMap().has(key); }
+bool Value::has(const Text& key) const { return isMap() && asMap().has(key); }
 
 size_t Value::size() const {
   if (isNull()) {

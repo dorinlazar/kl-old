@@ -9,4 +9,4 @@ ColumnLimit: 120
 AlwaysBreakTemplateDeclarations: Yes
 AllowShortCaseLabelsOnASingleLine: Yes
 Standard: c++20
-SortIncludes: No
+SortIncludes: Never
