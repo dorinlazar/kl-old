@@ -91,7 +91,9 @@ void StreamWriter::write(const TextChain& what) {
 }
 void StreamWriter::flush() { _stream->flush(); }
 
-FileStream::FileStream(const Text& filename, FileOpenMode mode) : _mode(mode) {
+PosixFileStream::PosixFileStream(int fd, FileOpenMode mode) : _fd(fd) {}
+
+static int openFile(const Text& filename, FileOpenMode mode) {
   int flags = 0;
   switch (mode) {
   case FileOpenMode::ReadOnly: flags = O_RDONLY; break;
@@ -100,7 +102,11 @@ FileStream::FileStream(const Text& filename, FileOpenMode mode) : _mode(mode) {
   case FileOpenMode::AppendRW: flags = O_RDWR | O_APPEND | O_CREAT; break;
   case FileOpenMode::TruncateRW: flags = O_RDWR | O_TRUNC | O_CREAT; break;
   }
-  _fd = ::open(std::string(filename.toView()).c_str(), flags);
+  return ::open(std::string(filename.toView()).c_str(), flags);
+}
+
+FileStream::FileStream(const Text& filename, FileOpenMode mode)
+    : PosixFileStream(openFile(filename, mode)), _mode(mode) {
   struct stat statbuf;
   if (::fstat(_fd, &statbuf) != 0) [[unlikely]] {
     throw IOException::currentStandardError();
@@ -112,33 +118,37 @@ bool FileStream::canRead() { return _mode != FileOpenMode::WriteOnly; }
 bool FileStream::canWrite() { return _mode != FileOpenMode::ReadOnly; }
 bool FileStream::canSeek() { return true; }
 
-size_t FileStream::size() {
+size_t PosixFileStream::size() {
   struct stat statbuf;
   if (::fstat(_fd, &statbuf) != 0) [[unlikely]] {
     throw IOException::currentStandardError();
   };
   return statbuf.st_size;
 }
-size_t FileStream::position() {
+
+size_t PosixFileStream::position() {
   auto pos = ::lseek(_fd, 0, SEEK_CUR);
   if (pos < 0) [[unlikely]] {
     throw IOException::currentStandardError();
   }
   return pos;
 }
-size_t FileStream::read(std::span<uint8_t> where) {
+
+size_t PosixFileStream::read(std::span<uint8_t> where) {
   auto res = ::read(_fd, where.data(), where.size());
   if (res < 0) [[unlikely]] {
     throw IOException::currentStandardError();
   }
   return res;
 }
-void FileStream::write(std::span<uint8_t> what) {
+
+void PosixFileStream::write(std::span<uint8_t> what) {
   if (::write(_fd, what.data(), what.size()) < 0) [[unlikely]] {
     throw IOException::currentStandardError();
   }
 }
-void FileStream::write(const List<std::span<uint8_t>>& what) {
+
+void PosixFileStream::write(const List<std::span<uint8_t>>& what) {
   std::vector<iovec> vectors(what.size());
   for (size_t i = 0; i < what.size(); i++) {
     vectors[i].iov_base = (void*)what[i].data();
@@ -149,11 +159,12 @@ void FileStream::write(const List<std::span<uint8_t>>& what) {
   }
 }
 
-void FileStream::seek(size_t offset) {
+void PosixFileStream::seek(size_t offset) {
   if (lseek(_fd, offset, SEEK_SET) < 0) [[unlikely]] {
     throw IOException::currentStandardError();
   }
 }
+
 bool FileStream::dataAvailable() {
   if (_regular) [[likely]] {
     return position() < size();

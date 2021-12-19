@@ -72,8 +72,31 @@ public:
 
 enum class FileOpenMode { ReadOnly, WriteOnly, ReadWrite, AppendRW, TruncateRW };
 
-class FileStream : public Stream {
+class PosixFileStream : public Stream {
+protected:
   int _fd = -1;
+
+public:
+  PosixFileStream(int fd, FileOpenMode mode);
+
+public: // properties
+  size_t size() override final;
+  size_t position() override final;
+
+public: // operations
+  size_t read(std::span<uint8_t> where) override final;
+  void write(std::span<uint8_t> what) override final;
+  void write(const List<std::span<uint8_t>>& what) override final;
+
+  void seek(size_t offset) override final;
+  bool dataAvailable() override final;
+  bool endOfStream() override final;
+  void flush() override final;
+
+  void close() override final;
+};
+
+class FileStream : public PosixFileStream {
   FileOpenMode _mode;
   bool _regular;
 
