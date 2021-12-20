@@ -75,9 +75,10 @@ enum class FileOpenMode { ReadOnly, WriteOnly, ReadWrite, AppendRW, TruncateRW }
 class PosixFileStream : public Stream {
 protected:
   int _fd = -1;
+  bool _regular = false;
 
 public:
-  PosixFileStream(int fd, FileOpenMode mode);
+  PosixFileStream(int fd);
 
 public: // properties
   size_t size() override final;
@@ -90,15 +91,14 @@ public: // operations
 
   void seek(size_t offset) override final;
   bool dataAvailable() override final;
-  bool endOfStream() override final;
   void flush() override final;
+  bool endOfStream() override final;
 
   void close() override final;
 };
 
 class FileStream : public PosixFileStream {
   FileOpenMode _mode;
-  bool _regular;
 
 public:
   FileStream(const Text& filename, FileOpenMode mode);
@@ -107,22 +107,6 @@ public: // capabilities
   bool canRead() override final;
   bool canWrite() override final;
   bool canSeek() override final;
-
-public: // properties
-  size_t size() override final;
-  size_t position() override final;
-
-public: // operations
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
-
-  void seek(size_t offset) override final;
-  bool dataAvailable() override final;
-  bool endOfStream() override final;
-  void flush() override final;
-
-  void close() override final;
 };
 
 } // namespace kl

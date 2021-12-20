@@ -91,7 +91,12 @@ void StreamWriter::write(const TextChain& what) {
 }
 void StreamWriter::flush() { _stream->flush(); }
 
-PosixFileStream::PosixFileStream(int fd, FileOpenMode mode) : _fd(fd) {}
+PosixFileStream::PosixFileStream(int fd) : _fd(fd) {
+  struct stat statbuf;
+  if (::fstat(_fd, &statbuf) == 0) {
+    _regular = S_ISREG(statbuf.st_mode);
+  }
+}
 
 static int openFile(const Text& filename, FileOpenMode mode) {
   int flags = 0;
@@ -106,24 +111,21 @@ static int openFile(const Text& filename, FileOpenMode mode) {
 }
 
 FileStream::FileStream(const Text& filename, FileOpenMode mode)
-    : PosixFileStream(openFile(filename, mode)), _mode(mode) {
-  struct stat statbuf;
-  if (::fstat(_fd, &statbuf) != 0) [[unlikely]] {
-    throw IOException::currentStandardError();
-  };
-  _regular = S_ISREG(statbuf.st_mode);
-}
+    : PosixFileStream(openFile(filename, mode)), _mode(mode) {}
 
 bool FileStream::canRead() { return _mode != FileOpenMode::WriteOnly; }
 bool FileStream::canWrite() { return _mode != FileOpenMode::ReadOnly; }
 bool FileStream::canSeek() { return true; }
 
 size_t PosixFileStream::size() {
-  struct stat statbuf;
-  if (::fstat(_fd, &statbuf) != 0) [[unlikely]] {
-    throw IOException::currentStandardError();
-  };
-  return statbuf.st_size;
+  if (_regular) {
+    struct stat statbuf;
+    if (::fstat(_fd, &statbuf) != 0) [[unlikely]] {
+      throw IOException::currentStandardError();
+    };
+    return statbuf.st_size;
+  }
+  return 0;
 }
 
 size_t PosixFileStream::position() {
@@ -165,26 +167,28 @@ void PosixFileStream::seek(size_t offset) {
   }
 }
 
-bool FileStream::dataAvailable() {
-  if (_regular) [[likely]] {
+bool PosixFileStream::dataAvailable() {
+  if (_regular) {
     return position() < size();
   }
   auto pfd = pollfd{.fd = _fd, .events = 0, .revents = 0};
   return poll(&pfd, 1, 0) > 0;
 }
-bool FileStream::endOfStream() {
+
+bool PosixFileStream::endOfStream() {
   if (_regular) [[likely]] {
     return position() >= size();
   }
   throw OperationNotSupported("End of stream", "non-regular file");
 }
-void FileStream::flush() {
+
+void PosixFileStream::flush() {
   if (fdatasync(_fd) < 0) [[unlikely]] {
     throw IOException::currentStandardError();
   }
 }
 
-void FileStream::close() {
+void PosixFileStream::close() {
   if (_fd >= 0) {
     ::close(_fd);
     _fd = -1;
