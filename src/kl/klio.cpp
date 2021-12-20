@@ -137,6 +137,7 @@ size_t PosixFileStream::position() {
 }
 
 size_t PosixFileStream::read(std::span<uint8_t> where) {
+  // TODO: read everything!
   auto res = ::read(_fd, where.data(), where.size());
   if (res < 0) [[unlikely]] {
     throw IOException::currentStandardError();
@@ -145,6 +146,7 @@ size_t PosixFileStream::read(std::span<uint8_t> where) {
 }
 
 void PosixFileStream::write(std::span<uint8_t> what) {
+  // TODO: write everything!
   if (::write(_fd, what.data(), what.size()) < 0) [[unlikely]] {
     throw IOException::currentStandardError();
   }
