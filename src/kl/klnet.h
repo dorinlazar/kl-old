@@ -35,26 +35,12 @@ public:
 
 static_assert(sizeof(sockaddr_in) == sizeof(IPv4EndPoint));
 
-class Socket : public Stream {
-public:
-  bool canRead() override final;
-  bool canWrite() override final;
-  bool canTimeout() override final;
+class Socket : public PosixFileStream {
 
 public:
   TimeSpan readTimeout();
   void setReadTimeout(TimeSpan);
   TimeSpan writeTimeout();
   void setWriteTimeout(TimeSpan);
-
-public:
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
-
-  bool dataAvailable() override final;
-  void flush() override final;
-
-  void close() override final;
 };
 } // namespace kl

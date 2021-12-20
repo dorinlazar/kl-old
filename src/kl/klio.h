@@ -81,23 +81,23 @@ public:
   PosixFileStream(int fd);
 
 public: // properties
-  size_t size() override final;
-  size_t position() override final;
+  size_t size() override;
+  size_t position() override;
 
 public: // operations
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
+  size_t read(std::span<uint8_t> where) override;
+  void write(std::span<uint8_t> what) override;
+  void write(const List<std::span<uint8_t>>& what) override;
 
-  void seek(size_t offset) override final;
-  bool dataAvailable() override final;
-  void flush() override final;
-  bool endOfStream() override final;
+  void seek(size_t offset) override;
+  bool dataAvailable() override;
+  void flush() override;
+  bool endOfStream() override;
 
-  void close() override final;
+  void close() override;
 };
 
-class FileStream : public PosixFileStream {
+class FileStream final : public PosixFileStream {
   FileOpenMode _mode;
 
 public:
