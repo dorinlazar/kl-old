@@ -9,13 +9,27 @@ using namespace kl;
 
 TcpClient::TcpClient(const Text& server, uint16_t port) {
   std::string server_str = server.toString();
-  addrinfo hints, *res;
-  if (0 != ::getaddrinfo()) {
-    throw IOException::currentStandardError();
+  addrinfo hints = {.ai_flags = AI_ADDRCONFIG | AI_PASSIVE | AI_ALL | AI_NUMERICSERV,
+                    .ai_family = AF_UNSPEC,
+                    .ai_socktype = SOCK_STREAM,
+                    .ai_protocol = 0};
+  addrinfo* addresses = nullptr;
+  auto callres = ::getaddrinfo(server.toString().c_str(), std::to_string(port).c_str(), &hints, &addresses);
+  if (0 != callres) {
+    throw IOException(gai_strerror(callres));
+  }
+  Defer{[addresses]() { freeaddrinfo(addresses); }};
+
+  addrinfo* candidate = addresses;
+  for (auto p = addresses; p != nullptr; p = p->ai_next) {
+    candidate = p;
+    if (p->ai_family == AF_INET6) {
+      break;
+    }
   }
 
-  _socket_id = socket();
-  if (0 != ::connect()) {
+  _socket_id = socket(candidate->ai_family, candidate->ai_socktype, IPPROTO_TCP);
+  if (0 != ::connect(_socket_id, candidate->ai_addr, candidate->ai_addrlen)) {
     throw IOException::currentStandardError();
   }
 }

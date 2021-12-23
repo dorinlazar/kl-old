@@ -21,6 +21,15 @@ template <typename... Args>
 inline void err(const Args&... args) {
   _perform_log(std::cerr, args...);
 }
+
+class Defer final {
+  std::function<void(void)> _call;
+
+public:
+  Defer(std::function<void(void)> call);
+  ~Defer();
+};
+
 } // namespace kl
 
 template <typename... Args>
