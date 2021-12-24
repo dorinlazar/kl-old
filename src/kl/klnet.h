@@ -61,101 +61,11 @@ public:
   void setWriteTimeout(TimeSpan);
 };
 
-class TcpServer : public Stream {
+class TcpServer {
 public:
+  TcpServer(uint16_t port);
   ~TcpServer();
 
-public: // capabilities
-  bool canRead() override final;
-  bool canWrite() override final;
-  bool canSeek() override final;
-  bool canTimeout() override final;
-
-public: // properties
-  size_t size() override final;
-  size_t position() override final;
-
-public: // operations
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-
-  void seek(size_t offset) override final;
-  bool dataAvailable() override final;
-  bool endOfStream() override final;
-  void flush() override final;
-
-  void close() override final;
-
-public:
-  TimeSpan readTimeout();
-  void setReadTimeout(TimeSpan);
-  TimeSpan writeTimeout();
-  void setWriteTimeout(TimeSpan);
-};
-
-class UdpClient : public Stream {
-public:
-  ~UdpClient();
-
-public: // capabilities
-  bool canRead() override final;
-  bool canWrite() override final;
-  bool canSeek() override final;
-  bool canTimeout() override final;
-
-public: // properties
-  size_t size() override final;
-  size_t position() override final;
-
-public: // operations
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
-
-  void seek(size_t offset) override final;
-  bool dataAvailable() override final;
-  bool endOfStream() override final;
-  void flush() override final;
-
-  void close() override final;
-
-public:
-  TimeSpan readTimeout();
-  void setReadTimeout(TimeSpan);
-  TimeSpan writeTimeout();
-  void setWriteTimeout(TimeSpan);
-};
-
-class UdpServer : public Stream {
-public:
-  ~UdpServer();
-
-public: // capabilities
-  bool canRead() override final;
-  bool canWrite() override final;
-  bool canSeek() override final;
-  bool canTimeout() override final;
-
-public: // properties
-  size_t size() override final;
-  size_t position() override final;
-
-public: // operations
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
-
-  void seek(size_t offset) override final;
-  bool dataAvailable() override final;
-  bool endOfStream() override final;
-  void flush() override final;
-
-  void close() override final;
-
-public:
-  TimeSpan readTimeout();
-  void setReadTimeout(TimeSpan);
-  TimeSpan writeTimeout();
-  void setWriteTimeout(TimeSpan);
+  std::unique_ptr<Stream> accept();
 };
 } // namespace kl

@@ -8,7 +8,7 @@
 
 using namespace kl;
 
-static int open_file_descriptor(const Text& server, uint16_t port) {
+static int connect_to_server(const Text& server, uint16_t port) {
   std::string server_str = server.toString();
   addrinfo hints;
   memset(&hints, 0, sizeof(addrinfo));
@@ -38,9 +38,8 @@ static int open_file_descriptor(const Text& server, uint16_t port) {
   return socketid;
 }
 
-TcpClient::TcpClient(const Text& server, uint16_t port) : PosixFileStream(open_file_descriptor(server, port)) {}
+TcpClient::TcpClient(const Text& server, uint16_t port) : PosixFileStream(connect_to_server(server, port)) {}
 
-TcpClient::~TcpClient() { close(); }
 bool TcpClient::canRead() { return true; }
 bool TcpClient::canWrite() { return true; }
 bool TcpClient::canSeek() { return false; }
@@ -56,7 +55,30 @@ bool TcpClient::dataAvailable() {
 bool TcpClient::endOfStream() { throw OperationNotSupported("TcpClient::endOfStream()", ""); }
 void TcpClient::flush() { throw OperationNotSupported("TcpClient::flush()", ""); }
 
-TimeSpan TcpClient::readTimeout() {}
-void TcpClient::setReadTimeout(TimeSpan) {}
-TimeSpan TcpClient::writeTimeout() {}
-void TcpClient::setWriteTimeout(TimeSpan) {}
+TimeSpan TcpClient::readTimeout() {
+  struct timeval timeout;
+  socklen_t length = sizeof(timeout);
+  if (getsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, &length) < 0) {
+    return {};
+  }
+  return TimeSpan::fromTimeval(timeout);
+}
+
+void TcpClient::setReadTimeout(TimeSpan ts) {
+  struct timeval timeout = ts.timeval();
+  setsockopt(_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+}
+
+TimeSpan TcpClient::writeTimeout() {
+  struct timeval timeout;
+  socklen_t length = sizeof(timeout);
+  if (getsockopt(_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, &length) < 0) {
+    return {};
+  }
+  return TimeSpan::fromTimeval(timeout);
+}
+
+void TcpClient::setWriteTimeout(TimeSpan ts) {
+  struct timeval timeout = ts.timeval();
+  setsockopt(_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
+}

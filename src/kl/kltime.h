@@ -6,6 +6,7 @@
 #include <array>
 #include <compare>
 #include <cstdint>
+#include <sys/time.h>
 
 namespace kl {
 
@@ -26,6 +27,8 @@ struct TimeLimits {
   static constexpr int64_t MIN_TICKS = 0LL;                   // 0001-01-01 00:00:00 UTC (if that makes any sense)
   static constexpr int64_t MAX_TICKS = 3155378975999999999LL; // 9999-12-31 23:59:59 UTC
   static constexpr int64_t TICKS_PER_SECOND = 10'000'000LL;
+  static constexpr int64_t TICKS_PER_MILLISECOND = 10'000LL;
+  static constexpr int64_t TICKS_PER_MICROSECOND = 10LL;
   static constexpr int64_t TICKS_PER_DAY = TICKS_PER_SECOND * 24 * 3600;
   static constexpr uint32_t DAYS_IN_400_YEARS = 365 * 400 + 97;
 };
@@ -39,6 +42,10 @@ struct TimeSpan {
   static constexpr TimeSpan fromSeconds(int64_t s) { return {.ticks = s * TimeLimits::TICKS_PER_SECOND}; }
   static constexpr TimeSpan fromDays(int64_t d) { return {.ticks = d * TimeLimits::TICKS_PER_DAY}; }
   static constexpr TimeSpan fromNanos(int64_t d) { return {.ticks = d / 100}; }
+  static constexpr TimeSpan fromTimeval(struct timeval tv) {
+    return {.ticks = (int64_t)tv.tv_sec * TimeLimits::TICKS_PER_SECOND +
+                     (int64_t)tv.tv_usec * TimeLimits::TICKS_PER_MICROSECOND};
+  }
 
   constexpr int64_t totalHours() const { return ticks / (TimeLimits::TICKS_PER_SECOND * 3600); }
   constexpr int64_t totalMinutes() const { return ticks / (TimeLimits::TICKS_PER_SECOND * 60); }
@@ -48,7 +55,11 @@ struct TimeSpan {
   constexpr int64_t minutes() const { return (ticks / (TimeLimits::TICKS_PER_SECOND * 60)) % 60; }
   constexpr int64_t seconds() const { return (ticks / TimeLimits::TICKS_PER_SECOND) % 60; }
   constexpr int64_t days() const { return ticks / TimeLimits::TICKS_PER_DAY; }
-  constexpr int64_t milliseconds() const { return (ticks / (TimeLimits::TICKS_PER_SECOND / 1000)) % 1000; }
+  constexpr int64_t milliseconds() const { return (ticks / (TimeLimits::TICKS_PER_MILLISECOND)) % 1000; }
+  constexpr struct timeval timeval() const {
+    return {.tv_sec = totalSeconds(),
+            .tv_usec = (ticks % TimeLimits::TICKS_PER_SECOND) / TimeLimits::TICKS_PER_MICROSECOND};
+  }
 
   auto operator<=>(const TimeSpan&) const = default;
   constexpr TimeSpan operator-(const TimeSpan& ts) const { return {.ticks = ticks - ts.ticks}; }
