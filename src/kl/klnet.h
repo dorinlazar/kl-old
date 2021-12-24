@@ -35,12 +35,9 @@ public:
 
 static_assert(sizeof(sockaddr_in) == sizeof(IPv4EndPoint));
 
-class TcpClient : public Stream {
-  int _socket_id = -1;
-
+class TcpClient : public PosixFileStream {
 public:
   TcpClient(const Text& server, uint16_t port);
-  ~TcpClient();
 
 public: // capabilities
   bool canRead() override final;
@@ -53,16 +50,9 @@ public: // properties
   size_t position() override final;
 
 public: // operations
-  size_t read(std::span<uint8_t> where) override final;
-  void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
-
-  void seek(size_t offset) override final;
   bool dataAvailable() override final;
   bool endOfStream() override final;
   void flush() override final;
-
-  void close() override final;
 
 public:
   TimeSpan readTimeout();
@@ -88,7 +78,6 @@ public: // properties
 public: // operations
   size_t read(std::span<uint8_t> where) override final;
   void write(std::span<uint8_t> what) override final;
-  void write(const List<std::span<uint8_t>>& what) override final;
 
   void seek(size_t offset) override final;
   bool dataAvailable() override final;

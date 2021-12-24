@@ -19,9 +19,6 @@ size_t Stream::size() { throw OperationNotSupported("Stream::size"_t, s_notImple
 size_t Stream::position() { throw OperationNotSupported("Stream::position"_t, s_notImplemented); }
 size_t Stream::read(std::span<uint8_t>) { throw OperationNotSupported("Stream::read"_t, s_notImplemented); }
 void Stream::write(std::span<uint8_t>) { throw OperationNotSupported("Stream::write"_t, s_notImplemented); }
-void Stream::write(const List<std::span<uint8_t>>&) {
-  throw OperationNotSupported("Stream::write"_t, s_notImplemented);
-}
 void Stream::seek(size_t) { throw OperationNotSupported("Stream::seek"_t, s_notImplemented); }
 bool Stream::dataAvailable() { throw OperationNotSupported("Stream::dataAvailable"_t, s_notImplemented); }
 void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImplemented); }
@@ -84,11 +81,10 @@ void StreamWriter::write(std::span<uint8_t> what) { _stream->write(what); }
 void StreamWriter::write(const Text& what) { _stream->write(what.toRawData()); }
 void StreamWriter::writeLine(const Text& what) {
   static char eol[] = "\n";
-  _stream->write({what.toRawData(), {std::span<uint8_t>((uint8_t*)&eol[0], 1)}});
+  _stream->write(what.toRawData());
+  _stream->write(std::span<uint8_t>((uint8_t*)&eol[0], 1));
 }
-void StreamWriter::write(const TextChain& what) {
-  _stream->write(what.chain().transform<std::span<uint8_t>>([](const Text& t) { return t.toRawData(); }));
-}
+void StreamWriter::write(const TextChain& what) { _stream->write(what.toText().toRawData()); }
 void StreamWriter::flush() { _stream->flush(); }
 
 PosixFileStream::PosixFileStream(int fd) : _fd(fd) {
@@ -129,15 +125,17 @@ size_t PosixFileStream::size() {
 }
 
 size_t PosixFileStream::position() {
-  auto pos = ::lseek(_fd, 0, SEEK_CUR);
-  if (pos < 0) [[unlikely]] {
-    throw IOException::currentStandardError();
+  if (_regular) {
+    auto pos = ::lseek(_fd, 0, SEEK_CUR);
+    if (pos < 0) [[unlikely]] {
+      throw IOException::currentStandardError();
+    }
+    return pos;
   }
-  return pos;
+  return 0;
 }
 
 size_t PosixFileStream::read(std::span<uint8_t> where) {
-  // TODO: read everything!
   auto res = ::read(_fd, where.data(), where.size());
   if (res < 0) [[unlikely]] {
     throw IOException::currentStandardError();
@@ -147,19 +145,13 @@ size_t PosixFileStream::read(std::span<uint8_t> where) {
 
 void PosixFileStream::write(std::span<uint8_t> what) {
   // TODO: write everything!
-  if (::write(_fd, what.data(), what.size()) < 0) [[unlikely]] {
-    throw IOException::currentStandardError();
-  }
-}
-
-void PosixFileStream::write(const List<std::span<uint8_t>>& what) {
-  std::vector<iovec> vectors(what.size());
-  for (size_t i = 0; i < what.size(); i++) {
-    vectors[i].iov_base = (void*)what[i].data();
-    vectors[i].iov_len = what[i].size();
-  }
-  if (writev(_fd, vectors.data(), vectors.size()) < 0) [[unlikely]] {
-    throw IOException::currentStandardError();
+  size_t offset = 0;
+  while (offset < what.size()) {
+    auto bytes_written = ::write(_fd, what.data() + offset, what.size() - offset);
+    if (bytes_written < 0) [[unlikely]] {
+      throw IOException::currentStandardError();
+    }
+    offset += bytes_written;
   }
 }
 
@@ -196,3 +188,5 @@ void PosixFileStream::close() {
     _fd = -1;
   }
 }
+
+PosixFileStream::~PosixFileStream() { close(); }

@@ -12,6 +12,10 @@ namespace kl {
 // Inspired by System.IO.Stream: https://docs.microsoft.com/en-us/dotnet/api/system.io.stream?view=net-5.0
 class Stream {
 public:
+  Stream() = default;
+  Stream(const Stream&) = delete;
+  Stream(Stream&&) = delete;
+  Stream& operator=(const Stream&) = delete;
   virtual ~Stream();
 
 public: // capabilities
@@ -27,7 +31,6 @@ public: // properties
 public: // operations
   virtual size_t read(std::span<uint8_t> where);
   virtual void write(std::span<uint8_t> what);
-  virtual void write(const List<std::span<uint8_t>>& what);
 
   virtual void seek(size_t offset);
   virtual bool dataAvailable();
@@ -79,6 +82,7 @@ protected:
 
 public:
   PosixFileStream(int fd);
+  virtual ~PosixFileStream();
 
 public: // properties
   size_t size() override;
@@ -87,7 +91,6 @@ public: // properties
 public: // operations
   size_t read(std::span<uint8_t> where) override;
   void write(std::span<uint8_t> what) override;
-  void write(const List<std::span<uint8_t>>& what) override;
 
   void seek(size_t offset) override;
   bool dataAvailable() override;
