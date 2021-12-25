@@ -61,6 +61,33 @@ public:
   void setWriteTimeout(TimeSpan);
 };
 
+class SslClient final : public Stream {
+  struct SslClientImpl;
+  std::unique_ptr<SslClientImpl> _impl;
+
+public:
+  SslClient(const Text& server, uint16_t port);
+  virtual ~SslClient();
+
+public: // capabilities
+  bool canRead() override;
+  bool canWrite() override;
+  bool canSeek() override;
+  bool canTimeout() override;
+
+public: // operations
+  size_t read(std::span<uint8_t> where) override;
+  void write(std::span<uint8_t> what) override;
+
+  void close() override;
+
+public:
+  TimeSpan readTimeout();
+  void setReadTimeout(TimeSpan);
+  TimeSpan writeTimeout();
+  void setWriteTimeout(TimeSpan);
+};
+
 class TcpServer {
 public:
   TcpServer(uint16_t port);

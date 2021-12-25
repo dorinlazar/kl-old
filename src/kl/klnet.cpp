@@ -2,6 +2,7 @@
 #include <sys/socket.h>
 #include <netdb.h>
 #include <poll.h>
+#include <openssl/ssl.h>
 
 #include "klnet.h"
 #include "klexcept.h"
@@ -82,3 +83,36 @@ void TcpClient::setWriteTimeout(TimeSpan ts) {
   struct timeval timeout = ts.timeval();
   setsockopt(_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 }
+
+struct SSLHandler {
+  SSL* ctx;
+  static std::unique_ptr<SSLHandler> create(int fd) {
+    auto res = std::make_unique<SSLHandler>();
+    res->ctx = SSL_new(TLS_client_method());
+    SSL_set_fd(res->ctx, fd);
+  }
+};
+
+struct SslClient::SslClientImpl {
+  TcpClient client;
+  SslClientImpl(const Text& server, uint16_t port) : client(server, port) {}
+};
+
+SslClient::SslClient(const Text& server, uint16_t port)
+    : _impl(std::make_unique<SslClient::SslClientImpl>(server, port)) {}
+
+SslClient::~SslClient() {}
+
+bool SslClient::canRead() { return true; }
+bool SslClient::canWrite() { return true; }
+bool SslClient::canSeek() { return false; }
+bool SslClient::canTimeout() { return true; }
+size_t SslClient::read(std::span<uint8_t> where) { return 0; }
+void SslClient::write(std::span<uint8_t> what) {}
+
+void SslClient::close() {}
+
+TimeSpan SslClient::readTimeout() { return _impl->client.readTimeout(); }
+void SslClient::setReadTimeout(TimeSpan ts) { _impl->client.setReadTimeout(ts); }
+TimeSpan SslClient::writeTimeout() { return _impl->client.writeTimeout(); }
+void SslClient::setWriteTimeout(TimeSpan ts) { _impl->client.setWriteTimeout(ts); }

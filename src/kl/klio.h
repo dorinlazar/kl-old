@@ -98,6 +98,7 @@ public: // operations
   bool endOfStream() override;
 
   void close() override;
+  int fileDescriptor();
 };
 
 class FileStream final : public PosixFileStream {
