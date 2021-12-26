@@ -3,6 +3,7 @@
 #include <netdb.h>
 #include <poll.h>
 #include <openssl/ssl.h>
+#include <arpa/inet.h>
 
 #include "klnet.h"
 #include "klexcept.h"
@@ -22,20 +23,28 @@ static int connect_to_server(const Text& server, uint16_t port) {
   if (0 != callres) {
     throw IOException(gai_strerror(callres));
   }
-  Defer{[addresses]() { freeaddrinfo(addresses); }};
 
   addrinfo* candidate = addresses;
+  char buffer[128];
   for (auto p = addresses; p != nullptr; p = p->ai_next) {
     candidate = p;
+    ::inet_ntop(p->ai_family, p->ai_addr, buffer, 128);
+    // log("Received address info for ", server, ":", port, " => ", buffer, " addrelen:", p->ai_addrlen, " ",
+    //     (int)(((uint8_t*)(p->ai_addr))[0]), " ", (int)(((uint8_t*)(p->ai_addr))[1]), "|FAM", p->ai_family, "|PROTO",
+    //     p->ai_protocol);
     if (p->ai_family == AF_INET6) {
+      // log("AF_INET6 found");
       break;
     }
   }
 
-  int socketid = socket(candidate->ai_family, candidate->ai_socktype, IPPROTO_TCP);
-  if (0 != ::connect(socketid, candidate->ai_addr, candidate->ai_addrlen)) {
+  int socketid = socket(candidate->ai_family, candidate->ai_socktype, candidate->ai_protocol);
+  auto res = ::connect(socketid, candidate->ai_addr, candidate->ai_addrlen);
+  freeaddrinfo(addresses);
+  if (0 != res) {
     throw IOException::currentStandardError();
   }
+  log("Connected...");
   return socketid;
 }
 

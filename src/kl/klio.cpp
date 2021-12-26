@@ -190,3 +190,5 @@ void PosixFileStream::close() {
 }
 
 PosixFileStream::~PosixFileStream() { close(); }
+
+int PosixFileStream::fileDescriptor() { return _fd; }
