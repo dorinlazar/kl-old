@@ -84,18 +84,58 @@ void TcpClient::setWriteTimeout(TimeSpan ts) {
   setsockopt(_fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 }
 
-struct SSLHandler {
-  SSL* ctx;
-  static std::unique_ptr<SSLHandler> create(int fd) {
-    auto res = std::make_unique<SSLHandler>();
-    res->ctx = SSL_new(TLS_client_method());
-    SSL_set_fd(res->ctx, fd);
+class SSLHandler {
+  SSL_CTX* ctx;
+  SSLHandler() { ctx = SSL_CTX_new(SSLv23_method()); }
+  ~SSLHandler() {
+    SSL_CTX_free(ctx);
+    ctx = nullptr;
+  }
+
+  SSL* createSSL() { return SSL_new(ctx); }
+
+public:
+  static SSL* create() {
+    static SSLHandler libhandler;
+    return libhandler.createSSL();
   }
 };
 
 struct SslClient::SslClientImpl {
   TcpClient client;
-  SslClientImpl(const Text& server, uint16_t port) : client(server, port) {}
+  SSL* sslHandler;
+  SslClientImpl(const Text& server, uint16_t port) : client(server, port), sslHandler(SSLHandler::create()) {
+    SSL_set_fd(sslHandler, client.fileDescriptor());
+    auto res = SSL_connect(sslHandler);
+    if (res <= 0) {
+      throw IOException("SSL Connect error "_t + std::to_string(SSL_get_error(sslHandler, res)));
+    }
+  }
+
+  ~SslClientImpl() { close(); }
+
+  void close() {
+    if (sslHandler) {
+      SSL_shutdown(sslHandler);
+      sslHandler = nullptr;
+      client.close();
+    }
+  }
+
+  size_t read(std::span<uint8_t> where) {
+    auto res = SSL_read(sslHandler, where.data(), where.size());
+    if (res <= 0) {
+      throw IOException("SSL Read error "_t + std::to_string(SSL_get_error(sslHandler, res)));
+    }
+    return res;
+  }
+
+  void write(std::span<uint8_t> what) {
+    auto res = SSL_write(sslHandler, what.data(), what.size());
+    if (res <= 0) {
+      throw IOException("SSL Write error "_t + std::to_string(SSL_get_error(sslHandler, res)));
+    }
+  }
 };
 
 SslClient::SslClient(const Text& server, uint16_t port)
@@ -107,10 +147,10 @@ bool SslClient::canRead() { return true; }
 bool SslClient::canWrite() { return true; }
 bool SslClient::canSeek() { return false; }
 bool SslClient::canTimeout() { return true; }
-size_t SslClient::read(std::span<uint8_t> where) { return 0; }
-void SslClient::write(std::span<uint8_t> what) {}
+size_t SslClient::read(std::span<uint8_t> where) { return _impl->read(where); }
+void SslClient::write(std::span<uint8_t> what) { _impl->write(what); }
 
-void SslClient::close() {}
+void SslClient::close() { _impl->close(); }
 
 TimeSpan SslClient::readTimeout() { return _impl->client.readTimeout(); }
 void SslClient::setReadTimeout(TimeSpan ts) { _impl->client.setReadTimeout(ts); }
