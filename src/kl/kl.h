@@ -21,6 +21,7 @@ template <typename... Args>
 inline void err(const Args&... args) {
   _perform_log(std::cerr, args...);
 }
+
 } // namespace kl
 
 template <typename... Args>
