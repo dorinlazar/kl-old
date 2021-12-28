@@ -25,16 +25,18 @@ void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImple
 void Stream::close() {}
 bool Stream::endOfStream() { return false; }
 
-StreamReader::StreamReader(Stream* stream) : _stream(stream), _offset(0), _readSize(0) {}
+StreamReader::StreamReader(Stream* stream) : _stream(stream) {}
 Stream* StreamReader::stream() const { return _stream; }
 size_t StreamReader::read(std::span<uint8_t> where) {
-  if (_offset >= _readSize) {
+  if (_offset >= _readSize) { // skip the buffer
     return _stream->read(where);
   }
   auto bufsize = std::min(_readSize - _offset, where.size());
+  std::copy(_buffer.data() + _offset, _buffer.data() + _offset + bufsize, where.data());
   _offset += bufsize;
-  std::copy(_buffer.begin() + _offset, _buffer.begin() + _readSize, where.data());
   if (bufsize < where.size()) {
+    _offset = 0;
+    _readSize = 0;
     return bufsize + _stream->read(where.subspan(bufsize));
   }
   return bufsize;
@@ -42,33 +44,40 @@ size_t StreamReader::read(std::span<uint8_t> where) {
 
 Text StreamReader::readLine() {
   TextChain tc;
-  while (_offset < _readSize || !_stream->endOfStream()) {
+  while (true) {
     if (_offset >= _readSize) {
       _offset = 0;
       _readSize = _stream->read(_buffer);
+      if (_readSize == 0) {
+        break;
+      }
     }
     auto _startOffset = _offset;
     for (; _offset < _readSize; _offset++) {
       if (_buffer[_offset] == '\n') { // TODO identify newlines based on encoding.
-        tc.add(Text((const char*)_buffer.begin() + _startOffset, _offset - _startOffset));
+        tc.add(Text((const char*)_buffer.data() + _startOffset, _offset - _startOffset));
         _offset++;
         return tc.toText();
       }
     }
-    tc.add(Text((const char*)_buffer.begin() + _startOffset, _offset - _startOffset));
+    tc.add(Text((const char*)_buffer.data() + _startOffset, _offset - _startOffset));
   }
   return tc.toText();
 }
 
 Text StreamReader::readAll() {
   TextChain tc;
-  while (_offset < _readSize || !_stream->endOfStream()) {
+  while (true) {
     if (_offset >= _readSize) {
       _offset = 0;
       _readSize = _stream->read(_buffer);
+      if (_readSize == 0) {
+        break;
+      }
     }
-    tc.add(Text((const char*)_buffer.begin() + _offset, _readSize - _offset));
-    _offset = _readSize;
+    tc.add(Text((const char*)_buffer.data() + _offset, _readSize - _offset));
+    _readSize = 0;
+    _offset = 0;
   }
   return tc.toText();
 }

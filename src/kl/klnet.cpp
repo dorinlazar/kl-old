@@ -134,7 +134,11 @@ struct SslClient::SslClientImpl {
   size_t read(std::span<uint8_t> where) {
     auto res = SSL_read(sslHandler, where.data(), where.size());
     if (res <= 0) {
-      throw IOException("SSL Read error "_t + std::to_string(SSL_get_error(sslHandler, res)));
+      auto err = SSL_get_error(sslHandler, res);
+      if (err == SSL_ERROR_ZERO_RETURN) {
+        return 0;
+      }
+      throw IOException("SSL Read error "_t + std::to_string(err));
     }
     return res;
   }

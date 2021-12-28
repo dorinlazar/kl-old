@@ -40,14 +40,10 @@ public: // operations
   virtual void close();
 };
 
-const size_t BASE_BUFFER_SIZE = 4096;
-const size_t STREAM_BUFFER_SIZE =
-    BASE_BUFFER_SIZE - sizeof(std::array<uint8_t, 16>) + 16 - sizeof(Stream*) - 2 * sizeof(size_t);
-
 class StreamReader {
+  size_t _offset = 0, _readSize = 0;
+  std::array<uint8_t, 4096> _buffer;
   Stream* _stream;
-  size_t _offset, _readSize;
-  std::array<uint8_t, STREAM_BUFFER_SIZE> _buffer;
 
 public:
   StreamReader(Stream* stream);
@@ -57,8 +53,6 @@ public:
   Text readAll();
   bool endOfStream();
 };
-
-static_assert(sizeof(StreamReader) == BASE_BUFFER_SIZE);
 
 class StreamWriter {
   Stream* _stream;
