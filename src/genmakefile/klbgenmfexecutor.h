@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "modulecollection.h"
+#include "klb/modulecollection.h"
 
 class GenMakefileExecutionStrategy {
   ModuleCollection* _modules;
