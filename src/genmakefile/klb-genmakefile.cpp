@@ -32,7 +32,7 @@ int main(int argc, char** argv, char** envp) {
   }
 
   auto modules = mc->getTargetModules(targets.toList());
-  ExecutionStrategy sched(mc.get());
+  DefaultBuildStrategy sched(mc.get());
 
   for (const auto& mod: modules) {
     sched.build(mod);

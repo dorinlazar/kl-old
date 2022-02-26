@@ -92,12 +92,15 @@ public:
   }
 };
 
-ExecutionStrategy::ExecutionStrategy(ModuleCollection* coll) : _modules(coll) {
+BuildStrategy::BuildStrategy(ModuleCollection* coll) : _modules(coll) {}
+BuildStrategy::~BuildStrategy() {}
+
+DefaultBuildStrategy::DefaultBuildStrategy(ModuleCollection* coll) : BuildStrategy(coll) {
   impl = std::make_unique<ParallelExecutionStrategy>(coll);
 }
 
-ExecutionStrategy::~ExecutionStrategy() {}
-void ExecutionStrategy::build(Module* mod) { impl->add(ExecStepType::Build, mod); }
-void ExecutionStrategy::link(Module* mod) { impl->add(ExecStepType::Link, mod); }
-void ExecutionStrategy::run(Module* mod) { impl->add(ExecStepType::Run, mod); }
-bool ExecutionStrategy::execute() { return impl->execute(); }
+DefaultBuildStrategy::~DefaultBuildStrategy() {}
+void DefaultBuildStrategy::build(Module* mod) { impl->add(ExecStepType::Build, mod); }
+void DefaultBuildStrategy::link(Module* mod) { impl->add(ExecStepType::Link, mod); }
+void DefaultBuildStrategy::run(Module* mod) { impl->add(ExecStepType::Run, mod); }
+bool DefaultBuildStrategy::execute() { return impl->execute(); }
