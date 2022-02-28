@@ -17,12 +17,24 @@ public:
 struct ExecutionStrategyImpl;
 
 class DefaultBuildStrategy final : public BuildStrategy {
-  ModuleCollection* _modules;
   kl::uptr<ExecutionStrategyImpl> impl;
 
 public:
   DefaultBuildStrategy(ModuleCollection* coll);
   ~DefaultBuildStrategy();
+  void build(Module* module);
+  void link(Module* module);
+  void run(Module* module);
+  bool execute();
+};
+
+class GenMakefileStrategy final : public BuildStrategy {
+  kl::uptr<ExecutionStrategyImpl> impl;
+  std::ostream output;
+
+public:
+  GenMakefileStrategy(ModuleCollection* coll, kl::Text filename);
+  ~GenMakefileStrategy();
   void build(Module* module);
   void link(Module* module);
   void run(Module* module);
