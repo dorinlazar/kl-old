@@ -17,6 +17,7 @@ struct Module {
 public:
   bool hasSource() const;
   bool hasMain() const;
+  bool hasHeader() const;
   kl::Text headerPath() const;
   kl::Text sourcePath() const;
   kl::Text objectPath() const;

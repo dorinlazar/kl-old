@@ -104,3 +104,50 @@ void DefaultBuildStrategy::build(Module* mod) { impl->add(ExecStepType::Build, m
 void DefaultBuildStrategy::link(Module* mod) { impl->add(ExecStepType::Link, mod); }
 void DefaultBuildStrategy::run(Module* mod) { impl->add(ExecStepType::Run, mod); }
 bool DefaultBuildStrategy::execute() { return impl->execute(); }
+
+GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text filename)
+    : BuildStrategy(coll), _output(filename.toString(), std::ios::trunc) {
+  _output << ".PHONY: executables makedirs\n";
+  _output << "all: makedirs executables\n";
+}
+
+GenMakefileStrategy::~GenMakefileStrategy() {
+  _output << "executables: " << kl::TextChain(_build_targets).join(' ') << "\n";
+  _output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ') << "\n";
+}
+
+void GenMakefileStrategy::build(Module* mod) {
+  Gcc toolchain;
+  _build_dirs.add(mod->buildFolder());
+  auto deps = mod->requiredModules()
+                  .select([](Module* pmod) { return pmod->hasHeader(); })
+                  .transform<kl::Text>([](Module* ptr) { return ptr->headerPath(); });
+  _output << mod->objectPath() << ": " << mod->sourcePath() << " " << kl::TextChain(deps).join(' ') << "\n\t";
+  auto cmdLine = toolchain.buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
+                                        CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
+  _output << kl::TextChain(cmdLine).join(' ') << "\n";
+}
+
+kl::List<kl::Text> getDepObjects(Module* mod) {
+  kl::Set<kl::Text> objects;
+  objects.add(mod->objectPath());
+  for (const auto& m: mod->requiredModules()) {
+    if (m->hasSource()) {
+      objects.add(m->objectPath());
+    }
+  }
+  return objects.toList();
+}
+
+void GenMakefileStrategy::link(Module* mod) {
+  Gcc toolchain;
+  auto objects = getDepObjects(mod);
+  auto cmdLine =
+      toolchain.linkCmdLine(objects, mod->executablePath(), CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
+  _output << mod->executablePath() << ": " << kl::TextChain(objects).join(' ') << "\n\t"
+          << kl::TextChain(cmdLine).join(' ') << "\n";
+  _build_targets.add(mod->executablePath());
+}
+
+void GenMakefileStrategy::run(Module*) {}
+bool GenMakefileStrategy::execute() { return true; }

@@ -101,7 +101,7 @@ public:
   }
   bool all(std::function<bool(const T&)> op) const { return std::all_of(_vec.begin(), _vec.end(), op); }
   bool any(std::function<bool(const T&)> op) const { return std::any_of(_vec.begin(), _vec.end(), op); }
-  List<T> select(std::function<bool(const T&)> op) {
+  List<T> select(std::function<bool(const T&)> op) const {
     List<T> res;
     for (const auto& item: _vec) {
       if (op(item)) {

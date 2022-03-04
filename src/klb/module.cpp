@@ -236,6 +236,7 @@ kl::Text Module::executablePath() const {
 kl::Text Module::buildFolder() const { return d->buildPath.folderName(); }
 
 bool Module::hasSource() const { return d->source.has_value(); }
+bool Module::hasHeader() const { return d->header.has_value(); }
 
 const kl::Text& Module::name() const { return d->name; }
 bool Module::hasMain() const { return d->source.has_value() && d->source->hasMain; }

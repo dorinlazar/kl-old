@@ -16,23 +16,12 @@ int main(int argc, char** argv, char** envp) {
   auto fscache = std::make_unique<FSCache>(CMD.sourceFolder, CMD.buildFolder);
 
   auto mc = discoverModules(fscache.get());
-
-  kl::Set<kl::Text> targets;
-
-  for (const auto& target: CMD.targets) {
-    kl::FilePath fp(target);
-    // TODO implement a FilePath::startsWith that does this per path component
-    if (target.startsWith(CMD.buildFolder.fullPath())) {
-      fp = fp.remove_base_folder(CMD.buildFolder.folderDepth());
-    } else if (target.startsWith(CMD.sourceFolder.fullPath())) {
-      fp = fp.remove_base_folder(CMD.sourceFolder.folderDepth());
-    }
-
-    targets.add(mc->getModuleNames(fp.fullPath()));
+  auto modules = mc->getTargetModules({});
+  kl::Text target_makefile = "Makefile";
+  if (CMD.targets.size() > 0) {
+    target_makefile = CMD.targets[0];
   }
-
-  auto modules = mc->getTargetModules(targets.toList());
-  DefaultBuildStrategy sched(mc.get());
+  GenMakefileStrategy sched(mc.get(), target_makefile);
 
   for (const auto& mod: modules) {
     sched.build(mod);
@@ -41,14 +30,6 @@ int main(int argc, char** argv, char** envp) {
   for (const auto& mod: modules) {
     if (mod->hasMain()) {
       sched.link(mod);
-    }
-  }
-
-  if (CMD.runMode) {
-    for (const auto& mod: modules) {
-      if (mod->hasMain()) {
-        sched.run(mod);
-      }
     }
   }
 

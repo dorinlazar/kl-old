@@ -1,6 +1,7 @@
 #pragma once
 
 #include "modulecollection.h"
+#include <fstream>
 
 class BuildStrategy {
   ModuleCollection* _modules;
@@ -29,8 +30,9 @@ public:
 };
 
 class GenMakefileStrategy final : public BuildStrategy {
-  kl::uptr<ExecutionStrategyImpl> impl;
-  std::ostream output;
+  std::ofstream _output;
+  kl::List<kl::Text> _build_targets;
+  kl::Set<kl::Text> _build_dirs;
 
 public:
   GenMakefileStrategy(ModuleCollection* coll, kl::Text filename);
