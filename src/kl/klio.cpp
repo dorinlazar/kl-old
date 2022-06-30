@@ -112,6 +112,9 @@ static int openFile(const Text& filename, FileOpenMode mode) {
   case FileOpenMode::AppendRW: flags = O_RDWR | O_APPEND | O_CREAT; break;
   case FileOpenMode::TruncateRW: flags = O_RDWR | O_TRUNC | O_CREAT; break;
   }
+  if (flags & O_CREAT) {
+    return ::open(std::string(filename.toView()).c_str(), flags, 0600);
+  }
   return ::open(std::string(filename.toView()).c_str(), flags);
 }
 
