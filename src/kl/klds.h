@@ -1,7 +1,7 @@
 #pragma once
 
-#include <unordered_map>
-#include <unordered_set>
+#include <map>
+#include <set>
 #include <queue>
 #include <exception>
 #include <stdexcept>
@@ -164,7 +164,7 @@ public:
 
 template <typename K, typename V>
 class Dict {
-  std::unordered_map<K, V> _map;
+  std::map<K, V> _map;
 
 public:
   Dict() {}
@@ -247,7 +247,7 @@ public:
 
 template <typename T>
 class Set {
-  std::unordered_set<T> _data;
+  std::set<T> _data;
 
 public:
   Set() {}
