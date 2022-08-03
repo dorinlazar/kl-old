@@ -34,3 +34,5 @@
 build/
 bld/
 *.tst
+.vscode/settings.json
+
