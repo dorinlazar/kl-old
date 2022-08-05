@@ -112,8 +112,8 @@ GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text filena
 }
 
 GenMakefileStrategy::~GenMakefileStrategy() {
-  _output << "executables: " << kl::TextChain(_build_targets).join(' ') << "\n";
-  _output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ') << "\n";
+  _output << "executables: " << kl::TextChain(_build_targets).join(' ').toView() << "\n";
+  _output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ').toView() << "\n";
 }
 
 void GenMakefileStrategy::build(Module* mod) {
@@ -122,10 +122,11 @@ void GenMakefileStrategy::build(Module* mod) {
   auto deps = mod->requiredModules()
                   .select([](Module* pmod) { return pmod->hasHeader(); })
                   .transform<kl::Text>([](Module* ptr) { return ptr->headerPath(); });
-  _output << mod->objectPath() << ": " << mod->sourcePath() << " " << kl::TextChain(deps).join(' ') << "\n\t";
+  _output << mod->objectPath().toView() << ": " << mod->sourcePath().toView() << " "
+          << kl::TextChain(deps).join(' ').toView() << "\n\t";
   auto cmdLine = toolchain.buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
                                         CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
-  _output << kl::TextChain(cmdLine).join(' ') << "\n";
+  _output << kl::TextChain(cmdLine).join(' ').toView() << "\n";
 }
 
 kl::List<kl::Text> getDepObjects(Module* mod) {
@@ -144,8 +145,8 @@ void GenMakefileStrategy::link(Module* mod) {
   auto objects = getDepObjects(mod);
   auto cmdLine =
       toolchain.linkCmdLine(objects, mod->executablePath(), CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
-  _output << mod->executablePath() << ": " << kl::TextChain(objects).join(' ') << "\n\t"
-          << kl::TextChain(cmdLine).join(' ') << "\n";
+  _output << mod->executablePath().toView() << ": " << kl::TextChain(objects).join(' ').toView() << "\n\t"
+          << kl::TextChain(cmdLine).join(' ').toView() << "\n";
   _build_targets.add(mod->executablePath());
 }
 

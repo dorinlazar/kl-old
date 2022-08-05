@@ -3,6 +3,7 @@
 #include <functional>
 #include <source_location>
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 
 namespace kl {
 template <typename... Args>
@@ -24,6 +25,13 @@ template <typename... Args>
   std::cout.flush();
   std::cerr.flush();
   std::abort();
+}
+
+inline void CHECK(bool value) {
+  if (value) [[likely]] {
+    return;
+  }
+  FATAL("");
 }
 
 template <typename... Ts>

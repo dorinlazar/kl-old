@@ -139,7 +139,7 @@ bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
       auto node = _executionQueue.pop();
       auto monitorNode = std::make_shared<ExecutionMonitorNode>(node);
       if (verbose) {
-        kl::log("> {}", node->params);
+        kl::log("> [{}]", fmt::join(node->params, ","));
       }
       monitorNode->process.spawn();
       monitor.add(monitorNode->process.pid(), std::move(monitorNode));

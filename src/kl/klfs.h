@@ -92,11 +92,6 @@ public:
   const kl::FilePath& fullPath() const;
   const kl::List<kl::FileSystemEntryInfo>& files() const;
   bool hasFile(const kl::Text& file) const;
-  std::ostream& write(std::ostream& os) const;
 };
 
 } // namespace kl
-
-std::ostream& operator<<(std::ostream& os, const kl::FilePath& p);
-inline std::ostream& operator<<(std::ostream& os, const kl::ptr<kl::Folder> l);
-inline std::ostream& operator<<(std::ostream& os, const kl::Folder& l);

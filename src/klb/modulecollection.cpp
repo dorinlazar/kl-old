@@ -69,8 +69,8 @@ kl::FilePath ModuleCollection::resolvePath(const kl::Text& name, Module* origin)
   auto path = CMD.sourceFolder.add(name);
   if (!_cache->fileExists(path)) {
     path = kl::FilePath(CMD.sourceFolder.add(origin->name()).folderName()).add(name);
-    CHECK(_cache->fileExists(path), "Unable to locate dependency", name, "included in module", origin->name(),
-          ". Tried:", CMD.sourceFolder.add(name), path);
+    CHECK(_cache->fileExists(path), "Unable to locate dependency {} included in module {}. Tried: {} {}", name,
+          origin->name(), CMD.sourceFolder.add(name).fullPath(), path.fullPath());
   }
   return path.remove_base_folder(CMD.sourceFolder.folderDepth());
 }
@@ -89,7 +89,7 @@ kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& t
       kl::Text moduleName = fp.replace_extension(""_t).fullPath();
       auto mod = modules.get(moduleName);
       if (!mod) [[unlikely]] {
-        FATAL("Unable to identify target", file);
+        FATAL("Unable to identify target {}", file);
       }
       auto ext = fp.extension();
       if (ext == "o"_t) {
@@ -97,7 +97,7 @@ kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& t
       } else if (mod->hasMain() && (ext == "exe"_t || ext == ""_t || ext.startsWith("c"))) {
         requiredModules.add(mod->requiredModules());
       } else {
-        FATAL("Don't know how to build", file);
+        FATAL("Don't know how to build {}", file);
       }
     }
   }

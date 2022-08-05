@@ -333,19 +333,19 @@ bool Folder::hasFile(const kl::Text& file) const {
   return _files.any([file](const auto& f) { return f.path.fileName() == file; });
 }
 
-std::ostream& Folder::write(std::ostream& os) const {
-  os << "Folder: " << _name << " with ";
-  if (_parent) {
-    os << "parent: " << _parent->_name;
-  } else {
-    os << "no parent";
-  }
-  os << " FullPath: " << _path;
-  os << "\nFolders: " << _folders.keys();
-  os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileSystemEntryInfo& fi) { return fi.path.fileName(); });
-  return os;
-}
+// std::ostream& Folder::write(std::ostream& os) const {
+//   os << "Folder: " << _name << " with ";
+//   if (_parent) {
+//     os << "parent: " << _parent->_name;
+//   } else {
+//     os << "no parent";
+//   }
+//   os << " FullPath: " << _path;
+//   os << "\nFolders: " << _folders.keys();
+//   os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileSystemEntryInfo& fi) { return fi.path.fileName();
+//   }); return os;
+// }
 
-std::ostream& operator<<(std::ostream& os, const kl::FilePath& p) { return os << p.fullPath(); }
-inline std::ostream& operator<<(std::ostream& os, const kl::ptr<kl::Folder> l) { return l->write(os); }
-inline std::ostream& operator<<(std::ostream& os, const kl::Folder& l) { return l.write(os); }
+// std::ostream& operator<<(std::ostream& os, const kl::FilePath& p) { return os << p.fullPath(); }
+// inline std::ostream& operator<<(std::ostream& os, const kl::ptr<kl::Folder> l) { return l->write(os); }
+// inline std::ostream& operator<<(std::ostream& os, const kl::Folder& l) { return l.write(os); }

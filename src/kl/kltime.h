@@ -103,7 +103,59 @@ public:
 
 } // namespace kl
 
-#include <ostream>
+template <>
+struct fmt::formatter<kl::TimeSpan> {
+  constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && *it != '}') {
+      throw fmt::format_error("invalid format");
+    }
+    return it;
+  }
+  template <typename FormatContext>
+  auto format(const kl::TimeSpan& ts, FormatContext& ctx) const -> decltype(ctx.out()) {
+    std::string s;
+    kl::TimeSpan t = ts;
+    if (t.ticks < 0) {
+      s = "-";
+      t.ticks = -t.ticks;
+    }
+    uint32_t days = t.days();
+    uint32_t hours = t.hours();
+    uint32_t minutes = t.minutes();
+    uint32_t seconds = t.seconds();
+    uint32_t millis = t.milliseconds();
 
-std::ostream& operator<<(std::ostream& os, kl::DateTime t);
-std::ostream& operator<<(std::ostream& os, kl::TimeSpan t);
+    if (days > 0) {
+      return fmt::format_to(ctx.out(), "{}{}d {:0>2}:{:0>2}:{:0>2}.{:0>3}", s, days, hours, minutes, seconds, millis);
+    }
+
+    if (hours > 0) {
+      return fmt::format_to(ctx.out(), "{}{:0>2}:{:0>2}:{:0>2}.{:0>3}", s, hours, minutes, seconds, millis);
+    }
+
+    if (minutes > 0) {
+      return fmt::format_to(ctx.out(), "{}{:0>2}:{:0>2}.{:0>3}", s, minutes, seconds, millis);
+    }
+
+    return fmt::format_to(ctx.out(), "{}{:0>2}.{:0>3}", s, seconds, millis);
+  }
+};
+
+template <>
+struct fmt::formatter<kl::DateTime> {
+  constexpr auto parse(format_parse_context& ctx) -> decltype(ctx.begin()) {
+    auto it = ctx.begin(), end = ctx.end();
+    if (it != end && *it != '}') {
+      throw fmt::format_error("invalid format");
+    }
+    return it;
+  }
+  template <typename FormatContext>
+  auto format(const kl::DateTime& dt, FormatContext& ctx) const -> decltype(ctx.out()) {
+    auto d = dt.date();
+    auto t = dt.timeOfDay();
+    return fmt::format_to(ctx.out(), "{:0>4}.{:0>2}.{:0>2}T{:0>2}:{:0>2}:{:0>2}.{:0>3}Z", d.year, d.month, d.day,
+                          t.hour, t.min, t.sec, t.nanos / 1'000'000);
+  }
+};
