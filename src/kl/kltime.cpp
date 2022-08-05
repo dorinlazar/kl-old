@@ -43,8 +43,6 @@ Date DateTime::date() const {
   auto fh = std::lldiv(d, TimeLimits::DAYS_IN_400_YEARS);
   auto it = std::lower_bound(DeltaMonths.begin(), DeltaMonths.end(), fh.rem + 1) - 1;
   auto mo = std::div((uint32_t)std::distance(DeltaMonths.begin(), it), 12);
-  // kl::log("days:", d, "fh.quot", fh.quot, "fh.rem:", fh.rem, "iterator at",
-  //         (int32_t)std::distance(s_DateHelper.DeltaMonths.begin(), it), "value", *it);
   return Date{.year = (uint32_t)fh.quot * 400 + mo.quot + 1,
               .month = (uint32_t)mo.rem + 1,
               .day = 1 + (uint32_t)fh.rem - *it};

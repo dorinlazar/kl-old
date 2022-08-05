@@ -29,11 +29,7 @@ static int connect_to_server(const Text& server, uint16_t port) {
   for (auto p = addresses; p != nullptr; p = p->ai_next) {
     candidate = p;
     ::inet_ntop(p->ai_family, p->ai_addr, buffer, 128);
-    // log("Received address info for ", server, ":", port, " => ", buffer, " addrelen:", p->ai_addrlen, " ",
-    //     (int)(((uint8_t*)(p->ai_addr))[0]), " ", (int)(((uint8_t*)(p->ai_addr))[1]), "|FAM", p->ai_family, "|PROTO",
-    //     p->ai_protocol);
     if (p->ai_family == AF_INET6) {
-      // log("AF_INET6 found");
       break;
     }
   }

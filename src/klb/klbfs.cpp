@@ -64,7 +64,7 @@ kl::List<Folder*> FSCache::getAllBuildFolders() const {
 kl::ptr<Folder> _readFolder(const kl::FilePath& folderName, kl::ptr<Folder> parent) {
   if (!kl::FileSystem::isDirectory(folderName.fullPath())) {
     if (CMD.verbose) {
-      kl::log(folderName, "folder doesn't exist. Skipping");
+      kl::log("{} folder doesn't exist. Skipping", folderName);
     }
     return nullptr;
   }

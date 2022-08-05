@@ -71,12 +71,12 @@ void Module::readDirectRequirements() {
 void Module::_scanHeader() {
   if (!d->header.has_value()) {
     if (CMD.verbose) {
-      kl::log("For module", d->name, "we have no header");
+      kl::log("For module {} we have no header", d->name);
     }
     return;
   }
   if (CMD.verbose) {
-    kl::log("For module", d->name, "header is", headerPath());
+    kl::log("For module {} header is {}", d->name, headerPath());
   }
 
   kl::SourceCodeScanner scanner(headerPath());
@@ -89,12 +89,12 @@ void Module::_scanHeader() {
 void Module::_scanSource() {
   if (!d->source.has_value()) {
     if (CMD.verbose) {
-      kl::log("For module", d->name, "we have no source");
+      kl::log("For module {} we have no source", d->name);
     }
     return;
   }
   if (CMD.verbose) {
-    kl::log("For module", d->name, "source is", sourcePath());
+    kl::log("For module {} source is {}", d->name, sourcePath());
   }
 
   kl::SourceCodeScanner scanner(sourcePath());
@@ -120,8 +120,8 @@ void Module::updateHeaderDependencies() {
     auto deph = processingQueue.pop();
     resolved.add(deph);
     auto mod = d->parent->getModule(""_t, deph);
-    CHECK(mod != nullptr, "Sanity check failed: search for module for", deph, "failed. ");
-    CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
+    CHECK(mod != nullptr, "Sanity check failed: search for module for {} failed.", deph);
+    CHECK(mod->d->header.has_value(), "Sanity check failed: {} doesn't have a header?", mod->name());
     if (mod->d->header->recursiveLocalHeaderDeps.size() > 0) {
       resolved.add(mod->d->header->recursiveLocalHeaderDeps);
     } else {
@@ -148,8 +148,8 @@ void Module::updateModuleDependencies() {
     kl::Set<kl::Text> depHeaders;
     for (const auto& inc: d->source->localIncludes) {
       auto mod = d->parent->getModule(inc);
-      CHECK(mod != nullptr, "Sanity check failed: search for module for", inc, "failed. ");
-      CHECK(mod->d->header.has_value(), "Sanity check failed:", mod->name(), "doesn't have a header?");
+      CHECK(mod != nullptr, "Sanity check failed: search for module for {} failed.", inc);
+      CHECK(mod->d->header.has_value(), "Sanity check failed: {} doesn't have a header?", mod->name());
       depHeaders.add(mod->d->header->recursiveLocalHeaderDeps);
       depSysHeaders.add(mod->d->header->recursiveSystemHeaderDeps);
     }

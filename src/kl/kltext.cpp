@@ -455,8 +455,6 @@ Text TextChain::toText() const {
   return Text::FromBuffer(memblock, 0, _length);
 }
 
-std::ostream& std::operator<<(std::ostream& os, const kl::Text& t) { return os << t.toView(); }
-
 TextChain operator+(const Text& t, const char* p) {
   TextChain tc;
   tc.add(t);

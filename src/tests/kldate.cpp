@@ -55,7 +55,7 @@ void check_year(uint32_t year) {
       CHECKST(t.nanos == 123'456'700);
     }
   }
-  kl::log("Testing year", year, "leap:", delta_leap, "[OK]");
+  kl::log("Testing year {} leap: {} [OK]", year, delta_leap);
 }
 
 void test_date_time() {

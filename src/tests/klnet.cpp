@@ -14,7 +14,7 @@ int main() {
     std::span<uint8_t> bufspan(buffer.data(), buffer.size());
     while (true) {
       auto line = reader.readLine();
-      log(line[0], line);
+      log("{} -- {}", line[0], line);
       if (line.trim().size() == 0) {
         break;
       }

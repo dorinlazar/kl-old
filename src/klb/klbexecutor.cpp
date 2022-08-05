@@ -62,7 +62,7 @@ public:
         auto node = _horde.addNode(cmdLine, depNodes);
         _execNodes.add(mod->executablePath(), node);
       } else if (CMD.verbose) {
-        kl::log("Module", mod->name(), "requires no linking");
+        kl::log("Module {} requires no linking");
       }
     } else if (t == ExecStepType::Run) {
       auto exe = mod->executablePath();

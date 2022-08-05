@@ -79,15 +79,9 @@ public:
     if (_pid) {
       int s = 0;
       switch (sig) {
-      case Signal::Interrupt:
-        s = SIGINT;
-        break;
-      case Signal::Terminate:
-        s = SIGTERM;
-        break;
-      case Signal::Kill:
-        s = SIGKILL;
-        break;
+      case Signal::Interrupt: s = SIGINT; break;
+      case Signal::Terminate: s = SIGTERM; break;
+      case Signal::Kill: s = SIGKILL; break;
       }
       ::kill(_pid, s);
     }
@@ -145,7 +139,7 @@ bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
       auto node = _executionQueue.pop();
       auto monitorNode = std::make_shared<ExecutionMonitorNode>(node);
       if (verbose) {
-        kl::log("> ", node->params);
+        kl::log("> {}", node->params);
       }
       monitorNode->process.spawn();
       monitor.add(monitorNode->process.pid(), std::move(monitorNode));

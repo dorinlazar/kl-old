@@ -10,6 +10,7 @@
 #include <string_view>
 #include <vector>
 #include <span>
+#include <fmt/format.h>
 
 namespace kl {
 
@@ -151,9 +152,15 @@ struct hash<kl::Text> {
   std::size_t operator()(const kl::Text& s) const noexcept;
 };
 
-ostream& operator<<(ostream& os, const kl::Text& t);
-
 } // namespace std
+
+template <>
+struct fmt::formatter<kl::Text> : public fmt::formatter<std::string_view> {
+  template <typename FormatContext>
+  auto format(kl::Text c, FormatContext& ctx) const {
+    return fmt::formatter<std::string_view>::format(c.toView(), ctx);
+  }
+};
 
 kl::TextChain operator+(const kl::Text&, const char*);
 kl::TextChain operator+(const kl::Text&, const kl::Text&);

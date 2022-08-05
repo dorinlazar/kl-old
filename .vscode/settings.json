@@ -4,7 +4,13 @@
     "string_view": "cpp",
     "initializer_list": "cpp",
     "span": "cpp",
-    "utility": "cpp"
+    "utility": "cpp",
+    "*.tcc": "cpp",
+    "vector": "cpp",
+    "memory": "cpp",
+    "optional": "cpp",
+    "system_error": "cpp",
+    "variant": "cpp"
   },
   "C_Cpp.clang_format_path": "/usr/bin/clang-format",
   "C_Cpp.default.cppStandard": "c++20",
