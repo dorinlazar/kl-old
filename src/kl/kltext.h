@@ -141,6 +141,86 @@ public:
   kl::Text join(char splitchar = '\0');
 };
 
+class TextView {
+public:
+  TextView(std::string_view v) : m_view(v) {}
+  TextView(const TextView&) = default;
+  TextView(TextView&&) = default;
+  TextView& operator=(const TextView&) = default;
+  TextView& operator=(TextView&&) = default;
+  ~TextView() = default;
+
+public:
+  operator std::string_view() const;
+  TextView trim() const;
+  TextView trimLeft() const;
+  TextView trimRight() const;
+
+  bool startsWith(const TextView& tv) const;
+  bool startsWith(std::string_view) const;
+  bool endsWith(const TextView& tv) const;
+
+  char operator[](uint32_t index) const;
+
+  uint32_t size() const;
+  const char* begin() const;
+  const char* end() const;
+
+  std::strong_ordering operator<=>(const Text&) const;
+  std::strong_ordering operator<=>(const char*) const;
+  std::strong_ordering operator<=>(const std::string&) const;
+
+  bool operator==(const Text&) const;
+  bool operator==(const char*) const;
+  bool operator==(const std::string&) const;
+
+  std::string toString() const;
+  std::string_view toView() const;
+  std::span<uint8_t> toRawData() const;
+  int64_t toInt() const;
+
+  bool contains(char c) const;
+  Text skip(const Text& skippables) const;
+  Text skip(uint32_t n) const;
+  Text skipBOM() const;
+
+  // substring position based. The string will contain the character from ending position too.
+  Text subpos(uint32_t start, uint32_t end) const;
+
+  // substring length based. The return value will have a string of at most <len> characters
+  Text sublen(uint32_t start, uint32_t len) const;
+
+  // occurence is one based - so first occurence is 1;
+  std::optional<uint32_t> pos(char c, uint32_t occurence = 1) const;
+  std::optional<uint32_t> pos(Text t, uint32_t occurence = 1) const;
+  std::optional<uint32_t> lastPos(char c) const;
+
+  std::pair<Text, Text> splitPos(int32_t where) const;
+  std::pair<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
+  std::pair<Text, Text> splitNextLine() const;
+  List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
+  List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+  List<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+
+  // returns a value that skips the starting text
+  std::optional<Text> expect(const Text& t) const;
+  // returns a value that skips the whitespace in the text
+  std::optional<Text> expectws(const Text& t) const;
+
+  // returns text after <indentLevel> whitespaces, or empty;
+  std::optional<Text> skipIndent(uint32_t indentLevel) const;
+  // returns whitespace indent level
+  uint32_t getIndent() const;
+
+  // fills a C buffer, preallocated with bufsize bytes;
+  void fill_c_buffer(char* dest, uint32_t bufsize) const;
+  // how many times the character c appears in the text
+  uint32_t count(char c) const;
+
+private:
+  std::string_view m_view;
+};
+
 } // namespace kl
 
 kl::Text operator"" _t(const char* p, size_t s);

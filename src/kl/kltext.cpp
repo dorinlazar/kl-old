@@ -1,6 +1,5 @@
 #include "kltext.h"
-using namespace kl;
-
+namespace kl {
 std::shared_ptr<char> Text::s_null_data = std::make_shared<char>(0);
 
 Text::Text(char c) {
@@ -455,34 +454,6 @@ Text TextChain::toText() const {
   return Text::FromBuffer(memblock, 0, _length);
 }
 
-TextChain operator+(const Text& t, const char* p) {
-  TextChain tc;
-  tc.add(t);
-  tc.add(p);
-  return tc;
-}
-
-TextChain operator+(const Text& t1, const Text& t2) {
-  TextChain tc;
-  tc.add(t1);
-  tc.add(t2);
-  return tc;
-}
-
-TextChain operator+(const TextChain& t1, const Text& t2) {
-  TextChain tc;
-  tc.add(t1);
-  tc.add(t2);
-  return tc;
-}
-
-TextChain operator+(const TextChain& t, const char* p) {
-  TextChain tc;
-  tc.add(t);
-  tc.add(p);
-  return tc;
-}
-
 kl::Text TextChain::join(char splitchar) {
   if (_length == 0) {
     return ""_t;
@@ -603,8 +574,6 @@ uint32_t Text::count(char t) const {
   return count;
 }
 
-kl::Text operator"" _t(const char* p, size_t s) { return kl::Text(p, s); }
-
 void TextChain::_updateLength() {
   _length = 0;
   for (const auto& t: _chain) {
@@ -642,10 +611,6 @@ void TextChain::clear() {
   _length = 0;
 }
 
-std::size_t std::hash<kl::Text>::operator()(const kl::Text& s) const noexcept {
-  return std::hash<std::string_view>{}(s.toView());
-}
-
 std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), (uint8_t*)end()}; }
 Text Text::skipBOM() const {
   if (size() >= 3) {
@@ -656,3 +621,41 @@ Text Text::skipBOM() const {
   }
   return *this;
 }
+
+TextView::operator std::string_view() const { return m_view; }
+
+} // namespace kl
+
+std::size_t std::hash<kl::Text>::operator()(const kl::Text& s) const noexcept {
+  return std::hash<std::string_view>{}(s.toView());
+}
+
+kl::TextChain operator+(const kl::Text& t, const char* p) {
+  kl::TextChain tc;
+  tc.add(t);
+  tc.add(p);
+  return tc;
+}
+
+kl::TextChain operator+(const kl::Text& t1, const kl::Text& t2) {
+  kl::TextChain tc;
+  tc.add(t1);
+  tc.add(t2);
+  return tc;
+}
+
+kl::TextChain operator+(const kl::TextChain& t1, const kl::Text& t2) {
+  kl::TextChain tc;
+  tc.add(t1);
+  tc.add(t2);
+  return tc;
+}
+
+kl::TextChain operator+(const kl::TextChain& t, const char* p) {
+  kl::TextChain tc;
+  tc.add(t);
+  tc.add(p);
+  return tc;
+}
+
+kl::Text operator"" _t(const char* p, size_t s) { return kl::Text(p, s); }
