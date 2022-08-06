@@ -1,4 +1,8 @@
 #include "kltext.h"
+#include <stdexcept>
+
+using namespace std::literals;
+
 namespace kl {
 std::shared_ptr<char> Text::s_null_data = std::make_shared<char>(0);
 
@@ -622,7 +626,103 @@ Text Text::skipBOM() const {
   return *this;
 }
 
+TextView::TextView(std::string_view v) : m_view(v) {}
 TextView::operator std::string_view() const { return m_view; }
+
+TextView TextView::trim() const { return trimLeft().trimRight(); }
+TextView TextView::trimLeft() const { return skip(" \t\n\r"sv); }
+TextView TextView::trimRight() const {
+  auto v = m_view;
+  v.remove_suffix(v.size() - v.find_last_not_of(" \t\n\r"));
+  return v;
+}
+
+bool TextView::startsWith(const TextView& tv) const { return m_view.starts_with(tv.m_view); }
+bool TextView::endsWith(const TextView& tv) const { return m_view.ends_with(tv.m_view); }
+
+char TextView::operator[](size_t index) const {
+  if (index < size()) [[unlikely]] {
+    throw std::out_of_range(fmt::format("Requested index {} in a {} long TextView", index, size()));
+  }
+  return m_view[index];
+}
+
+size_t TextView::size() const { return m_view.size(); }
+const char* TextView::begin() const { return m_view.begin(); }
+const char* TextView::end() const { return m_view.end(); }
+
+std::strong_ordering TextView::operator<=>(const TextView& v) const { return m_view <=> v.m_view; }
+
+bool TextView::operator==(const TextView& v) const { return m_view == v.m_view; }
+
+std::string_view TextView::view() const { return m_view; }
+
+TextView TextView::skip(const TextView& skippables) const {
+  auto v = m_view;
+  v.remove_prefix(std::min(v.find_first_not_of(skippables.m_view), v.size()));
+  return v;
+}
+
+TextView TextView::skip(size_t size) const { return m_view.substr(size); }
+TextView TextView::skipBOM() const {
+  if (size() >= 3) {
+    auto buf = begin();
+    if (buf[0] == (char)0xEF && buf[1] == (char)0xBB && buf[2] == (char)0xBF) {
+      return skip(3);
+    }
+  }
+  return *this;
+}
+
+// substring position based. The string will contain the character from ending position too.
+TextView TextView::subpos(size_t start, size_t end) const { return m_view.substr(start, std::max(end, start) - start); }
+
+// substring length based. The return value will have a string of at most <len> characters
+TextView TextView::sublen(size_t start, size_t len) const { return m_view.substr(start, len); }
+
+std::optional<size_t> TextView::pos(char c, uint32_t occurence) const {
+  if (occurence == 0) {
+    return std::nullopt;
+  }
+  size_t pos = 0;
+  while (pos < m_view.size()) {
+    pos = m_view.find_first_of(c, pos);
+    if (pos != std::string_view::npos) {
+      occurence--;
+      if (occurence == 0) {
+        return pos;
+      }
+    }
+  }
+
+  return std::nullopt;
+}
+
+std::optional<size_t> TextView::pos(const TextView& t, uint32_t occurence) const {
+  if (occurence == 0) {
+    return std::nullopt;
+  }
+  size_t pos = 0;
+  while (pos < m_view.size()) {
+    pos = m_view.find(t.m_view, pos);
+    if (pos < m_view.size()) {
+      occurence--;
+      if (occurence == 0) {
+        return pos;
+      }
+    }
+  }
+
+  return std::nullopt;
+}
+
+std::optional<size_t> TextView::lastPos(char c) const {
+  auto res = m_view.find_last_of(c);
+  if (res != std::string_view::npos) {
+    return res;
+  }
+  return std::nullopt;
+}
 
 } // namespace kl
 

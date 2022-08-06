@@ -143,7 +143,8 @@ public:
 
 class TextView {
 public:
-  TextView(std::string_view v) : m_view(v) {}
+  TextView() = default;
+  TextView(std::string_view v);
   TextView(const TextView&) = default;
   TextView(TextView&&) = default;
   TextView& operator=(const TextView&) = default;
@@ -157,43 +158,34 @@ public:
   TextView trimRight() const;
 
   bool startsWith(const TextView& tv) const;
-  bool startsWith(std::string_view) const;
   bool endsWith(const TextView& tv) const;
 
-  char operator[](uint32_t index) const;
+  char operator[](size_t index) const;
 
-  uint32_t size() const;
+  size_t size() const;
   const char* begin() const;
   const char* end() const;
 
-  std::strong_ordering operator<=>(const Text&) const;
-  std::strong_ordering operator<=>(const char*) const;
-  std::strong_ordering operator<=>(const std::string&) const;
+  std::strong_ordering operator<=>(const TextView&) const;
 
-  bool operator==(const Text&) const;
-  bool operator==(const char*) const;
-  bool operator==(const std::string&) const;
+  bool operator==(const TextView&) const;
 
-  std::string toString() const;
-  std::string_view toView() const;
-  std::span<uint8_t> toRawData() const;
-  int64_t toInt() const;
-
+  std::string_view view() const;
   bool contains(char c) const;
-  Text skip(const Text& skippables) const;
-  Text skip(uint32_t n) const;
-  Text skipBOM() const;
+  TextView skip(const TextView& skippables) const;
+  TextView skip(size_t n) const;
+  TextView skipBOM() const;
 
   // substring position based. The string will contain the character from ending position too.
-  Text subpos(uint32_t start, uint32_t end) const;
+  TextView subpos(size_t start, size_t end) const;
 
   // substring length based. The return value will have a string of at most <len> characters
-  Text sublen(uint32_t start, uint32_t len) const;
+  TextView sublen(size_t start, size_t len) const;
 
   // occurence is one based - so first occurence is 1;
-  std::optional<uint32_t> pos(char c, uint32_t occurence = 1) const;
-  std::optional<uint32_t> pos(Text t, uint32_t occurence = 1) const;
-  std::optional<uint32_t> lastPos(char c) const;
+  std::optional<size_t> pos(char c, uint32_t occurence = 1) const;
+  std::optional<size_t> pos(const TextView& t, uint32_t occurence = 1) const;
+  std::optional<size_t> lastPos(char c) const;
 
   std::pair<Text, Text> splitPos(int32_t where) const;
   std::pair<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
