@@ -641,7 +641,7 @@ bool TextView::startsWith(const TextView& tv) const { return m_view.starts_with(
 bool TextView::endsWith(const TextView& tv) const { return m_view.ends_with(tv.m_view); }
 
 char TextView::operator[](size_t index) const {
-  if (index < size()) [[unlikely]] {
+  if (index >= size()) [[unlikely]] {
     throw std::out_of_range(fmt::format("Requested index {} in a {} long TextView", index, size()));
   }
   return m_view[index];
