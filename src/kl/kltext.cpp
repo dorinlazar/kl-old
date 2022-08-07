@@ -1,5 +1,6 @@
 #include "kltext.h"
 #include <stdexcept>
+#include <algorithm>
 
 using namespace std::literals;
 
@@ -722,6 +723,27 @@ std::optional<size_t> TextView::lastPos(char c) const {
     return res;
   }
   return std::nullopt;
+}
+
+std::pair<TextView, TextView> TextView::splitPos(int32_t where) const {
+  size_t pos = where > 0 ? std::min(size(), static_cast<size_t>(where))
+                         : (size() - std::min(static_cast<size_t>(-where), size()));
+  return {m_view.substr(0, pos), m_view.substr(pos)};
+}
+
+std::pair<TextView, TextView> TextView::splitNextChar(char c,
+                                                      SplitDirection direction = SplitDirection::Discard) const {
+  auto pos = m_view.find_last_of(c);
+  if (pos == std::string_view::npos) {
+    return {m_view, {}};
+  }
+  if (direction == SplitDirection::Discard) {
+    return {m_view.substr(0, pos), m_view.substr(pos + 1)};
+  }
+  if (direction == SplitDirection::KeepLeft) {
+    pos++;
+  }
+  return {m_view.substr(0, pos), m_view.substr(pos)};
 }
 
 } // namespace kl

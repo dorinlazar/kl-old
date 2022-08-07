@@ -187,8 +187,8 @@ public:
   std::optional<size_t> pos(const TextView& t, uint32_t occurence = 1) const;
   std::optional<size_t> lastPos(char c) const;
 
-  std::pair<Text, Text> splitPos(int32_t where) const;
-  std::pair<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
+  std::pair<TextView, TextView> splitPos(int32_t where) const;
+  std::pair<TextView, TextView> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
   std::pair<Text, Text> splitNextLine() const;
   List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
   List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
