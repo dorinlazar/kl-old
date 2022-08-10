@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include "kl/klprocess.h"
+using namespace kl::literals;
 
 void run_test() {
   kl::Process p({"ls"_t, "-l"_t, "-a"_t});

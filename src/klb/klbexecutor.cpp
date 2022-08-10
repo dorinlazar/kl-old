@@ -3,6 +3,7 @@
 #include "klbsettings.h"
 #include "kl/klprocess.h"
 #include <thread>
+using namespace kl::literals;
 
 enum class ExecStepType { Build, Link, Run };
 

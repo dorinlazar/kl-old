@@ -1,5 +1,6 @@
 #include "moduleitem.h"
 #include "klbsettings.h"
+using namespace kl::literals;
 
 void ModuleItem::_updateModuleType() {
   _type = ModuleItemType::Unknown;

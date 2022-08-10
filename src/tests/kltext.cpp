@@ -1,6 +1,7 @@
 #include "kl/kltext.h"
 using namespace kl;
 using namespace std::literals;
+using namespace kl::literals;
 
 void test_text_construction() {
   Text txt("Hello world");

@@ -2,6 +2,7 @@
 #include "kl/klfs.h"
 #include <thread>
 #include "ff/poorconfig.h"
+using namespace kl::literals;
 
 void CommandParameters::_updateFlags() {
   auto cxxfl = configurationFile->getOpt("CXXFLAGS"_t);

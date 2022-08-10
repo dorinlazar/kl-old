@@ -1,6 +1,7 @@
 #include "modulecollection.h"
 #include "klbsettings.h"
 #include "ff/codescanner.h"
+using namespace kl::literals;
 
 void ModuleCollection::discoverModules() {
   _scanAllModules();

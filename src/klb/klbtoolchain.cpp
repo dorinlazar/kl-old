@@ -1,6 +1,7 @@
 #include "klbtoolchain.h"
 #include "klbsettings.h"
 #include "kl/klprocess.h"
+using namespace kl::literals;
 
 Gcc::Gcc() {
   _cCompileBase.add({"gcc"_t, "-Wall"_t, "-Wextra"_t, "-c"_t});

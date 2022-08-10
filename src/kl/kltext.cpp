@@ -731,9 +731,8 @@ std::pair<TextView, TextView> TextView::splitPos(int32_t where) const {
   return {m_view.substr(0, pos), m_view.substr(pos)};
 }
 
-std::pair<TextView, TextView> TextView::splitNextChar(char c,
-                                                      SplitDirection direction = SplitDirection::Discard) const {
-  auto pos = m_view.find_last_of(c);
+std::pair<TextView, TextView> TextView::splitNextChar(char c, SplitDirection direction) const {
+  auto pos = m_view.find_first_of(c);
   if (pos == std::string_view::npos) {
     return {m_view, {}};
   }
@@ -745,6 +744,112 @@ std::pair<TextView, TextView> TextView::splitNextChar(char c,
   }
   return {m_view.substr(0, pos), m_view.substr(pos)};
 }
+
+std::pair<TextView, TextView> TextView::splitNextLine() const {
+  auto pos = m_view.find_first_of('\n');
+  if (pos == std::string_view::npos) {
+    return {m_view, {}};
+  }
+  if (pos > 0 && m_view[pos - 1] == '\r') {
+    return {m_view.substr(0, pos - 1), m_view.substr(pos + 1)};
+  }
+  return {m_view.substr(0, pos), m_view.substr(pos + 1)};
+}
+
+List<TextView> TextView::splitLines(SplitEmpty onEmpty) const {
+  List<TextView> res;
+  TextView view = *this;
+  TextView first_line;
+  while (view.size() > 0) {
+    std::tie(first_line, view) = view.splitNextLine();
+    if (first_line.size() > 0 || onEmpty == SplitEmpty::Keep) {
+      res.add(first_line);
+    }
+  }
+  return res;
+}
+
+List<TextView> TextView::splitByChar(char c, SplitEmpty onEmpty) const {
+  List<TextView> res;
+  TextView view = *this;
+  TextView first_line;
+  while (view.size() > 0) {
+    std::tie(first_line, view) = view.splitNextChar(c);
+    if (first_line.size() > 0 || onEmpty == SplitEmpty::Keep) {
+      res.add(first_line);
+    }
+  }
+  return res;
+}
+
+List<TextView> TextView::splitByText(const TextView& t, SplitEmpty onEmpty) const {
+  List<TextView> res;
+  TextView view = *this;
+  TextView first_line;
+  while (view.size() > 0) {
+    auto opos = view.pos(t);
+    if (opos.has_value()) {
+      first_line = view.subpos(0, opos.value());
+      view = view.subpos(opos.value() + t.size(), view.size());
+    } else {
+      first_line = view;
+      view = {};
+    }
+    if (first_line.size() > 0 || onEmpty == SplitEmpty::Keep) {
+      res.add(first_line);
+    }
+  }
+  return res;
+}
+
+std::optional<TextView> TextView::expect(const TextView& t) const {
+  if (startsWith(t)) {
+    return skip(t.size());
+  }
+  return {};
+}
+
+std::optional<TextView> TextView::expectws(const TextView& t) const { return trimLeft().expect(t); }
+
+std::optional<TextView> TextView::skipIndent(uint32_t indentLevel) const {
+  if (size() < indentLevel) [[unlikely]] {
+    return {};
+  }
+  auto ptr = begin();
+  for (uint32_t i = 0; i < indentLevel; i++) {
+    if (*ptr != ' ') {
+      return {};
+    }
+    ptr++;
+  }
+  return skip(indentLevel);
+}
+
+uint32_t TextView::getIndent() const {
+  uint32_t level = 0;
+  for (char c: *this) {
+    if (c == ' ') {
+      level++;
+    } else {
+      return level;
+    }
+  }
+  return level;
+}
+
+uint32_t TextView::count(char t) const {
+  uint32_t count = 0;
+  for (auto c: *this) {
+    if (c == t) {
+      count++;
+    }
+  }
+  return count;
+}
+
+inline namespace literals {
+kl::Text operator"" _t(const char* p, size_t s) { return kl::Text(p, s); }
+} // namespace literals
 
 } // namespace kl
 
@@ -779,5 +884,3 @@ kl::TextChain operator+(const kl::TextChain& t, const char* p) {
   tc.add(p);
   return tc;
 }
-
-kl::Text operator"" _t(const char* p, size_t s) { return kl::Text(p, s); }

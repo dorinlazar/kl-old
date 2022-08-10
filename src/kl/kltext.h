@@ -17,6 +17,75 @@ namespace kl {
 enum class SplitEmpty { Keep, Discard };
 enum class SplitDirection { KeepLeft, Discard, KeepRight };
 
+class TextView {
+public:
+  TextView() = default;
+  TextView(std::string_view v);
+  TextView(const TextView&) = default;
+  TextView(TextView&&) = default;
+  TextView& operator=(const TextView&) = default;
+  TextView& operator=(TextView&&) = default;
+  ~TextView() = default;
+
+public:
+  operator std::string_view() const;
+  TextView trim() const;
+  TextView trimLeft() const;
+  TextView trimRight() const;
+
+  bool startsWith(const TextView& tv) const;
+  bool endsWith(const TextView& tv) const;
+
+  char operator[](size_t index) const;
+
+  size_t size() const;
+  const char* begin() const;
+  const char* end() const;
+
+  std::strong_ordering operator<=>(const TextView&) const;
+
+  bool operator==(const TextView&) const;
+
+  std::string_view view() const;
+  bool contains(char c) const;
+  TextView skip(const TextView& skippables) const;
+  TextView skip(size_t n) const;
+  TextView skipBOM() const;
+
+  // substring position based. The string will contain the character from ending position too.
+  TextView subpos(size_t start, size_t end) const;
+
+  // substring length based. The return value will have a string of at most <len> characters
+  TextView sublen(size_t start, size_t len) const;
+
+  // occurence is one based - so first occurence is 1;
+  std::optional<size_t> pos(char c, uint32_t occurence = 1) const;
+  std::optional<size_t> pos(const TextView& t, uint32_t occurence = 1) const;
+  std::optional<size_t> lastPos(char c) const;
+
+  std::pair<TextView, TextView> splitPos(int32_t where) const;
+  std::pair<TextView, TextView> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
+  std::pair<TextView, TextView> splitNextLine() const;
+  List<TextView> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
+  List<TextView> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+  List<TextView> splitByText(const TextView& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
+
+  // returns a value that skips the starting text
+  std::optional<TextView> expect(const TextView& t) const;
+  // returns a value that skips the whitespace in the text
+  std::optional<TextView> expectws(const TextView& t) const;
+
+  // returns text after <indentLevel> whitespaces, or empty;
+  std::optional<TextView> skipIndent(uint32_t indentLevel) const;
+  // returns whitespace indent level
+  uint32_t getIndent() const;
+  // how many times the character c appears in the text
+  uint32_t count(char c) const;
+
+private:
+  std::string_view m_view;
+};
+
 class Text {
   // the only place where we unconst this is in constructors. replace void with const char
   static std::shared_ptr<char> s_null_data;
@@ -141,90 +210,16 @@ public:
   kl::Text join(char splitchar = '\0');
 };
 
-class TextView {
-public:
-  TextView() = default;
-  TextView(std::string_view v);
-  TextView(const TextView&) = default;
-  TextView(TextView&&) = default;
-  TextView& operator=(const TextView&) = default;
-  TextView& operator=(TextView&&) = default;
-  ~TextView() = default;
-
-public:
-  operator std::string_view() const;
-  TextView trim() const;
-  TextView trimLeft() const;
-  TextView trimRight() const;
-
-  bool startsWith(const TextView& tv) const;
-  bool endsWith(const TextView& tv) const;
-
-  char operator[](size_t index) const;
-
-  size_t size() const;
-  const char* begin() const;
-  const char* end() const;
-
-  std::strong_ordering operator<=>(const TextView&) const;
-
-  bool operator==(const TextView&) const;
-
-  std::string_view view() const;
-  bool contains(char c) const;
-  TextView skip(const TextView& skippables) const;
-  TextView skip(size_t n) const;
-  TextView skipBOM() const;
-
-  // substring position based. The string will contain the character from ending position too.
-  TextView subpos(size_t start, size_t end) const;
-
-  // substring length based. The return value will have a string of at most <len> characters
-  TextView sublen(size_t start, size_t len) const;
-
-  // occurence is one based - so first occurence is 1;
-  std::optional<size_t> pos(char c, uint32_t occurence = 1) const;
-  std::optional<size_t> pos(const TextView& t, uint32_t occurence = 1) const;
-  std::optional<size_t> lastPos(char c) const;
-
-  std::pair<TextView, TextView> splitPos(int32_t where) const;
-  std::pair<TextView, TextView> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
-  std::pair<Text, Text> splitNextLine() const;
-  List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
-  List<Text> splitByChar(char c, SplitEmpty onEmpty = SplitEmpty::Discard) const;
-  List<Text> splitByText(const Text& t, SplitEmpty onEmpty = SplitEmpty::Discard) const;
-
-  // returns a value that skips the starting text
-  std::optional<Text> expect(const Text& t) const;
-  // returns a value that skips the whitespace in the text
-  std::optional<Text> expectws(const Text& t) const;
-
-  // returns text after <indentLevel> whitespaces, or empty;
-  std::optional<Text> skipIndent(uint32_t indentLevel) const;
-  // returns whitespace indent level
-  uint32_t getIndent() const;
-
-  // fills a C buffer, preallocated with bufsize bytes;
-  void fill_c_buffer(char* dest, uint32_t bufsize) const;
-  // how many times the character c appears in the text
-  uint32_t count(char c) const;
-
-private:
-  std::string_view m_view;
-};
+inline namespace literals {
+kl::Text operator"" _t(const char* p, size_t s);
+}
 
 } // namespace kl
 
-kl::Text operator"" _t(const char* p, size_t s);
-
-namespace std {
-
 template <>
-struct hash<kl::Text> {
+struct std::hash<kl::Text> {
   std::size_t operator()(const kl::Text& s) const noexcept;
 };
-
-} // namespace std
 
 template <>
 struct fmt::formatter<kl::Text> : public fmt::formatter<std::string_view> {

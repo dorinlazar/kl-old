@@ -1,4 +1,5 @@
 #include "kl/klfs.h"
+using namespace kl::literals;
 
 void test_file_path() {
   kl::FilePath path("/foldername/sub/folder/file.name.txt");

@@ -1,4 +1,5 @@
 #include "ff/textscanner.h"
+using namespace kl::literals;
 
 void test_line_column() {
   kl::TextScanner sc("   \n   x     ");

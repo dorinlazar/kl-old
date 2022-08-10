@@ -2,6 +2,7 @@
 #include "modulecollection.h"
 #include "klbsettings.h"
 #include "ff/codescanner.h"
+using namespace kl::literals;
 
 struct SourceFile {
   kl::List<kl::Text> localIncludes;

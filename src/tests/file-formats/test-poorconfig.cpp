@@ -1,4 +1,5 @@
 #include "ff/poorconfig.h"
+using namespace kl::literals;
 
 void test_basic() {
   auto value = kl::PoorConfig::parse("CXXFLAGS = -std=c++20 -flto\nLDFLAGS=-flto\nJOBS=6", '=');

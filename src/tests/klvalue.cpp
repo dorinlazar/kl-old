@@ -1,4 +1,5 @@
 #include "kl/klvalue.h"
+using namespace kl::literals;
 
 void test_value_null() {
   auto v = kl::Value::createNull();
