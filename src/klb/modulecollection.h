@@ -12,13 +12,13 @@ struct ModuleCollection {
 
   kl::FilePath resolvePath(const kl::Text& name, Module* origin) const;
 
-  ModuleCollection(FSCache* cache) : _cache(cache) {}
+  ModuleCollection(kl::ptr<FSCache> cache);
 
   void discoverModules();
 
   kl::Dict<kl::Text, kl::ptr<Module>> modules;
 
 private:
-  FSCache* _cache;
+  kl::ptr<FSCache> _cache;
   void _scanAllModules();
 };

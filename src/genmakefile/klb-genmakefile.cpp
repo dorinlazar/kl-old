@@ -5,7 +5,7 @@
 
 using namespace kl;
 
-kl::uptr<ModuleCollection> discoverModules(FSCache* cache) {
+kl::uptr<ModuleCollection> discoverModules(kl::ptr<FSCache> cache) {
   auto mc = std::make_unique<ModuleCollection>(cache);
   mc->discoverModules();
   return mc;
@@ -13,9 +13,9 @@ kl::uptr<ModuleCollection> discoverModules(FSCache* cache) {
 
 int main(int argc, char** argv, char** envp) {
   CMD.init(argc, argv, envp);
-  auto fscache = std::make_unique<FSCache>(CMD.sourceFolder, CMD.buildFolder);
+  auto fscache = std::make_shared<FSCache>(CMD.sourceFolder, CMD.buildFolder);
 
-  auto mc = discoverModules(fscache.get());
+  auto mc = discoverModules(fscache);
   auto modules = mc->getTargetModules({});
   kl::Text target_makefile = "Makefile";
   if (CMD.targets.size() > 0) {

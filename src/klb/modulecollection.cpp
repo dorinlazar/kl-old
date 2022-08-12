@@ -3,6 +3,8 @@
 #include "ff/codescanner.h"
 using namespace kl::literals;
 
+ModuleCollection::ModuleCollection(kl::ptr<FSCache> cache) : _cache(cache) {}
+
 void ModuleCollection::discoverModules() {
   _scanAllModules();
   for (const auto& [name, mod]: modules) {
