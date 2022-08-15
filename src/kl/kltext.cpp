@@ -627,18 +627,25 @@ Text Text::skipBOM() const {
   return *this;
 }
 
+constexpr std::string_view WHITESPACE = " \t\n\r"sv;
+
 TextView::TextView(std::string_view v) : m_view(v) {}
-TextView::operator std::string_view() const { return m_view; }
+TextView::TextView(const char* text) : m_view(text) {}
+TextView::TextView(const char* text, size_t length) : m_view(text, length) {}
 
 TextView TextView::trim() const { return trimLeft().trimRight(); }
-TextView TextView::trimLeft() const { return skip(" \t\n\r"sv); }
+TextView TextView::trimLeft() const { return skip(WHITESPACE); }
 TextView TextView::trimRight() const {
-  auto v = m_view;
-  v.remove_suffix(v.size() - v.find_last_not_of(" \t\n\r"));
-  return v;
+  auto position = m_view.find_last_not_of(WHITESPACE);
+  if (position == std::string_view::npos) {
+    return {};
+  }
+  return m_view.substr(0, position + 1);
 }
 
+bool TextView::startsWith(char c) const { return m_view.size() > 0 && m_view.front() == c; }
 bool TextView::startsWith(const TextView& tv) const { return m_view.starts_with(tv.m_view); }
+bool TextView::endsWith(char c) const { return m_view.size() > 0 && m_view.back() == c; }
 bool TextView::endsWith(const TextView& tv) const { return m_view.ends_with(tv.m_view); }
 
 char TextView::operator[](size_t index) const {
@@ -653,17 +660,24 @@ const char* TextView::begin() const { return m_view.begin(); }
 const char* TextView::end() const { return m_view.end(); }
 
 std::strong_ordering TextView::operator<=>(const TextView& v) const { return m_view <=> v.m_view; }
-
+std::strong_ordering TextView::operator<=>(const std::string_view& sv) const { return m_view <=> sv; }
+std::strong_ordering TextView::operator<=>(const std::string& s) const { return m_view <=> s; }
+std::strong_ordering TextView::operator<=>(const char* s) const { return m_view <=> s; }
 bool TextView::operator==(const TextView& v) const { return m_view == v.m_view; }
+bool TextView::operator==(const std::string_view& sv) const { return m_view == sv; }
+bool TextView::operator==(const std::string& s) const { return m_view == s; }
+bool TextView::operator==(const char* s) const { return m_view == s; }
 
+TextView::operator std::string_view() const { return m_view; }
 std::string_view TextView::view() const { return m_view; }
+
+bool TextView::contains(char c) const { return pos(c).has_value(); }
 
 TextView TextView::skip(const TextView& skippables) const {
   auto v = m_view;
   v.remove_prefix(std::min(v.find_first_not_of(skippables.m_view), v.size()));
   return v;
 }
-
 TextView TextView::skip(size_t size) const { return m_view.substr(size); }
 TextView TextView::skipBOM() const {
   if (size() >= 3) {
@@ -676,12 +690,18 @@ TextView TextView::skipBOM() const {
 }
 
 // substring position based. The string will contain the character from ending position too.
-TextView TextView::subpos(size_t start, size_t end) const { return m_view.substr(start, std::max(end, start) - start); }
+TextView TextView::subpos(size_t start, size_t end) const {
+  if (start > end) {
+    return {};
+  }
+
+  return m_view.substr(std::min(start, size()), 1 + (std::min(end, size()) - start));
+}
 
 // substring length based. The return value will have a string of at most <len> characters
 TextView TextView::sublen(size_t start, size_t len) const { return m_view.substr(start, len); }
 
-std::optional<size_t> TextView::pos(char c, uint32_t occurence) const {
+std::optional<size_t> TextView::pos(char c, size_t occurence) const {
   if (occurence == 0) {
     return std::nullopt;
   }
@@ -694,12 +714,13 @@ std::optional<size_t> TextView::pos(char c, uint32_t occurence) const {
         return pos;
       }
     }
+    pos++;
   }
 
   return std::nullopt;
 }
 
-std::optional<size_t> TextView::pos(const TextView& t, uint32_t occurence) const {
+std::optional<size_t> TextView::pos(const TextView& t, size_t occurence) const {
   if (occurence == 0) {
     return std::nullopt;
   }
@@ -712,6 +733,7 @@ std::optional<size_t> TextView::pos(const TextView& t, uint32_t occurence) const
         return pos;
       }
     }
+    pos += t.size();
   }
 
   return std::nullopt;
@@ -725,7 +747,7 @@ std::optional<size_t> TextView::lastPos(char c) const {
   return std::nullopt;
 }
 
-std::pair<TextView, TextView> TextView::splitPos(int32_t where) const {
+std::pair<TextView, TextView> TextView::splitPos(ssize_t where) const {
   size_t pos = where > 0 ? std::min(size(), static_cast<size_t>(where))
                          : (size() - std::min(static_cast<size_t>(-where), size()));
   return {m_view.substr(0, pos), m_view.substr(pos)};
@@ -811,12 +833,12 @@ std::optional<TextView> TextView::expect(const TextView& t) const {
 
 std::optional<TextView> TextView::expectws(const TextView& t) const { return trimLeft().expect(t); }
 
-std::optional<TextView> TextView::skipIndent(uint32_t indentLevel) const {
+std::optional<TextView> TextView::skipIndent(size_t indentLevel) const {
   if (size() < indentLevel) [[unlikely]] {
     return {};
   }
   auto ptr = begin();
-  for (uint32_t i = 0; i < indentLevel; i++) {
+  for (size_t i = 0; i < indentLevel; i++) {
     if (*ptr != ' ') {
       return {};
     }
@@ -825,8 +847,8 @@ std::optional<TextView> TextView::skipIndent(uint32_t indentLevel) const {
   return skip(indentLevel);
 }
 
-uint32_t TextView::getIndent() const {
-  uint32_t level = 0;
+size_t TextView::getIndent() const {
+  size_t level = 0;
   for (char c: *this) {
     if (c == ' ') {
       level++;
@@ -837,8 +859,8 @@ uint32_t TextView::getIndent() const {
   return level;
 }
 
-uint32_t TextView::count(char t) const {
-  uint32_t count = 0;
+size_t TextView::count(char t) const {
+  size_t count = 0;
   for (auto c: *this) {
     if (c == t) {
       count++;
