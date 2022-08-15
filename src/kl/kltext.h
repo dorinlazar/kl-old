@@ -21,6 +21,8 @@ class TextView {
 public:
   TextView() = default;
   TextView(std::string_view v);
+  TextView(const char* text);
+  TextView(const char* text, size_t length);
   TextView(const TextView&) = default;
   TextView(TextView&&) = default;
   TextView& operator=(const TextView&) = default;
@@ -28,12 +30,13 @@ public:
   ~TextView() = default;
 
 public:
-  operator std::string_view() const;
   TextView trim() const;
   TextView trimLeft() const;
   TextView trimRight() const;
 
+  bool startsWith(char c) const;
   bool startsWith(const TextView& tv) const;
+  bool endsWith(char c) const;
   bool endsWith(const TextView& tv) const;
 
   char operator[](size_t index) const;
@@ -43,11 +46,19 @@ public:
   const char* end() const;
 
   std::strong_ordering operator<=>(const TextView&) const;
-
+  std::strong_ordering operator<=>(const std::string_view&) const;
+  std::strong_ordering operator<=>(const std::string&) const;
+  std::strong_ordering operator<=>(const char*) const;
   bool operator==(const TextView&) const;
+  bool operator==(const std::string_view&) const;
+  bool operator==(const std::string&) const;
+  bool operator==(const char*) const;
 
+  operator std::string_view() const;
   std::string_view view() const;
+
   bool contains(char c) const;
+
   TextView skip(const TextView& skippables) const;
   TextView skip(size_t n) const;
   TextView skipBOM() const;
@@ -59,11 +70,11 @@ public:
   TextView sublen(size_t start, size_t len) const;
 
   // occurence is one based - so first occurence is 1;
-  std::optional<size_t> pos(char c, uint32_t occurence = 1) const;
-  std::optional<size_t> pos(const TextView& t, uint32_t occurence = 1) const;
+  std::optional<size_t> pos(char c, size_t occurence = 1) const;
+  std::optional<size_t> pos(const TextView& t, size_t occurence = 1) const;
   std::optional<size_t> lastPos(char c) const;
 
-  std::pair<TextView, TextView> splitPos(int32_t where) const;
+  std::pair<TextView, TextView> splitPos(ssize_t where) const;
   std::pair<TextView, TextView> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
   std::pair<TextView, TextView> splitNextLine() const;
   List<TextView> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
@@ -76,11 +87,11 @@ public:
   std::optional<TextView> expectws(const TextView& t) const;
 
   // returns text after <indentLevel> whitespaces, or empty;
-  std::optional<TextView> skipIndent(uint32_t indentLevel) const;
+  std::optional<TextView> skipIndent(size_t indentLevel) const;
   // returns whitespace indent level
-  uint32_t getIndent() const;
+  size_t getIndent() const;
   // how many times the character c appears in the text
-  uint32_t count(char c) const;
+  size_t count(char c) const;
 
 private:
   std::string_view m_view;
