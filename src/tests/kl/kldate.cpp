@@ -1,6 +1,6 @@
 #include "kl/kl.h"
 #include "kl/kltime.h"
-#include "timecounter.h"
+#include "kl/kltimecounter.h"
 
 void sanity_checks() {
   CHECKST((25 * kl::TimeLimits::DAYS_IN_400_YEARS - 366) * kl::TimeLimits::TICKS_PER_DAY ==
