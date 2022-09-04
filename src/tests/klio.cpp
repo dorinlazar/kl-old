@@ -2,7 +2,7 @@
 #include "kl/kl.h"
 
 void test_basic() {
-  kl::FileStream fs("src/tests/klblog/config.yml", kl::FileOpenMode::ReadOnly);
+  kl::FileStream fs("data/klblog/config.yml", kl::FileOpenMode::ReadOnly);
   kl::StreamReader sr(&fs);
   auto next = sr.readLine();
   CHECKST(next == "# Don't modify this heading");
