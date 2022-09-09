@@ -46,19 +46,19 @@ void ModuleCollection::_scanAllModules() {
   }
 }
 
-std::shared_ptr<Module> ModuleCollection::getModule(const kl::FilePath& folder, const kl::Text& file) const {
+kl::ptr<Module> ModuleCollection::getModule(const kl::FilePath& folder, const kl::Text& file) const {
   kl::Text moduleName = folder.add(file).replace_extension(""_t).fullPath();
   auto mod = modules.get(moduleName);
   return mod;
 }
 
-std::shared_ptr<Module> ModuleCollection::getModule(const kl::Text& file) const {
+kl::ptr<Module> ModuleCollection::getModule(const kl::Text& file) const {
   kl::Text moduleName = kl::FilePath(file).replace_extension(""_t).fullPath();
   auto mod = modules.get(moduleName);
   return mod;
 }
 
-std::shared_ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& folder, const kl::Text& stem) {
+kl::ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& folder, const kl::Text& stem) {
   kl::Text moduleName = folder.add(stem).fullPath();
   auto val = modules.get(moduleName, nullptr);
   if (!val) {

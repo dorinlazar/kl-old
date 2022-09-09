@@ -1,7 +1,7 @@
-#include "kltext.h"
-#include "klvalue.h"
-#include "klfs.h"
-#include "kldate.h"
+#include "kltext-test.h"
+#include "klvalue-test.h"
+#include "klfs-test.h"
+#include "kldate-test.h"
 
 #include <gtest/gtest.h>
 

@@ -248,10 +248,10 @@ size_t TextView::count(char t) const {
   return count;
 }
 
-std::shared_ptr<char> Text::s_null_data = std::make_shared<char>(0);
+ptr<char> Text::s_null_data = std::make_shared<char>(0);
 
 Text::Text(char c) {
-  _memblock = std::shared_ptr<char>((char*)malloc(sizeof(c)), free);
+  _memblock = ptr<char>((char*)malloc(sizeof(c)), free);
   _memblock.get()[0] = c;
   _end = sizeof(c);
 }
@@ -260,7 +260,7 @@ Text::Text(const std::string& s) {
   _end = s.size();
   if (_end > 0) {
     // TODO replace as soon as gcc implements with make_shared_for_overwrite
-    _memblock = std::shared_ptr<char>((char*)malloc(_end), free);
+    _memblock = ptr<char>((char*)malloc(_end), free);
     std::copy(s.begin(), s.end(), _memblock.get());
   }
 }
@@ -270,7 +270,7 @@ Text::Text(const char* ptr) {
     _end = std::strlen(ptr);
     if (_end > 0) {
       // TODO replace as soon as gcc implements with make_shared_for_overwrite
-      _memblock = std::shared_ptr<char>((char*)malloc(_end), free);
+      _memblock = kl::ptr<char>((char*)malloc(_end), free);
       std::copy(ptr, ptr + _end, _memblock.get());
     }
   }
@@ -281,7 +281,7 @@ Text::Text(const char* ptr, uint32_t size) {
     _end = size;
     if (_end > 0) {
       // TODO replace as soon as gcc implements with make_shared_for_overwrite
-      _memblock = std::shared_ptr<char>((char*)malloc(_end), free);
+      _memblock = kl::ptr<char>((char*)malloc(_end), free);
       std::copy(ptr, ptr + _end, _memblock.get());
     }
   }
@@ -305,7 +305,7 @@ Text& Text::operator=(const Text& v) {
   return *this;
 }
 
-Text Text::FromBuffer(std::shared_ptr<char> p, uint32_t start, uint32_t end) {
+Text Text::FromBuffer(ptr<char> p, uint32_t start, uint32_t end) {
   if (start >= end || p.get() == nullptr) {
     return {};
   }
@@ -692,7 +692,7 @@ Text TextChain::toText() const {
     return _chain[0];
   }
   // TODO replace as soon as gcc implements with make_shared_for_overwrite
-  std::shared_ptr<char> memblock = std::shared_ptr<char>((char*)malloc(_length), free);
+  ptr<char> memblock = ptr<char>((char*)malloc(_length), free);
   char* ptr = memblock.get();
   uint32_t offset = 0;
   for (const auto& tv: _chain) {
@@ -708,7 +708,7 @@ kl::Text TextChain::join(char splitchar) {
   }
   size_t size = _length + (splitchar != '\0' ? (_chain.size() - 1) : 0);
 
-  std::shared_ptr<char> memblock = std::shared_ptr<char>((char*)malloc(size), free);
+  ptr<char> memblock = ptr<char>((char*)malloc(size), free);
 
   size_t offset = 0;
   char* p = memblock.get();
@@ -727,7 +727,7 @@ void TextChain::consolidate() {
   // TODO replace as soon as gcc implements with make_shared_for_overwrite
   if (_length > 0) {
     List<Text> new_chain(_chain.size());
-    auto _memblock = std::shared_ptr<char>((char*)malloc(_length), free);
+    auto _memblock = kl::ptr<char>((char*)malloc(_length), free);
     char* ptr = _memblock.get();
     uint32_t offset = 0;
     for (uint32_t i = 0; i < _chain.size(); i++) {

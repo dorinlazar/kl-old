@@ -99,8 +99,8 @@ private:
 
 class Text {
   // the only place where we unconst this is in constructors. replace void with const char
-  static std::shared_ptr<char> s_null_data;
-  std::shared_ptr<char> _memblock = s_null_data;
+  static ptr<char> s_null_data;
+  ptr<char> _memblock = s_null_data;
   uint32_t _start = 0;
   uint32_t _end = 0;
 
@@ -116,7 +116,7 @@ public:
   Text(const char* ptr, uint32_t size);
   Text(const Text& t, uint32_t start, uint32_t length);
   Text& operator=(const Text& v);
-  static Text FromBuffer(std::shared_ptr<char> p, uint32_t start, uint32_t end);
+  static Text FromBuffer(ptr<char> p, uint32_t start, uint32_t end);
 
 public:
   void clear();
