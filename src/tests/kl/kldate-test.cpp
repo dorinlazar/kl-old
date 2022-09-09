@@ -8,10 +8,10 @@ TEST(kldate, sanity_checks) {
 }
 
 TEST(kldate, test_ticks) {
-  EXPECT_TRUE(kl::DateTime::fromTicks(kl::TimeLimits::MIN_TICKS - 100).ticks() == kl::TimeLimits::MIN_TICKS);
-  EXPECT_TRUE(kl::DateTime::fromTicks(kl::TimeLimits::MIN_TICKS).ticks() == kl::TimeLimits::MIN_TICKS);
-  EXPECT_TRUE(kl::DateTime::fromTicks(kl::TimeLimits::MAX_TICKS).ticks() == kl::TimeLimits::MAX_TICKS);
-  EXPECT_TRUE(kl::DateTime::fromTicks(kl::TimeLimits::MAX_TICKS + 1000).ticks() == kl::TimeLimits::MAX_TICKS);
+  EXPECT_EQ(kl::DateTime::fromTicks(kl::TimeLimits::MIN_TICKS - 100).ticks(), kl::TimeLimits::MIN_TICKS);
+  EXPECT_EQ(kl::DateTime::fromTicks(kl::TimeLimits::MIN_TICKS).ticks(), kl::TimeLimits::MIN_TICKS);
+  EXPECT_EQ(kl::DateTime::fromTicks(kl::TimeLimits::MAX_TICKS).ticks(), kl::TimeLimits::MAX_TICKS);
+  EXPECT_EQ(kl::DateTime::fromTicks(kl::TimeLimits::MAX_TICKS + 1000).ticks(), kl::TimeLimits::MAX_TICKS);
 }
 
 void check_year(uint32_t year) {
@@ -22,47 +22,47 @@ void check_year(uint32_t year) {
       auto dt = kl::DateTime(year, month + 1, day + 1);
       auto d = dt.date();
       auto t = dt.timeOfDay();
-      EXPECT_TRUE(d.year == year);
-      EXPECT_TRUE(d.month == month + 1);
-      EXPECT_TRUE(d.day == day + 1);
-      EXPECT_TRUE(t.hour == 0);
-      EXPECT_TRUE(t.min == 0);
-      EXPECT_TRUE(t.sec == 0);
-      EXPECT_TRUE(t.nanos == 0);
+      EXPECT_EQ(d.year, year);
+      EXPECT_EQ(d.month, month + 1);
+      EXPECT_EQ(d.day, day + 1);
+      EXPECT_EQ(t.hour, 0);
+      EXPECT_EQ(t.min, 0);
+      EXPECT_EQ(t.sec, 0);
+      EXPECT_EQ(t.nanos, 0);
 
       dt = kl::DateTime(year, month + 1, day + 1, 23, 59, 59, 999'999'999);
       d = dt.date();
       t = dt.timeOfDay();
-      EXPECT_TRUE(d.year == year);
-      EXPECT_TRUE(d.month == month + 1);
-      EXPECT_TRUE(d.day == day + 1);
-      EXPECT_TRUE(t.hour == 23);
-      EXPECT_TRUE(t.min == 59);
-      EXPECT_TRUE(t.sec == 59);
-      EXPECT_TRUE(t.nanos == 999'999'900);
+      EXPECT_EQ(d.year, year);
+      EXPECT_EQ(d.month, month + 1);
+      EXPECT_EQ(d.day, day + 1);
+      EXPECT_EQ(t.hour, 23);
+      EXPECT_EQ(t.min, 59);
+      EXPECT_EQ(t.sec, 59);
+      EXPECT_EQ(t.nanos, 999'999'900);
 
       dt = kl::DateTime(year, month + 1, day + 1, 14, 37, 21, 123'456'789);
       d = dt.date();
       t = dt.timeOfDay();
-      EXPECT_TRUE(d.year == year);
-      EXPECT_TRUE(d.month == month + 1);
-      EXPECT_TRUE(d.day == day + 1);
-      EXPECT_TRUE(t.hour == 14);
-      EXPECT_TRUE(t.min == 37);
-      EXPECT_TRUE(t.sec == 21);
-      EXPECT_TRUE(t.nanos == 123'456'700);
+      EXPECT_EQ(d.year, year);
+      EXPECT_EQ(d.month, month + 1);
+      EXPECT_EQ(d.day, day + 1);
+      EXPECT_EQ(t.hour, 14);
+      EXPECT_EQ(t.min, 37);
+      EXPECT_EQ(t.sec, 21);
+      EXPECT_EQ(t.nanos, 123'456'700);
     }
   }
 }
 
 TEST(kldate, test_date_time) {
   auto dt = kl::DateTime(9999, 12, 31, 23, 59, 59, 999999999);
-  EXPECT_TRUE(dt.ticks() == kl::TimeLimits::MAX_TICKS);
-  EXPECT_TRUE(dt.days() == 3652058);
+  EXPECT_EQ(dt.ticks(), kl::TimeLimits::MAX_TICKS);
+  EXPECT_EQ(dt.days(), 3652058);
   auto d = dt.date();
-  EXPECT_TRUE(d.year == 9999);
-  EXPECT_TRUE(d.month == 12);
-  EXPECT_TRUE(d.day == 31);
+  EXPECT_EQ(d.year, 9999);
+  EXPECT_EQ(d.month, 12);
+  EXPECT_EQ(d.day, 31);
 
   check_year(2021);
   check_year(2020);
@@ -74,37 +74,37 @@ TEST(kldate, test_date_time) {
 
 TEST(kldate, test_parsing) {
   auto dt = kl::DateTime::parse("2019-03-03T10:21Z");
-  EXPECT_TRUE(dt == kl::DateTime(2019, 03, 03, 10, 21));
+  EXPECT_EQ(dt, kl::DateTime(2019, 03, 03, 10, 21));
   dt = kl::DateTime::parse("2019-03-03T10:21");
-  EXPECT_TRUE(dt == kl::DateTime(2019, 03, 03, 10, 21));
+  EXPECT_EQ(dt, kl::DateTime(2019, 03, 03, 10, 21));
   dt = kl::DateTime::parse("2020-03-03 10:21");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 10, 21));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 10, 21));
   dt = kl::DateTime::parse("2020-03-03 10:21:14");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 10, 21, 14));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 10, 21, 14));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781321");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 10, 21, 14, 781'321'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 10, 21, 14, 781'321'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 10, 21, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 10, 21, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781Z");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 10, 21, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 10, 21, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781+02:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 8, 21, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 8, 21, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781+03:21");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 7, 00, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 7, 00, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781+03:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 7, 21, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 7, 21, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781-02:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 12, 21, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 12, 21, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781-03:21");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 13, 42, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 13, 42, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14.781-03:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 13, 21, 14, 781'000'000));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 13, 21, 14, 781'000'000));
   dt = kl::DateTime::parse("2020-03-03 10:21:14-03:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 13, 21, 14));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 13, 21, 14));
   dt = kl::DateTime::parse("2020-03-03 10:21:14+03:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 7, 21, 14));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 7, 21, 14));
   dt = kl::DateTime::parse("2020-03-03 10:21-03:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 13, 21));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 13, 21));
   dt = kl::DateTime::parse("2020-03-03 10:21+03:00");
-  EXPECT_TRUE(dt == kl::DateTime(2020, 03, 03, 7, 21));
+  EXPECT_EQ(dt, kl::DateTime(2020, 03, 03, 7, 21));
 }
