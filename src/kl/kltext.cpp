@@ -250,11 +250,11 @@ size_t TextView::count(char t) const {
 
 class TextRefCounter {
 
-  int64_t ref_count;
+  int64_t ref_count = 1;
   char block_start[0];
+  TextRefCounter() = default;
 
 public:
-  TextRefCounter() = default;
   TextRefCounter* acquire() {
     ref_count++;
     return this;
@@ -275,21 +275,43 @@ public:
 };
 static_assert(sizeof(TextRefCounter) == sizeof(int64_t));
 /////// From here onwards
-Text::Text();
-Text::~Text();
-Text::Text(const Text&);
-Text::Text(Text&&);
-Text& Text::operator=(const Text& v) {
-  clear();
-  m_memblock = v.m_memblock->acquire();
-  m_start = v.m_start;
-  m_end = v.m_end;
+Text::Text() {
+  m_memblock = &TextRefCounter::s_empty;
+  m_start = 0;
+  m_end = 0;
+}
+
+Text::~Text() { reset(); }
+
+Text::Text(const Text& t) {
+  m_memblock = t.m_memblock->acquire();
+  m_start = t.m_start;
+  m_end = t.m_end;
+}
+
+Text::Text(Text&& dying) {
+  m_start = std::exchange(dying.m_start, 0);
+  m_end = std::exchange(dying.m_end, 0);
+  m_memblock = std::exchange(dying.m_memblock, &TextRefCounter::s_empty);
+}
+
+Text& Text::operator=(const Text& t) {
+  reset();
+  if (t.size() > 0) {
+    m_memblock = t.m_memblock->acquire();
+    m_start = t.m_start;
+    m_end = t.m_end;
+  }
   return *this;
 }
 
-Text& Text::operator=(Text&& v) {
-  clear();
-  m_memblock = std::exchange(v.m_memblock, )
+Text& Text::operator=(Text&& dying) {
+  reset();
+  if (dying.size() > 0) {
+    m_memblock = std::exchange(dying.m_memblock, &TextRefCounter::s_empty);
+    m_start = std::exchange(dying.m_start, 0);
+    m_end = std::exchange(dying.m_end, 0);
+  }
 }
 
 Text::Text(char c) {
@@ -344,11 +366,13 @@ Text::Text(const Text& t, uint32_t start, uint32_t length) {
   }
 }
 
-void Text::clear() {
-  if (m_memblock->release()) {
-    free(m_memblock);
+void Text::reset() {
+  if (m_start < m_end) {
+    if (m_memblock->release()) {
+      free(m_memblock);
+    }
+    m_memblock = &TextRefCounter::s_empty;
   }
-  m_memblock = &TextRefCounter::s_empty;
   m_start = 0;
   m_end = 0;
 }

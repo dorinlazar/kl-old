@@ -136,7 +136,7 @@ public:
   static Text FromBuffer(ptr<char> p, uint32_t start, uint32_t end);
 
 public:
-  void clear();
+  void reset();
   Text trim() const;
   Text trimLeft() const;
   Text trimRight() const;

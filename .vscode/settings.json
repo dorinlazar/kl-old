@@ -13,7 +13,8 @@
     "variant": "cpp",
     "istream": "cpp",
     "functional": "cpp",
-    "tuple": "cpp"
+    "tuple": "cpp",
+    "random": "cpp"
   },
   "C_Cpp.clang_format_path": "/usr/bin/clang-format",
   "C_Cpp.default.cppStandard": "c++20",
