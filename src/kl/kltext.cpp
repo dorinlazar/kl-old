@@ -255,26 +255,41 @@ class TextRefCounter {
 
 public:
   TextRefCounter() = default;
-  TextRefCounter* acquire();
-  static TextRefCounter s_empty;
-  bool release();
+  TextRefCounter* acquire() {
+    ref_count++;
+    return this;
+  }
+  bool release() {
+    ref_count--;
+    return ref_count == 0;
+  }
 
   char* text_data() { return reinterpret_cast<char*>(&block_start); }
   static TextRefCounter* allocate(size_t text_size) {
     auto buffer = reinterpret_cast<TextRefCounter*>(malloc(sizeof(TextRefCounter) + text_size));
     buffer->ref_count = 1;
+    return buffer;
   }
+
+  static TextRefCounter s_empty;
 };
 static_assert(sizeof(TextRefCounter) == sizeof(int64_t));
-
-Text::TextRefCounter* Text::TextRefCounter::allocate(size_t text_size) {}
-Text::TextRefCounter* Text::TextRefCounter::acquire() {
-  ref_count++;
-  return this;
+/////// From here onwards
+Text::Text();
+Text::~Text();
+Text::Text(const Text&);
+Text::Text(Text&&);
+Text& Text::operator=(const Text& v) {
+  clear();
+  m_memblock = v.m_memblock->acquire();
+  m_start = v.m_start;
+  m_end = v.m_end;
+  return *this;
 }
-bool Text::TextRefCounter::release() {
-  ref_count--;
-  return ref_count == 0;
+
+Text& Text::operator=(Text&& v) {
+  clear();
+  m_memblock = std::exchange(v.m_memblock, )
 }
 
 Text::Text(char c) {
@@ -288,6 +303,8 @@ Text::Text(const std::string& s) {
   if (m_end > 0) {
     m_memblock = TextRefCounter::allocate(m_end);
     std::copy(s.begin(), s.end(), m_memblock->text_data());
+  } else {
+    m_memblock = &TextRefCounter::s_empty;
   }
 }
 
@@ -297,6 +314,8 @@ Text::Text(const char* ptr) {
     if (m_end > 0) {
       m_memblock = TextRefCounter::allocate(m_end);
       std::copy(ptr, ptr + m_end, m_memblock->text_data());
+    } else {
+      m_memblock = &TextRefCounter::s_empty;
     }
   }
 }
@@ -307,6 +326,8 @@ Text::Text(const char* ptr, uint32_t size) {
     if (m_end > 0) {
       m_memblock = TextRefCounter::allocate(m_end);
       std::copy(ptr, ptr + m_end, m_memblock->text_data());
+    } else {
+      m_memblock = &TextRefCounter::s_empty;
     }
   }
 }
@@ -317,23 +338,17 @@ Text::Text(const Text& t, uint32_t start, uint32_t length) {
   if (m_start == m_end) {
     m_start = 0;
     m_end = 0;
+    m_memblock = &TextRefCounter::s_empty;
   } else {
     m_memblock = t.m_memblock->acquire();
   }
-}
-
-Text& Text::operator=(const Text& v) {
-  m_memblock = v.m_memblock->acquire();
-  m_start = v.m_start;
-  m_end = v.m_end;
-  return *this;
 }
 
 void Text::clear() {
   if (m_memblock->release()) {
     free(m_memblock);
   }
-  m_memblock = nullptr;
+  m_memblock = &TextRefCounter::s_empty;
   m_start = 0;
   m_end = 0;
 }

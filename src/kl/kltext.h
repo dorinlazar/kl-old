@@ -116,23 +116,23 @@ public:
 };
 
 class Text {
-
-  TextRefCounter* m_memblock = nullptr;
+  TextRefCounter* m_memblock;
   uint32_t m_start = 0;
   uint32_t m_end = 0;
 
 public:
-  Text() = default;
-  ~Text() = default;
-  Text(const Text&) = default;
-  Text(Text&&) = default;
+  Text();
+  ~Text();
+  Text(const Text&);
+  Text(Text&&);
+  Text& operator=(const Text& v);
+  Text& operator=(Text&& v);
 
   Text(char c);
   Text(const std::string& s);
   Text(const char* ptr);
   Text(const char* ptr, uint32_t size);
   Text(const Text& t, uint32_t start, uint32_t length);
-  Text& operator=(const Text& v);
   static Text FromBuffer(ptr<char> p, uint32_t start, uint32_t end);
 
 public:
