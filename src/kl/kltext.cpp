@@ -248,122 +248,140 @@ size_t TextView::count(char t) const {
   return count;
 }
 
-ptr<char> Text::s_null_data = std::make_shared<char>(0);
+class TextRefCounter {
+
+  int64_t ref_count;
+  char block_start[0];
+
+public:
+  TextRefCounter() = default;
+  TextRefCounter* acquire();
+  static TextRefCounter s_empty;
+  bool release();
+
+  char* text_data() { return reinterpret_cast<char*>(&block_start); }
+  static TextRefCounter* allocate(size_t text_size) {
+    auto buffer = reinterpret_cast<TextRefCounter*>(malloc(sizeof(TextRefCounter) + text_size));
+    buffer->ref_count = 1;
+  }
+};
+static_assert(sizeof(TextRefCounter) == sizeof(int64_t));
+
+Text::TextRefCounter* Text::TextRefCounter::allocate(size_t text_size) {}
+Text::TextRefCounter* Text::TextRefCounter::acquire() {
+  ref_count++;
+  return this;
+}
+bool Text::TextRefCounter::release() {
+  ref_count--;
+  return ref_count == 0;
+}
 
 Text::Text(char c) {
-  _memblock = ptr<char>((char*)malloc(sizeof(c)), free);
-  _memblock.get()[0] = c;
-  _end = sizeof(c);
+  m_memblock = TextRefCounter::allocate(sizeof(c));
+  m_memblock->text_data()[0] = c;
+  m_end = sizeof(c);
 }
 
 Text::Text(const std::string& s) {
-  _end = s.size();
-  if (_end > 0) {
-    // TODO replace as soon as gcc implements with make_shared_for_overwrite
-    _memblock = ptr<char>((char*)malloc(_end), free);
-    std::copy(s.begin(), s.end(), _memblock.get());
+  m_end = s.size();
+  if (m_end > 0) {
+    m_memblock = TextRefCounter::allocate(m_end);
+    std::copy(s.begin(), s.end(), m_memblock->text_data());
   }
 }
 
 Text::Text(const char* ptr) {
   if (ptr) {
-    _end = std::strlen(ptr);
-    if (_end > 0) {
-      // TODO replace as soon as gcc implements with make_shared_for_overwrite
-      _memblock = kl::ptr<char>((char*)malloc(_end), free);
-      std::copy(ptr, ptr + _end, _memblock.get());
+    m_end = std::strlen(ptr);
+    if (m_end > 0) {
+      m_memblock = TextRefCounter::allocate(m_end);
+      std::copy(ptr, ptr + m_end, m_memblock->text_data());
     }
   }
 }
 
 Text::Text(const char* ptr, uint32_t size) {
   if (ptr) {
-    _end = size;
-    if (_end > 0) {
-      // TODO replace as soon as gcc implements with make_shared_for_overwrite
-      _memblock = kl::ptr<char>((char*)malloc(_end), free);
-      std::copy(ptr, ptr + _end, _memblock.get());
+    m_end = size;
+    if (m_end > 0) {
+      m_memblock = TextRefCounter::allocate(m_end);
+      std::copy(ptr, ptr + m_end, m_memblock->text_data());
     }
   }
 }
 
 Text::Text(const Text& t, uint32_t start, uint32_t length) {
-  _memblock = t._memblock;
-  _start = std::min(t._start + start, t._end);
-  _end = std::min(_start + length, t._end);
-  if (_start == _end) {
-    _memblock = s_null_data;
-    _start = 0;
-    _end = 0;
+  m_start = std::min(t.m_start + start, t.m_end);
+  m_end = std::min(m_start + length, t.m_end);
+  if (m_start == m_end) {
+    m_start = 0;
+    m_end = 0;
+  } else {
+    m_memblock = t.m_memblock->acquire();
   }
 }
 
 Text& Text::operator=(const Text& v) {
-  _memblock = v._memblock;
-  _start = v._start;
-  _end = v._end;
+  m_memblock = v.m_memblock->acquire();
+  m_start = v.m_start;
+  m_end = v.m_end;
   return *this;
 }
 
-Text Text::FromBuffer(ptr<char> p, uint32_t start, uint32_t end) {
-  if (start >= end || p.get() == nullptr) {
-    return {};
-  }
-  Text t;
-  t._memblock = p;
-  t._start = start;
-  t._end = end;
-  return t;
-}
-
 void Text::clear() {
-  _memblock = s_null_data;
-  _start = 0;
-  _end = 0;
+  if (m_memblock->release()) {
+    free(m_memblock);
+  }
+  m_memblock = nullptr;
+  m_start = 0;
+  m_end = 0;
 }
 
-Text Text::copy() const { return Text(_memblock.get() + _start, size()); }
+Text Text::copy() const { return Text(m_memblock->text_data() + m_start, size()); }
 
 char Text::operator[](uint32_t index) const {
-  CHECKST(index < size()); // This is brutal. Do I really need this? Alternative: return \0
-  return *(_memblock.get() + _start + index);
+  if (index < size()) [[unlikely]] {
+    throw std::out_of_range(fmt::format("Requested index {} out of {}", index, size()));
+  }
+  return *(m_memblock->text_data() + m_start + index);
 }
 
-uint32_t Text::size() const { return _end - _start; }
-const char* Text::begin() const { return _memblock.get() ? _memblock.get() + _start : nullptr; }
-const char* Text::end() const { return _memblock.get() + _end; }
+uint32_t Text::size() const { return m_end - m_start; }
+const char* Text::begin() const { return m_memblock ? m_memblock->text_data() + m_start : nullptr; }
+const char* Text::end() const { return m_memblock ? m_memblock->text_data() + m_end : nullptr; }
 
-std::string Text::toString() const { return std::string((const char*)_memblock.get() + _start, size()); }
-std::string_view Text::toView() const { return std::string_view(_memblock.get() + _start, (size_t)size()); }
+std::string Text::toString() const { return std::string((const char*)m_memblock->text_data() + m_start, size()); }
+std::string_view Text::toView() const { return std::string_view(m_memblock->text_data() + m_start, (size_t)size()); }
 
 Text Text::trim() const {
-  const char* ptr = (const char*)_memblock.get();
-  uint32_t s = _start;
-  while (s < _end && isspace(ptr[s])) {
+  const char* ptr = (const char*)m_memblock->text_data();
+  uint32_t s = m_start;
+  while (s < m_end && isspace(ptr[s])) {
     s++;
   }
 
-  uint32_t e = _end;
+  uint32_t e = m_end;
   while (e > s && isspace(ptr[e - 1])) {
     e--;
   }
 
-  return Text(*this, s - _start, e - s);
+  return Text(*this, s - m_start, e - s);
 }
 
 Text Text::trimLeft() const {
-  const char* ptr = (const char*)_memblock.get();
-  uint32_t offset = _start;
-  while (offset < _end && isspace(ptr[offset])) {
+  const char* ptr = (const char*)m_memblock->text_data();
+  uint32_t offset = m_start;
+  while (offset < m_end && isspace(ptr[offset])) {
     offset++;
   }
-  return Text(*this, offset - _start, _end - offset);
+  return Text(*this, offset - m_start, m_end - offset);
 }
 
 Text Text::trimRight() const {
-  const char* ptr = (const char*)_memblock.get();
-  uint32_t offset = _end;
-  while (offset > _start && isspace(ptr[offset - 1])) {
+  const char* ptr = (const char*)m_memblock->text_data();
+  uint32_t offset = m_end;
+  while (offset > m_start && isspace(ptr[offset - 1])) {
     offset--;
   }
 
@@ -503,11 +521,11 @@ Text Text::skip(const Text& skippables) const {
 }
 
 Text Text::skip(uint32_t n) const {
-  n += _start;
-  if (n >= _end) {
+  n += m_start;
+  if (n >= m_end) {
     return ""_t;
   }
-  return Text::FromBuffer(_memblock, n, _end);
+  return Text::FromBuffer(_memblock, n, m_end);
 }
 
 std::optional<uint32_t> Text::pos(char c, uint32_t occurence) const {
@@ -550,7 +568,7 @@ std::optional<uint32_t> Text::lastPos(char c) const {
   uint32_t pos = size();
   while (pos > 0) {
     pos--;
-    if (_memblock.get()[pos + _start] == c) {
+    if (m_memblock->text_data()[pos + m_start] == c) {
       return pos;
     }
   }
@@ -572,39 +590,39 @@ std::pair<Text, Text> Text::splitPos(int32_t where) const {
 }
 
 std::pair<Text, Text> Text::splitNextChar(char c, SplitDirection direction) const {
-  const char* ptr = _memblock.get();
-  for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
+  const char* ptr = m_memblock->text_data();
+  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
     if (ptr[current_offset] == c) {
       if (direction == SplitDirection::KeepLeft) {
         current_offset++;
       }
-      auto first = Text::FromBuffer(_memblock, _start, current_offset);
+      auto first = Text::FromBuffer(_memblock, m_start, current_offset);
       if (direction == SplitDirection::Discard) {
         current_offset++;
       }
-      return {first, Text::FromBuffer(_memblock, current_offset, _end)};
+      return {first, Text::FromBuffer(_memblock, current_offset, m_end)};
     }
   }
   return {*this, Text()};
 }
 
 std::pair<Text, Text> Text::splitNextLine() const {
-  const char* ptr = _memblock.get();
-  for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
+  const char* ptr = m_memblock->text_data();
+  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
     if (ptr[current_offset] == '\n') {
-      auto first = Text::FromBuffer(_memblock, _start, current_offset);
-      if (current_offset < _end - 1 && (ptr[current_offset + 1] == '\r')) {
+      auto first = Text::FromBuffer(_memblock, m_start, current_offset);
+      if (current_offset < m_end - 1 && (ptr[current_offset + 1] == '\r')) {
         current_offset++;
       }
       current_offset++;
-      return {first, Text::FromBuffer(_memblock, current_offset, _end)};
+      return {first, Text::FromBuffer(_memblock, current_offset, m_end)};
     } else if (ptr[current_offset] == '\r') {
-      auto first = Text::FromBuffer(_memblock, _start, current_offset);
-      if (current_offset < _end - 1 && (ptr[current_offset + 1] == '\n')) {
+      auto first = Text::FromBuffer(_memblock, m_start, current_offset);
+      if (current_offset < m_end - 1 && (ptr[current_offset + 1] == '\n')) {
         current_offset++;
       }
       current_offset++;
-      return {first, Text::FromBuffer(_memblock, current_offset, _end)};
+      return {first, Text::FromBuffer(_memblock, current_offset, m_end)};
     }
   }
   return {*this, Text()};
@@ -612,14 +630,14 @@ std::pair<Text, Text> Text::splitNextLine() const {
 
 List<Text> Text::splitLines(SplitEmpty onEmpty) const {
   List<Text> res;
-  uint32_t last_start = _start;
-  const char* ptr = _memblock.get();
-  for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
+  uint32_t last_start = m_start;
+  const char* ptr = m_memblock->text_data();
+  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
     if (ptr[current_offset] == '\n') { // Time to build the next return item
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
         res.add(Text::FromBuffer(_memblock, last_start, current_offset));
       }
-      if ((current_offset < _end - 1) && (ptr[current_offset + 1] == '\r')) {
+      if ((current_offset < m_end - 1) && (ptr[current_offset + 1] == '\r')) {
         current_offset++;
       }
       last_start = current_offset + 1;
@@ -627,23 +645,23 @@ List<Text> Text::splitLines(SplitEmpty onEmpty) const {
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
         res.add(Text::FromBuffer(_memblock, last_start, current_offset));
       }
-      if ((current_offset < _end - 1) && (ptr[current_offset + 1] == '\n')) {
+      if ((current_offset < m_end - 1) && (ptr[current_offset + 1] == '\n')) {
         current_offset++;
       }
       last_start = current_offset + 1;
     }
   }
-  if (_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.add(Text::FromBuffer(_memblock, last_start, _end));
+  if (m_end > last_start || onEmpty == SplitEmpty::Keep) {
+    res.add(Text::FromBuffer(_memblock, last_start, m_end));
   }
   return res;
 }
 
 List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
   List<Text> res;
-  uint32_t last_start = _start;
-  const char* ptr = _memblock.get();
-  for (uint32_t current_offset = _start; current_offset < _end; current_offset++) {
+  uint32_t last_start = m_start;
+  const char* ptr = m_memblock->text_data();
+  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
     if (ptr[current_offset] == c) { // Time to build the next return item
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
         res.add(Text::FromBuffer(_memblock, last_start, current_offset));
@@ -651,8 +669,8 @@ List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
       last_start = current_offset + 1;
     }
   }
-  if (_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.add(Text::FromBuffer(_memblock, last_start, _end));
+  if (m_end > last_start || onEmpty == SplitEmpty::Keep) {
+    res.add(Text::FromBuffer(_memblock, last_start, m_end));
   }
   return res;
 }
@@ -665,10 +683,10 @@ List<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
     return (t == *this) ? (onEmpty == SplitEmpty::Keep ? List<Text>({""_t}) : List<Text>()) : List<Text>({*this});
   }
   List<Text> res;
-  uint32_t last_start = _start;
+  uint32_t last_start = m_start;
   char c = t[0];
-  const char* ptr = _memblock.get();
-  for (uint32_t current_offset = _start; current_offset <= _end - t.size(); current_offset++) {
+  const char* ptr = m_memblock->text_data();
+  for (uint32_t current_offset = m_start; current_offset <= m_end - t.size(); current_offset++) {
     if (ptr[current_offset] == c &&
         std::memcmp(t.begin(), ptr + current_offset, t.size()) == 0) { // Time to build the next return item
       if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
@@ -678,8 +696,8 @@ List<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
       current_offset += t.size() - 1;
     }
   }
-  if (_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.add(Text::FromBuffer(_memblock, last_start, _end));
+  if (m_end > last_start || onEmpty == SplitEmpty::Keep) {
+    res.add(Text::FromBuffer(_memblock, last_start, m_end));
   }
   return res;
 }
@@ -728,7 +746,7 @@ void TextChain::consolidate() {
   if (_length > 0) {
     List<Text> new_chain(_chain.size());
     auto _memblock = kl::ptr<char>((char*)malloc(_length), free);
-    char* ptr = _memblock.get();
+    char* ptr = m_memblock->text_data();
     uint32_t offset = 0;
     for (uint32_t i = 0; i < _chain.size(); i++) {
       auto& t = _chain[i];
@@ -755,7 +773,7 @@ Text Text::subpos(uint32_t start, uint32_t end) const {
   if (end > size()) {
     end = size();
   }
-  return Text::FromBuffer(_memblock, _start + start, _start + end);
+  return Text::FromBuffer(_memblock, m_start + start, m_start + end);
 }
 
 Text Text::sublen(uint32_t start, uint32_t len) const {
@@ -765,7 +783,7 @@ Text Text::sublen(uint32_t start, uint32_t len) const {
   if (start + len > size()) {
     len = size() - start;
   }
-  return Text::FromBuffer(_memblock, _start + start, _start + start + len);
+  return Text::FromBuffer(_memblock, m_start + start, m_start + start + len);
 }
 
 std::optional<Text> Text::expect(const Text& t) const {

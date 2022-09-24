@@ -97,12 +97,29 @@ private:
   std::string_view m_view;
 };
 
+class TextRefCounter;
+
+class TextRefCounterPtr {
+  TextRefCounter* m_ptr;
+
+public:
+  TextRefCounterPtr();
+  TextRefCounterPtr(const TextRefCounterPtr&);
+  TextRefCounterPtr(TextRefCounterPtr&&);
+  TextRefCounterPtr& operator=(const TextRefCounterPtr&);
+  TextRefCounterPtr& operator=(TextRefCounterPtr&&);
+  ~TextRefCounterPtr();
+
+  const char* data();
+
+  static TextRefCounterPtr create(const char* start, size_t size);
+};
+
 class Text {
-  // the only place where we unconst this is in constructors. replace void with const char
-  static ptr<char> s_null_data;
-  ptr<char> _memblock = s_null_data;
-  uint32_t _start = 0;
-  uint32_t _end = 0;
+
+  TextRefCounter* m_memblock = nullptr;
+  uint32_t m_start = 0;
+  uint32_t m_end = 0;
 
 public:
   Text() = default;
