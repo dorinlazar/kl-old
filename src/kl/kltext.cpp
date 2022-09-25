@@ -274,26 +274,16 @@ public:
   static TextRefCounter s_empty;
 };
 static_assert(sizeof(TextRefCounter) == sizeof(int64_t));
-/////// From here onwards
-Text::Text() {
-  m_memblock = &TextRefCounter::s_empty;
-  m_start = 0;
-  m_end = 0;
-}
+
+Text::Text() : m_memblock(&TextRefCounter::s_empty), m_start(0), m_end(0) {}
 
 Text::~Text() { reset(); }
 
-Text::Text(const Text& t) {
-  m_memblock = t.m_memblock->acquire();
-  m_start = t.m_start;
-  m_end = t.m_end;
-}
+Text::Text(const Text& t) : m_memblock(t.m_memblock->acquire()), m_start(t.m_start), m_end(t.m_end) {}
 
-Text::Text(Text&& dying) {
-  m_start = std::exchange(dying.m_start, 0);
-  m_end = std::exchange(dying.m_end, 0);
-  m_memblock = std::exchange(dying.m_memblock, &TextRefCounter::s_empty);
-}
+Text::Text(Text&& dying)
+    : m_memblock(std::exchange(dying.m_memblock, &TextRefCounter::s_empty)), m_start(std::exchange(dying.m_start, 0)),
+      m_end(std::exchange(dying.m_end, 0)) {}
 
 Text& Text::operator=(const Text& t) {
   reset();
@@ -321,6 +311,7 @@ Text::Text(char c) {
 }
 
 Text::Text(const std::string& s) {
+  m_start = 0;
   m_end = s.size();
   if (m_end > 0) {
     m_memblock = TextRefCounter::allocate(m_end);
@@ -331,37 +322,33 @@ Text::Text(const std::string& s) {
 }
 
 Text::Text(const char* ptr) {
-  if (ptr) {
+  if (ptr && (*ptr != '\0')) {
     m_end = std::strlen(ptr);
-    if (m_end > 0) {
-      m_memblock = TextRefCounter::allocate(m_end);
-      std::copy(ptr, ptr + m_end, m_memblock->text_data());
-    } else {
-      m_memblock = &TextRefCounter::s_empty;
-    }
+    m_memblock = TextRefCounter::allocate(m_end);
+    std::copy(ptr, ptr + m_end, m_memblock->text_data());
+  } else {
+    m_memblock = &TextRefCounter::s_empty;
   }
 }
 
-Text::Text(const char* ptr, uint32_t size) {
-  if (ptr) {
+Text::Text(const char* ptr, size_t size) {
+  if (ptr && size > 0) {
     m_end = size;
-    if (m_end > 0) {
-      m_memblock = TextRefCounter::allocate(m_end);
-      std::copy(ptr, ptr + m_end, m_memblock->text_data());
-    } else {
-      m_memblock = &TextRefCounter::s_empty;
-    }
+    m_memblock = TextRefCounter::allocate(m_end);
+    std::copy(ptr, ptr + m_end, m_memblock->text_data());
+  } else {
+    m_memblock = &TextRefCounter::s_empty;
   }
 }
 
-Text::Text(const Text& t, uint32_t start, uint32_t length) {
-  m_start = std::min(t.m_start + start, t.m_end);
-  m_end = std::min(m_start + length, t.m_end);
-  if (m_start == m_end) {
-    m_start = 0;
-    m_end = 0;
+Text::Text(const Text& t, size_t start, size_t length) {
+  auto start = std::min(t.m_start + start, t.m_end);
+  auto end = std::min(m_start + length, t.m_end);
+  if (start == end) {
     m_memblock = &TextRefCounter::s_empty;
   } else {
+    m_start = start;
+    m_end = end;
     m_memblock = t.m_memblock->acquire();
   }
 }
@@ -379,96 +366,11 @@ void Text::reset() {
 
 Text Text::copy() const { return Text(m_memblock->text_data() + m_start, size()); }
 
-char Text::operator[](uint32_t index) const {
-  if (index < size()) [[unlikely]] {
+char Text::operator[](ssize_t index) const {
+  if (std::abs(index) < size()) [[unlikely]] {
     throw std::out_of_range(fmt::format("Requested index {} out of {}", index, size()));
   }
-  return *(m_memblock->text_data() + m_start + index);
-}
-
-uint32_t Text::size() const { return m_end - m_start; }
-const char* Text::begin() const { return m_memblock ? m_memblock->text_data() + m_start : nullptr; }
-const char* Text::end() const { return m_memblock ? m_memblock->text_data() + m_end : nullptr; }
-
-std::string Text::toString() const { return std::string((const char*)m_memblock->text_data() + m_start, size()); }
-std::string_view Text::toView() const { return std::string_view(m_memblock->text_data() + m_start, (size_t)size()); }
-
-Text Text::trim() const {
-  const char* ptr = (const char*)m_memblock->text_data();
-  uint32_t s = m_start;
-  while (s < m_end && isspace(ptr[s])) {
-    s++;
-  }
-
-  uint32_t e = m_end;
-  while (e > s && isspace(ptr[e - 1])) {
-    e--;
-  }
-
-  return Text(*this, s - m_start, e - s);
-}
-
-Text Text::trimLeft() const {
-  const char* ptr = (const char*)m_memblock->text_data();
-  uint32_t offset = m_start;
-  while (offset < m_end && isspace(ptr[offset])) {
-    offset++;
-  }
-  return Text(*this, offset - m_start, m_end - offset);
-}
-
-Text Text::trimRight() const {
-  const char* ptr = (const char*)m_memblock->text_data();
-  uint32_t offset = m_end;
-  while (offset > m_start && isspace(ptr[offset - 1])) {
-    offset--;
-  }
-
-  return Text(*this, 0, offset);
-}
-
-bool Text::startsWith(const Text& tv) const {
-  if (tv.size() <= size()) [[likely]] {
-    const char* p = begin();
-    for (auto c: tv) {
-      if (*p != c) {
-        return false;
-      }
-      p++;
-    }
-    return true;
-  }
-  return false;
-}
-
-bool Text::startsWith(const char* v) const {
-  if (v == nullptr) [[unlikely]] {
-    return false;
-  }
-  const char* p = begin();
-  const char* e = end();
-  while (*v) {
-    if (p == e || *p != *v) {
-      return false;
-    }
-    v++;
-    p++;
-  }
-  return true;
-}
-
-bool Text::endsWith(const Text& tv) const {
-  if (tv.size() <= size()) [[likely]] {
-    const char* p = end() - tv.size();
-    for (auto c: tv) {
-      if (*p != c) {
-        return false;
-      }
-      p++;
-    }
-    return true;
-  }
-  return false;
+  return *(m_memblock->text_data() + m_start + index + ((index < 0) ? size() : 0));
 }
 
 std::strong_ordering Text::operator<=>(const Text& v) const {
@@ -536,183 +438,114 @@ bool Text::operator==(const std::string& v) const {
   return operator<=>(v) == std::strong_ordering::equal;
 }
 
-bool Text::contains(char c) const {
-  for (char ch: *this) {
-    if (ch == c) {
-      return true;
-    }
-  }
-  return false;
-}
+size_t Text::size() const { return m_end - m_start; }
+const char* Text::begin() const { return m_memblock->text_data() + m_start; }
+const char* Text::end() const { return m_memblock->text_data() + m_end; }
 
-Text Text::skip(const Text& skippables) const {
-  uint32_t skipped = 0;
-  const char* p = begin();
-  const char* e = end();
-  while (p != e) {
-    if (!skippables.contains(*p)) {
-      break;
-    }
-    skipped++;
-    p++;
-  }
-  return Text(*this, skipped, size());
-}
+std::string Text::toString() const { return std::string(begin(), size()); }
+std::string_view Text::toView() const { return std::string_view(begin(), size()); }
+TextView Text::toTextView() const { return TextView(toView()); }
+std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), (uint8_t*)end()}; }
+int64_t Text::toInt() const { return std::stoll(toString()); }
 
-Text Text::skip(uint32_t n) const {
-  n += m_start;
-  if (n >= m_end) {
-    return ""_t;
-  }
-  return Text::FromBuffer(_memblock, n, m_end);
-}
-
-std::optional<uint32_t> Text::pos(char c, uint32_t occurence) const {
-  if (occurence == 0) {
+Text Text::trim() const { return trimLeft().trimRight(); }
+Text Text::trimLeft() const { return skip(WHITESPACE); }
+Text Text::trimRight() const {
+  auto position = toView().find_last_not_of(WHITESPACE);
+  if (position == std::string_view::npos) {
     return {};
   }
-  uint32_t pos = 0;
-  for (char x: *this) {
-    if (x == c) {
-      occurence--;
-      if (occurence == 0) {
-        return pos;
-      }
-    }
-    pos++;
+  return Text(*this, 0, position + 1);
+}
+
+bool Text::startsWith(const Text& tv) const { return toView().starts_with(tv.toView()); }
+
+bool Text::startsWith(const char* v) const {
+  if (v == nullptr) [[unlikely]] {
+    return false;
   }
+  return toView().starts_with(v);
+}
+
+bool Text::endsWith(const Text& tv) const { return toView().ends_with(tv.toView()); }
+
+bool Text::contains(char c) const { return toTextView().contains(c); }
+
+Text Text::skip(std::string_view skippables) const { return skip(toView().find_first_not_of(skippables)); }
+
+Text Text::skip(size_t n) const {
+  if (n < size()) {
+    n += m_start;
+    return sublen(n, m_end - n);
+  };
   return {};
 }
 
-std::optional<uint32_t> Text::pos(Text t, uint32_t occurence) const {
-  auto ts = t.size();
-  auto s = size();
-  if (occurence == 0 || ts == 0 || ts > s) {
-    return {};
-  }
-  auto start = begin();
-  auto tstart = t.begin();
-  for (uint32_t pos = 0; pos <= s - ts; pos++) {
-    if ((start[pos] == *tstart) && std::memcmp(start + pos, tstart, ts) == 0) {
-      occurence--;
-      if (occurence == 0) {
-        return pos;
-      }
-    }
-  }
-  return {};
-}
+std::optional<size_t> Text::pos(char c, size_t occurence) const { return toTextView().pos(c, occurence); }
 
-std::optional<uint32_t> Text::lastPos(char c) const {
-  uint32_t pos = size();
-  while (pos > 0) {
-    pos--;
-    if (m_memblock->text_data()[pos + m_start] == c) {
-      return pos;
-    }
-  }
-  return {};
-}
+std::optional<size_t> Text::pos(Text t, size_t occurence) const { return toTextView().pos(t.toTextView(), occurence); }
 
-std::pair<Text, Text> Text::splitPos(int32_t where) const {
-  int32_t maxn = size();
+std::optional<size_t> Text::lastPos(char c) const { return toTextView().lastPos(c); }
+
+std::pair<Text, Text> Text::splitPos(ssize_t where) const {
+  auto maxn = size();
   if (where < 0) {
     where += maxn;
     if (where < 0) {
       where = 0;
     }
   }
-  if (where > maxn) {
-    where = maxn;
-  }
-  return {Text(*this, 0, where), Text(*this, where, maxn)};
+  return {sublen(0, where), sublen(where, maxn)};
 }
 
 std::pair<Text, Text> Text::splitNextChar(char c, SplitDirection direction) const {
-  const char* ptr = m_memblock->text_data();
-  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
-    if (ptr[current_offset] == c) {
-      if (direction == SplitDirection::KeepLeft) {
-        current_offset++;
-      }
-      auto first = Text::FromBuffer(_memblock, m_start, current_offset);
-      if (direction == SplitDirection::Discard) {
-        current_offset++;
-      }
-      return {first, Text::FromBuffer(_memblock, current_offset, m_end)};
-    }
+  auto position = pos(c, 1);
+  if (!position.has_value()) {
+    return {*this, {}};
   }
-  return {*this, Text()};
+
+  if (direction == SplitDirection::Discard) {
+    return {sublen(0, position.value()), sublen(position.value() + 1, m_end)};
+  }
+  auto split_position = position.value() + (direction == SplitDirection::KeepLeft) ? 1 : 0;
+  return {sublen(0, split_position), sublen(split_position, m_end)};
 }
 
 std::pair<Text, Text> Text::splitNextLine() const {
-  const char* ptr = m_memblock->text_data();
-  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
-    if (ptr[current_offset] == '\n') {
-      auto first = Text::FromBuffer(_memblock, m_start, current_offset);
-      if (current_offset < m_end - 1 && (ptr[current_offset + 1] == '\r')) {
-        current_offset++;
-      }
-      current_offset++;
-      return {first, Text::FromBuffer(_memblock, current_offset, m_end)};
-    } else if (ptr[current_offset] == '\r') {
-      auto first = Text::FromBuffer(_memblock, m_start, current_offset);
-      if (current_offset < m_end - 1 && (ptr[current_offset + 1] == '\n')) {
-        current_offset++;
-      }
-      current_offset++;
-      return {first, Text::FromBuffer(_memblock, current_offset, m_end)};
-    }
+  auto [left, right] = splitNextChar('\n', SplitDirection::Discard);
+  if (left.size() > 0 && left[-1] == '\r') {
+    return {left.sublen(0, left.size() - 1), right};
   }
-  return {*this, Text()};
+  return {left, right};
 }
 
 List<Text> Text::splitLines(SplitEmpty onEmpty) const {
   List<Text> res;
-  uint32_t last_start = m_start;
-  const char* ptr = m_memblock->text_data();
-  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
-    if (ptr[current_offset] == '\n') { // Time to build the next return item
-      if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
-      }
-      if ((current_offset < m_end - 1) && (ptr[current_offset + 1] == '\r')) {
-        current_offset++;
-      }
-      last_start = current_offset + 1;
-    } else if (ptr[current_offset] == '\r') {
-      if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
-      }
-      if ((current_offset < m_end - 1) && (ptr[current_offset + 1] == '\n')) {
-        current_offset++;
-      }
-      last_start = current_offset + 1;
+  auto right = *this;
+  Text left;
+  while (right.size() > 0) {
+    std::tie(left, right) = right.splitNextLine();
+    if (left.size() > 0 || onEmpty == SplitEmpty::Keep) {
+      res.add(left);
     }
-  }
-  if (m_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.add(Text::FromBuffer(_memblock, last_start, m_end));
   }
   return res;
 }
 
 List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
   List<Text> res;
-  uint32_t last_start = m_start;
-  const char* ptr = m_memblock->text_data();
-  for (uint32_t current_offset = m_start; current_offset < m_end; current_offset++) {
-    if (ptr[current_offset] == c) { // Time to build the next return item
-      if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
-      }
-      last_start = current_offset + 1;
+  auto right = *this;
+  Text left;
+  while (right.size() > 0) {
+    std::tie(left, right) = right.splitNextChar(c, SplitDirection::Discard);
+    if (left.size() > 0 || onEmpty == SplitEmpty::Keep) {
+      res.add(left);
     }
-  }
-  if (m_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.add(Text::FromBuffer(_memblock, last_start, m_end));
   }
   return res;
 }
+
+//// ONWARDS
 
 List<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
   if (t.size() == 0) {
@@ -797,11 +630,6 @@ void TextChain::consolidate() {
     }
     _chain = new_chain;
   }
-}
-
-int64_t Text::toInt() const {
-  // TODO make this properly
-  return std::stoll(toString());
 }
 
 Text Text::subpos(uint32_t start, uint32_t end) const {
@@ -916,7 +744,6 @@ void TextChain::clear() {
   _length = 0;
 }
 
-std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), (uint8_t*)end()}; }
 Text Text::skipBOM() const {
   if (size() >= 3) {
     auto buf = begin();

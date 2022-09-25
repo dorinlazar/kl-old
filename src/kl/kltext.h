@@ -99,26 +99,10 @@ private:
 
 class TextRefCounter;
 
-class TextRefCounterPtr {
-  TextRefCounter* m_ptr;
-
-public:
-  TextRefCounterPtr();
-  TextRefCounterPtr(const TextRefCounterPtr&);
-  TextRefCounterPtr(TextRefCounterPtr&&);
-  TextRefCounterPtr& operator=(const TextRefCounterPtr&);
-  TextRefCounterPtr& operator=(TextRefCounterPtr&&);
-  ~TextRefCounterPtr();
-
-  const char* data();
-
-  static TextRefCounterPtr create(const char* start, size_t size);
-};
-
 class Text {
   TextRefCounter* m_memblock;
-  uint32_t m_start = 0;
-  uint32_t m_end = 0;
+  size_t m_start = 0;
+  size_t m_end = 0;
 
 public:
   Text();
@@ -131,29 +115,16 @@ public:
   Text(char c);
   Text(const std::string& s);
   Text(const char* ptr);
-  Text(const char* ptr, uint32_t size);
-  Text(const Text& t, uint32_t start, uint32_t length);
-  static Text FromBuffer(ptr<char> p, uint32_t start, uint32_t end);
+  Text(const char* ptr, size_t size);
+  Text(const Text& t, size_t start, size_t length);
 
 public:
   void reset();
-  Text trim() const;
-  Text trimLeft() const;
-  Text trimRight() const;
-
   // This is useful when we don't want to keep the big source text like when we're parsing some file
   // for a small bit of information and we want to free that piece of memory.
   Text copy() const;
 
-  bool startsWith(const Text& tv) const;
-  bool startsWith(const char*) const;
-  bool endsWith(const Text& tv) const;
-
-  char operator[](uint32_t index) const;
-
-  uint32_t size() const;
-  const char* begin() const;
-  const char* end() const;
+  char operator[](ssize_t index) const;
 
   std::strong_ordering operator<=>(const Text&) const;
   std::strong_ordering operator<=>(const char*) const;
@@ -163,28 +134,42 @@ public:
   bool operator==(const char*) const;
   bool operator==(const std::string&) const;
 
+public:
+  size_t size() const;
+  const char* begin() const;
+  const char* end() const;
+
+  Text trim() const;
+  Text trimLeft() const;
+  Text trimRight() const;
+
+  bool startsWith(const Text& tv) const;
+  bool startsWith(const char*) const;
+  bool endsWith(const Text& tv) const;
+
   std::string toString() const;
   std::string_view toView() const;
+  TextView toTextView() const;
   std::span<uint8_t> toRawData() const;
   int64_t toInt() const;
 
   bool contains(char c) const;
-  Text skip(const Text& skippables) const;
-  Text skip(uint32_t n) const;
+  Text skip(std::string_view skippables) const;
+  Text skip(size_t n) const;
   Text skipBOM() const;
 
   // substring position based. The string will contain the character from ending position too.
-  Text subpos(uint32_t start, uint32_t end) const;
+  Text subpos(size_t start, size_t end) const;
 
   // substring length based. The return value will have a string of at most <len> characters
-  Text sublen(uint32_t start, uint32_t len) const;
+  Text sublen(size_t start, size_t len) const;
 
   // occurence is one based - so first occurence is 1;
-  std::optional<uint32_t> pos(char c, uint32_t occurence = 1) const;
-  std::optional<uint32_t> pos(Text t, uint32_t occurence = 1) const;
-  std::optional<uint32_t> lastPos(char c) const;
+  std::optional<size_t> pos(char c, size_t occurence = 1) const;
+  std::optional<size_t> pos(Text t, size_t occurence = 1) const;
+  std::optional<size_t> lastPos(char c) const;
 
-  std::pair<Text, Text> splitPos(int32_t where) const;
+  std::pair<Text, Text> splitPos(ssize_t where) const;
   std::pair<Text, Text> splitNextChar(char c, SplitDirection direction = SplitDirection::Discard) const;
   std::pair<Text, Text> splitNextLine() const;
   List<Text> splitLines(SplitEmpty onEmpty = SplitEmpty::Keep) const;
@@ -197,14 +182,14 @@ public:
   std::optional<Text> expectws(const Text& t) const;
 
   // returns text after <indentLevel> whitespaces, or empty;
-  std::optional<Text> skipIndent(uint32_t indentLevel) const;
+  std::optional<Text> skipIndent(size_t indentLevel) const;
   // returns whitespace indent level
-  uint32_t getIndent() const;
+  size_t getIndent() const;
 
   // fills a C buffer, preallocated with bufsize bytes;
-  void fill_c_buffer(char* dest, uint32_t bufsize) const;
+  void fill_c_buffer(char* dest, size_t bufsize) const;
   // how many times the character c appears in the text
-  uint32_t count(char c) const;
+  size_t count(char c) const;
 };
 
 class TextChain {
