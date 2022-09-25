@@ -343,7 +343,7 @@ Text::Text(const char* ptr, size_t size) {
 
 Text::Text(const Text& t, size_t start, size_t length) {
   auto start = std::min(t.m_start + start, t.m_end);
-  auto end = std::min(m_start + length, t.m_end);
+  auto end = std::min(start + length, t.m_end);
   if (start == end) {
     m_memblock = &TextRefCounter::s_empty;
   } else {
@@ -352,6 +352,8 @@ Text::Text(const Text& t, size_t start, size_t length) {
     m_memblock = t.m_memblock->acquire();
   }
 }
+
+Text::Text(TextRefCounter* buffer, size_t length) : m_memblock(buffer), m_end(length) {}
 
 void Text::reset() {
   if (m_start < m_end) {
@@ -545,33 +547,112 @@ List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
   return res;
 }
 
-//// ONWARDS
-
 List<Text> Text::splitByText(const Text& t, SplitEmpty onEmpty) const {
   if (t.size() == 0) {
     return {*this};
   }
-  if (t.size() >= size()) {
-    return (t == *this) ? (onEmpty == SplitEmpty::Keep ? List<Text>({""_t}) : List<Text>()) : List<Text>({*this});
-  }
   List<Text> res;
-  uint32_t last_start = m_start;
-  char c = t[0];
-  const char* ptr = m_memblock->text_data();
-  for (uint32_t current_offset = m_start; current_offset <= m_end - t.size(); current_offset++) {
-    if (ptr[current_offset] == c &&
-        std::memcmp(t.begin(), ptr + current_offset, t.size()) == 0) { // Time to build the next return item
-      if (current_offset > last_start || onEmpty == SplitEmpty::Keep) {
-        res.add(Text::FromBuffer(_memblock, last_start, current_offset));
-      }
-      last_start = current_offset + t.size();
-      current_offset += t.size() - 1;
+  auto position = pos(t);
+  auto left_over = *this;
+  while (position.has_value()) {
+    if (position.value() > 0 || onEmpty != SplitEmpty::Discard) {
+      res.add(left_over.sublen(0, position.value()));
     }
+    left_over = left_over.sublen(position.value() + t.size(), left_over.size());
+    position = left_over.pos(t);
   }
-  if (m_end > last_start || onEmpty == SplitEmpty::Keep) {
-    res.add(Text::FromBuffer(_memblock, last_start, m_end));
+  if (left_over.size() > 0 || onEmpty != SplitEmpty::Discard) {
+    res.add(left_over);
   }
   return res;
+}
+
+Text Text::subpos(size_t start, size_t end) const {
+  if (start >= size() || end < start) {
+    return {};
+  }
+  end++; // include the ending character
+  if (end > size()) {
+    end = size();
+  }
+  return Text(*this, start, end - start);
+}
+
+Text Text::sublen(size_t start, size_t len) const {
+  if (start >= size()) {
+    return Text();
+  }
+  return Text(*this, start, len);
+}
+
+std::optional<Text> Text::expect(const Text& t) const {
+  if (startsWith(t)) {
+    return skip(t.size());
+  }
+  return {};
+}
+
+std::optional<Text> Text::expectws(const Text& t) const { return trimLeft().expect(t); }
+
+std::optional<Text> Text::skipIndent(size_t indentLevel) const {
+  if (size() < indentLevel) [[unlikely]] {
+    return {};
+  }
+  auto ptr = begin();
+  for (size_t i = 0; i < indentLevel; i++) {
+    if (*ptr != ' ') {
+      return {};
+    }
+    ptr++;
+  }
+  return skip(indentLevel);
+}
+
+size_t Text::getIndent() const {
+  size_t level = 0;
+  for (char c: *this) {
+    if (c == ' ') {
+      level++;
+    } else {
+      return level;
+    }
+  }
+  return level;
+}
+
+void Text::fill_c_buffer(char* dest, size_t bufsize) const {
+  if (bufsize == 0) {
+    return;
+  }
+  size_t amount_to_copy = bufsize <= size() ? bufsize - 1 : size();
+  std::copy(begin(), begin() + amount_to_copy, dest);
+  dest[amount_to_copy] = 0;
+}
+
+size_t Text::count(char t) const {
+  size_t count = 0;
+  for (auto c: *this) {
+    if (c == t) {
+      count++;
+    }
+  }
+  return count;
+}
+
+void TextChain::_updateLength() {
+  _length = 0;
+  for (const auto& t: _chain) {
+    _length += t.size();
+  }
+}
+
+TextChain::TextChain(std::initializer_list<Text> l) : _chain(l) { _updateLength(); }
+TextChain::TextChain(List<Text>&& l) : _chain(l) { _updateLength(); }
+TextChain::TextChain(const List<Text>& l) : _chain(l) { _updateLength(); }
+const List<Text>& TextChain::chain() const { return _chain; }
+void TextChain::operator+=(const Text& text) {
+  _chain.add(text);
+  _length += text.size();
 }
 
 Text TextChain::toText() const {
@@ -581,8 +662,8 @@ Text TextChain::toText() const {
   if (_chain.size() == 1) {
     return _chain[0];
   }
-  // TODO replace as soon as gcc implements with make_shared_for_overwrite
-  ptr<char> memblock = ptr<char>((char*)malloc(_length), free);
+
+  TextRefCounter* buffer = ptr<char>((char*)malloc(_length), free);
   char* ptr = memblock.get();
   uint32_t offset = 0;
   for (const auto& tv: _chain) {
@@ -630,97 +711,6 @@ void TextChain::consolidate() {
     }
     _chain = new_chain;
   }
-}
-
-Text Text::subpos(uint32_t start, uint32_t end) const {
-  if (start >= size() || end < start) {
-    return Text();
-  }
-  end++; // include the ending character
-  if (end > size()) {
-    end = size();
-  }
-  return Text::FromBuffer(_memblock, m_start + start, m_start + end);
-}
-
-Text Text::sublen(uint32_t start, uint32_t len) const {
-  if (start >= size()) {
-    return Text();
-  }
-  if (start + len > size()) {
-    len = size() - start;
-  }
-  return Text::FromBuffer(_memblock, m_start + start, m_start + start + len);
-}
-
-std::optional<Text> Text::expect(const Text& t) const {
-  if (startsWith(t)) {
-    return skip(t.size());
-  }
-  return {};
-}
-
-std::optional<Text> Text::expectws(const Text& t) const { return trimLeft().expect(t); }
-
-std::optional<Text> Text::skipIndent(uint32_t indentLevel) const {
-  if (size() < indentLevel) [[unlikely]] {
-    return {};
-  }
-  auto ptr = begin();
-  for (uint32_t i = 0; i < indentLevel; i++) {
-    if (*ptr != ' ') {
-      return {};
-    }
-    ptr++;
-  }
-  return skip(indentLevel);
-}
-
-uint32_t Text::getIndent() const {
-  uint32_t level = 0;
-  for (char c: *this) {
-    if (c == ' ') {
-      level++;
-    } else {
-      return level;
-    }
-  }
-  return level;
-}
-
-void Text::fill_c_buffer(char* dest, uint32_t bufsize) const {
-  if (bufsize == 0) {
-    return;
-  }
-  uint32_t amount_to_copy = bufsize <= size() ? bufsize - 1 : size();
-  std::copy(begin(), begin() + amount_to_copy, dest);
-  dest[amount_to_copy] = 0;
-}
-
-uint32_t Text::count(char t) const {
-  uint32_t count = 0;
-  for (auto c: *this) {
-    if (c == t) {
-      count++;
-    }
-  }
-  return count;
-}
-
-void TextChain::_updateLength() {
-  _length = 0;
-  for (const auto& t: _chain) {
-    _length += t.size();
-  }
-}
-
-TextChain::TextChain(std::initializer_list<Text> l) : _chain(l) { _updateLength(); }
-TextChain::TextChain(List<Text>&& l) : _chain(l) { _updateLength(); }
-TextChain::TextChain(const List<Text>& l) : _chain(l) { _updateLength(); }
-const List<Text>& TextChain::chain() const { return _chain; }
-void TextChain::operator+=(const Text& text) {
-  _chain.add(text);
-  _length += text.size();
 }
 
 void TextChain::add(const Text& text) {

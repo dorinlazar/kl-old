@@ -117,6 +117,7 @@ public:
   Text(const char* ptr);
   Text(const char* ptr, size_t size);
   Text(const Text& t, size_t start, size_t length);
+  Text(TextRefCounter* buffer, size_t length);
 
 public:
   void reset();
