@@ -103,16 +103,16 @@ std::optional<size_t> TextView::pos(const TextView& t, size_t occurence) const {
   if (occurence == 0) {
     return std::nullopt;
   }
-  size_t pos = 0;
-  while (pos < m_view.size()) {
-    pos = m_view.find(t.m_view, pos);
-    if (pos < m_view.size()) {
+  size_t position = 0;
+  while (position < m_view.size()) {
+    position = m_view.find(t.m_view, position);
+    if (position < m_view.size()) {
       occurence--;
       if (occurence == 0) {
-        return pos;
+        return position;
       }
+      position += t.size();
     }
-    pos += t.size();
   }
 
   return std::nullopt;
