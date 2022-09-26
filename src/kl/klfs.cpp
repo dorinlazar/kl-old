@@ -37,9 +37,9 @@ static Text _readFile(const Text& filename) {
   } else {
     size -= 3;
   }
-  ptr<char> memblock = ptr<char>((char*)malloc(size), free);
-  is.read(memblock.get(), size);
-  return Text::FromBuffer(memblock, 0, (uint32_t)size);
+  auto memblock = TextRefCounter::allocate(size);
+  is.read(memblock->text_data(), size);
+  return Text(memblock, size);
 }
 
 static Text _normalize_path(const Text& filename) {
@@ -266,13 +266,13 @@ std::optional<Text> FileReader::readLine() {
 
 List<Text> FileReader::readAllLines(SplitEmpty onEmpty) {
   auto res = _unreadContent.splitLines(onEmpty);
-  _unreadContent.clear();
+  _unreadContent.reset();
   return res;
 }
 
 Text FileReader::readAll() {
   auto res = _unreadContent;
-  _unreadContent.clear();
+  _unreadContent.reset();
   return res;
 }
 

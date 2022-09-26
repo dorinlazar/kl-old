@@ -84,16 +84,16 @@ std::optional<size_t> TextView::pos(char c, size_t occurence) const {
   if (occurence == 0) {
     return std::nullopt;
   }
-  size_t pos = 0;
-  while (pos < m_view.size()) {
-    pos = m_view.find_first_of(c, pos);
-    if (pos != std::string_view::npos) {
+  size_t position = 0;
+  while (position < m_view.size()) {
+    position = m_view.find_first_of(c, position);
+    if (position != std::string_view::npos) {
       occurence--;
       if (occurence == 0) {
-        return pos;
+        return position;
       }
+      position++;
     }
-    pos++;
   }
 
   return std::nullopt;
@@ -248,32 +248,23 @@ size_t TextView::count(char t) const {
   return count;
 }
 
-class TextRefCounter {
+TextRefCounter* TextRefCounter::acquire() {
+  ref_count++;
+  return this;
+}
+bool TextRefCounter::release() {
+  ref_count--;
+  return ref_count == 0;
+}
 
-  int64_t ref_count = 1;
-  char block_start[0];
-  TextRefCounter() = default;
+char* TextRefCounter::text_data() { return reinterpret_cast<char*>(&block_start); }
+TextRefCounter* TextRefCounter::allocate(size_t text_size) {
+  auto buffer = reinterpret_cast<TextRefCounter*>(malloc(sizeof(TextRefCounter) + text_size));
+  buffer->ref_count = 1;
+  return buffer;
+}
 
-public:
-  TextRefCounter* acquire() {
-    ref_count++;
-    return this;
-  }
-  bool release() {
-    ref_count--;
-    return ref_count == 0;
-  }
-
-  char* text_data() { return reinterpret_cast<char*>(&block_start); }
-  static TextRefCounter* allocate(size_t text_size) {
-    auto buffer = reinterpret_cast<TextRefCounter*>(malloc(sizeof(TextRefCounter) + text_size));
-    buffer->ref_count = 1;
-    return buffer;
-  }
-
-  static TextRefCounter s_empty;
-};
-static_assert(sizeof(TextRefCounter) == sizeof(int64_t));
+TextRefCounter TextRefCounter::s_empty;
 
 Text::Text() : m_memblock(&TextRefCounter::s_empty), m_start(0), m_end(0) {}
 
@@ -302,6 +293,7 @@ Text& Text::operator=(Text&& dying) {
     m_start = std::exchange(dying.m_start, 0);
     m_end = std::exchange(dying.m_end, 0);
   }
+  return *this;
 }
 
 Text::Text(char c) {
@@ -342,13 +334,13 @@ Text::Text(const char* ptr, size_t size) {
 }
 
 Text::Text(const Text& t, size_t start, size_t length) {
-  auto start = std::min(t.m_start + start, t.m_end);
-  auto end = std::min(start + length, t.m_end);
-  if (start == end) {
+  auto real_start = std::min(t.m_start + start, t.m_end);
+  auto real_end = std::min(real_start + length, t.m_end);
+  if (real_start == real_end) {
     m_memblock = &TextRefCounter::s_empty;
   } else {
-    m_start = start;
-    m_end = end;
+    m_start = real_start;
+    m_end = real_end;
     m_memblock = t.m_memblock->acquire();
   }
 }
@@ -369,7 +361,7 @@ void Text::reset() {
 Text Text::copy() const { return Text(m_memblock->text_data() + m_start, size()); }
 
 char Text::operator[](ssize_t index) const {
-  if (std::abs(index) < size()) [[unlikely]] {
+  if (std::abs(index) >= (ssize_t)size()) [[unlikely]] {
     throw std::out_of_range(fmt::format("Requested index {} out of {}", index, size()));
   }
   return *(m_memblock->text_data() + m_start + index + ((index < 0) ? size() : 0));
@@ -663,54 +655,35 @@ Text TextChain::toText() const {
     return _chain[0];
   }
 
-  TextRefCounter* buffer = ptr<char>((char*)malloc(_length), free);
-  char* ptr = memblock.get();
+  auto memblock = TextRefCounter::allocate(_length);
+  char* ptr = memblock->text_data();
   uint32_t offset = 0;
   for (const auto& tv: _chain) {
     std::copy(tv.begin(), tv.end(), ptr + offset);
     offset += tv.size();
   }
-  return Text::FromBuffer(memblock, 0, _length);
+  return Text(memblock, _length);
 }
 
-kl::Text TextChain::join(char splitchar) {
+Text TextChain::join(char splitchar) {
   if (_length == 0) {
     return ""_t;
   }
   size_t size = _length + (splitchar != '\0' ? (_chain.size() - 1) : 0);
 
-  ptr<char> memblock = ptr<char>((char*)malloc(size), free);
+  auto memblock = TextRefCounter::allocate(_length);
+  char* ptr = memblock->text_data();
 
   size_t offset = 0;
-  char* p = memblock.get();
   for (const auto& t: _chain) {
     if (splitchar && offset != 0) {
-      p[offset] = splitchar;
+      ptr[offset] = splitchar;
       offset++;
     }
-    std::copy(t.begin(), t.end(), p + offset);
+    std::copy(t.begin(), t.end(), ptr + offset);
     offset += t.size();
   }
-  return kl::Text::FromBuffer(memblock, 0, (uint32_t)size);
-}
-
-void TextChain::consolidate() {
-  // TODO replace as soon as gcc implements with make_shared_for_overwrite
-  if (_length > 0) {
-    List<Text> new_chain(_chain.size());
-    auto _memblock = kl::ptr<char>((char*)malloc(_length), free);
-    char* ptr = m_memblock->text_data();
-    uint32_t offset = 0;
-    for (uint32_t i = 0; i < _chain.size(); i++) {
-      auto& t = _chain[i];
-      if (t.size() > 0) {
-        std::copy(t.begin(), t.end(), ptr + offset);
-        new_chain.add(std::move(Text::FromBuffer(_memblock, offset, offset + t.size())));
-        offset += t.size();
-      }
-    }
-    _chain = new_chain;
-  }
+  return Text(memblock, size);
 }
 
 void TextChain::add(const Text& text) {
@@ -745,7 +718,7 @@ Text Text::skipBOM() const {
 }
 
 inline namespace literals {
-kl::Text operator"" _t(const char* p, size_t s) { return kl::Text(p, s); }
+Text operator"" _t(const char* p, size_t s) { return Text(p, s); }
 } // namespace literals
 
 } // namespace kl

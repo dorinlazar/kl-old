@@ -97,7 +97,18 @@ private:
   std::string_view m_view;
 };
 
-class TextRefCounter;
+class TextRefCounter {
+  int64_t ref_count = 1;
+  char block_start[0];
+
+public:
+  TextRefCounter* acquire();
+  bool release();
+  char* text_data();
+  static TextRefCounter* allocate(size_t text_size);
+  static TextRefCounter s_empty;
+};
+static_assert(sizeof(TextRefCounter) == sizeof(int64_t));
 
 class Text {
   TextRefCounter* m_memblock;
@@ -220,7 +231,6 @@ public:
   const List<Text>& chain() const;
 
   void clear();
-  void consolidate();
   kl::Text join(char splitchar = '\0');
 };
 
