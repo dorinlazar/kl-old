@@ -22,11 +22,11 @@ class DefaultBuildStrategy final : public BuildStrategy {
 
 public:
   DefaultBuildStrategy(ModuleCollection* coll);
-  ~DefaultBuildStrategy();
-  void build(Module* module);
-  void link(Module* module);
-  void run(Module* module);
-  bool execute();
+  ~DefaultBuildStrategy() override;
+  void build(Module* module) override;
+  void link(Module* module) override;
+  void run(Module* module) override;
+  bool execute() override;
 };
 
 class GenMakefileStrategy final : public BuildStrategy {
@@ -36,9 +36,9 @@ class GenMakefileStrategy final : public BuildStrategy {
 
 public:
   GenMakefileStrategy(ModuleCollection* coll, kl::Text filename);
-  ~GenMakefileStrategy();
-  void build(Module* module);
-  void link(Module* module);
-  void run(Module* module);
-  bool execute();
+  ~GenMakefileStrategy() override;
+  void build(Module* module) override;
+  void link(Module* module) override;
+  void run(Module* module) override;
+  bool execute() override;
 };

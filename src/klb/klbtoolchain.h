@@ -5,6 +5,7 @@
 
 class Toolchain {
 public:
+  virtual ~Toolchain() = default;
   virtual kl::List<kl::Text> buildCmdLine(const kl::Text& source, const kl::Text& destination,
                                           const kl::List<kl::Text>& include, const kl::List<kl::Text>& extraflags) = 0;
   virtual kl::List<kl::Text> linkCmdLine(const kl::List<kl::Text>& objects, const kl::Text& executable,
@@ -20,6 +21,7 @@ class Gcc : public Toolchain {
 
 public:
   Gcc();
+  ~Gcc() override = default;
   kl::List<kl::Text> buildCmdLine(const kl::Text& source, const kl::Text& destination,
                                   const kl::List<kl::Text>& include, const kl::List<kl::Text>& extraflags) override;
   kl::List<kl::Text> linkCmdLine(const kl::List<kl::Text>& objects, const kl::Text& executable,

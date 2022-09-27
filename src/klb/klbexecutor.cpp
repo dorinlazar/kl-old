@@ -19,6 +19,7 @@ protected:
 
 public:
   ExecutionStrategyImpl(ModuleCollection* coll) : _modules(coll) { _toolchain = std::make_unique<Gcc>(); }
+  virtual ~ExecutionStrategyImpl() = default;
 
   virtual void add(ExecStepType t, Module* mod) = 0;
   virtual bool execute() = 0;
@@ -35,14 +36,14 @@ public:
   }
 };
 
-class ParallelExecutionStrategy : public ExecutionStrategyImpl {
+class ParallelExecutionStrategy final : public ExecutionStrategyImpl {
   kl::ProcessHorde _horde;
   kl::Set<kl::Text> _buildFolders;
   kl::Dict<kl::Text, kl::ExecutionNode*> _execNodes;
 
 public:
   ParallelExecutionStrategy(ModuleCollection* coll) : ExecutionStrategyImpl(coll) {}
-
+  ~ParallelExecutionStrategy() override = default;
   void add(ExecStepType t, Module* mod) override {
     if (t == ExecStepType::Build) {
       if (mod->requiresBuild()) {

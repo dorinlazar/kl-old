@@ -6,7 +6,7 @@ namespace kl {
 
 enum class Signal { Interrupt, Terminate, Kill };
 
-class Process {
+class Process final {
 public:
   Process(const List<Text>& params);
   Process(const Process&) = delete;
@@ -32,7 +32,7 @@ private:
   uptr<Impl> _handler;
 };
 
-struct ExecutionNode {
+struct ExecutionNode final {
   List<Text> params;
   List<ExecutionNode*> dependencies;
   Process::State state;

@@ -361,7 +361,7 @@ void Text::reset() {
 Text Text::copy() const { return Text(m_memblock->text_data() + m_start, size()); }
 
 char Text::operator[](ssize_t index) const {
-  if (index >= (ssize_t)size() || index < -(ssize_t)size()) [[unlikely]] {
+  if (index >= (ssize_t)size() || (-index > (ssize_t)size())) [[unlikely]] {
     throw std::out_of_range(fmt::format("Requested index {} out of {}", index, size()));
   }
   return *(m_memblock->text_data() + m_start + index + ((index < 0) ? size() : 0));
