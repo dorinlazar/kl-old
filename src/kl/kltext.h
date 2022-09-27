@@ -238,6 +238,10 @@ inline namespace literals {
 kl::Text operator"" _t(const char* p, size_t s);
 }
 
+std::ostream& operator<<(std::ostream& os, const TextView& tv);
+std::ostream& operator<<(std::ostream& os, const Text& tv);
+std::ostream& operator<<(std::ostream& os, const TextChain& tv);
+
 } // namespace kl
 
 template <>

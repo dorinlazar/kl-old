@@ -100,7 +100,7 @@ std::optional<size_t> TextView::pos(char c, size_t occurence) const {
 }
 
 std::optional<size_t> TextView::pos(const TextView& t, size_t occurence) const {
-  if (occurence == 0) {
+  if (occurence == 0 || t.size() == 0) {
     return std::nullopt;
   }
   size_t position = 0;
@@ -361,7 +361,7 @@ void Text::reset() {
 Text Text::copy() const { return Text(m_memblock->text_data() + m_start, size()); }
 
 char Text::operator[](ssize_t index) const {
-  if (std::abs(index) >= (ssize_t)size()) [[unlikely]] {
+  if (index >= (ssize_t)size() || index < -(ssize_t)size()) [[unlikely]] {
     throw std::out_of_range(fmt::format("Requested index {} out of {}", index, size()));
   }
   return *(m_memblock->text_data() + m_start + index + ((index < 0) ? size() : 0));
@@ -469,7 +469,6 @@ Text Text::skip(std::string_view skippables) const { return skip(toView().find_f
 
 Text Text::skip(size_t n) const {
   if (n < size()) {
-    n += m_start;
     return sublen(n, m_end - n);
   };
   return {};
@@ -497,11 +496,10 @@ std::pair<Text, Text> Text::splitNextChar(char c, SplitDirection direction) cons
   if (!position.has_value()) {
     return {*this, {}};
   }
-
   if (direction == SplitDirection::Discard) {
     return {sublen(0, position.value()), sublen(position.value() + 1, m_end)};
   }
-  auto split_position = position.value() + (direction == SplitDirection::KeepLeft) ? 1 : 0;
+  auto split_position = position.value() + ((direction == SplitDirection::KeepLeft) ? 1 : 0);
   return {sublen(0, split_position), sublen(split_position, m_end)};
 }
 
@@ -523,6 +521,9 @@ List<Text> Text::splitLines(SplitEmpty onEmpty) const {
       res.add(left);
     }
   }
+  if (onEmpty == SplitEmpty::Keep && (size() == 0 || operator[](-1) == '\n')) {
+    res.add(Text{});
+  }
   return res;
 }
 
@@ -536,6 +537,10 @@ List<Text> Text::splitByChar(char c, SplitEmpty onEmpty) const {
       res.add(left);
     }
   }
+  if (onEmpty == SplitEmpty::Keep && (size() == 0 || operator[](-1) == c)) {
+    res.add(Text{});
+  }
+
   return res;
 }
 
@@ -720,6 +725,10 @@ Text Text::skipBOM() const {
 inline namespace literals {
 Text operator"" _t(const char* p, size_t s) { return Text(p, s); }
 } // namespace literals
+
+std::ostream& operator<<(std::ostream& os, const TextView& tv) { return os << tv.view(); }
+std::ostream& operator<<(std::ostream& os, const Text& tv) { return os << tv.toView(); }
+std::ostream& operator<<(std::ostream& os, const TextChain& tv) { return os << tv.toText().toView(); }
 
 } // namespace kl
 
