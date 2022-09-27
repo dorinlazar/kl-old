@@ -29,23 +29,23 @@ public:
   struct Impl;
 
 private:
-  uptr<Impl> _handler;
+  uptr<Impl> m_handler;
 };
 
 struct ExecutionNode final {
-  List<Text> params;
-  List<ExecutionNode*> dependencies;
-  Process::State state;
+  List<Text> m_params;
+  List<ExecutionNode*> m_dependencies;
+  Process::State m_state;
 
 public:
   ExecutionNode(const List<Text>& p, const List<ExecutionNode*>& d)
-      : params(p), dependencies(d), state(Process::State::NotStarted) {}
+      : m_params(p), m_dependencies(d), m_state(Process::State::NotStarted) {}
 };
 
 class ProcessHorde {
-  PList<ExecutionNode> _nodes;
-  Queue<ExecutionNode*> _executionQueue;
-  List<ExecutionNode*> _waitingQueue;
+  PList<ExecutionNode> m_nodes;
+  Queue<ExecutionNode*> m_execution_queue;
+  List<ExecutionNode*> m_waiting_queue;
 
 public:
   ExecutionNode* addNode(const List<Text>& params, const List<ExecutionNode*>& deps);

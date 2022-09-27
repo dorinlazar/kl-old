@@ -104,27 +104,27 @@ public:
   pid_t pid() const { return _pid; }
 };
 
-Process::Process(const List<Text>& params) { _handler = std::make_unique<Impl>(params); }
+Process::Process(const List<Text>& params) { m_handler = std::make_unique<Impl>(params); }
 Process::~Process() {}
-void Process::spawn() { _handler->spawn(); }
-int Process::join() { return _handler->join(); }
-void Process::kill(Signal s) { _handler->kill(s); }
+void Process::spawn() { m_handler->spawn(); }
+int Process::join() { return m_handler->join(); }
+void Process::kill(Signal s) { m_handler->kill(s); }
 
 struct ExecutionMonitorNode {
   ExecutionNode* node;
   Process::Impl process;
 
 public:
-  ExecutionMonitorNode(ExecutionNode* n) : node(n), process(node->params) {}
+  ExecutionMonitorNode(ExecutionNode* n) : node(n), process(node->m_params) {}
 };
 
 ExecutionNode* ProcessHorde::addNode(const List<Text>& params, const List<ExecutionNode*>& deps) {
-  _nodes.add(std::make_unique<ExecutionNode>(params, deps));
-  auto p = _nodes[_nodes.size() - 1].get();
+  m_nodes.add(std::make_unique<ExecutionNode>(params, deps));
+  auto p = m_nodes[m_nodes.size() - 1].get();
   if (deps.size() == 0) {
-    _executionQueue.push(p);
+    m_execution_queue.push(p);
   } else {
-    _waitingQueue.add(p);
+    m_waiting_queue.add(p);
   }
   return p;
 }
@@ -134,12 +134,12 @@ bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
     nJobs = 1;
   }
   Dict<pid_t, ptr<ExecutionMonitorNode>> monitor;
-  while (monitor.size() > 0 || !_executionQueue.empty()) {
-    while (monitor.size() < nJobs && !_executionQueue.empty()) {
-      auto node = _executionQueue.pop();
+  while (monitor.size() > 0 || !m_execution_queue.empty()) {
+    while (monitor.size() < nJobs && !m_execution_queue.empty()) {
+      auto node = m_execution_queue.pop();
       auto monitorNode = std::make_shared<ExecutionMonitorNode>(node);
       if (verbose) {
-        kl::log("> [{}]", fmt::join(node->params, ","));
+        kl::log("> [{}]", fmt::join(node->m_params, ","));
       }
       monitorNode->process.spawn();
       monitor.add(monitorNode->process.pid(), std::move(monitorNode));
@@ -154,20 +154,21 @@ bool ProcessHorde::run(uint32_t nJobs, bool verbose) {
     auto monNode = monitor[pid];
     monitor.remove(pid);
     if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-      monNode->node->state = Process::State::Finished;
+      monNode->node->m_state = Process::State::Finished;
 
       size_t i = 0;
-      while (i < _waitingQueue.size()) {
-        auto task = _waitingQueue[i];
-        if (task->dependencies.all([](const kl::ExecutionNode* n) { return n->state == Process::State::Finished; })) {
-          _waitingQueue.removeAt(i);
-          _executionQueue.push(task);
+      while (i < m_waiting_queue.size()) {
+        auto task = m_waiting_queue[i];
+        if (task->m_dependencies.all(
+                [](const kl::ExecutionNode* n) { return n->m_state == Process::State::Finished; })) {
+          m_waiting_queue.removeAt(i);
+          m_execution_queue.push(task);
         } else {
           i++;
         }
       }
     } else {
-      monNode->node->state = Process::State::Error;
+      monNode->node->m_state = Process::State::Error;
       return false;
     }
   }

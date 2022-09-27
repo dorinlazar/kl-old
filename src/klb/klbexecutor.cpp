@@ -14,11 +14,11 @@ struct ExecStep {
 
 class ExecutionStrategyImpl {
 protected:
-  kl::uptr<Toolchain> _toolchain;
-  ModuleCollection* _modules;
+  kl::uptr<Toolchain> m_toolchain;
+  ModuleCollection* m_modules;
 
 public:
-  ExecutionStrategyImpl(ModuleCollection* coll) : _modules(coll) { _toolchain = std::make_unique<Gcc>(); }
+  ExecutionStrategyImpl(ModuleCollection* coll) : m_modules(coll) { m_toolchain = std::make_unique<Gcc>(); }
   virtual ~ExecutionStrategyImpl() = default;
 
   virtual void add(ExecStepType t, Module* mod) = 0;
@@ -37,9 +37,9 @@ public:
 };
 
 class ParallelExecutionStrategy final : public ExecutionStrategyImpl {
-  kl::ProcessHorde _horde;
-  kl::Set<kl::Text> _buildFolders;
-  kl::Dict<kl::Text, kl::ExecutionNode*> _execNodes;
+  kl::ProcessHorde m_horde;
+  kl::Set<kl::Text> m_build_folders;
+  kl::Dict<kl::Text, kl::ExecutionNode*> m_exec_nodes;
 
 public:
   ParallelExecutionStrategy(ModuleCollection* coll) : ExecutionStrategyImpl(coll) {}
@@ -47,22 +47,22 @@ public:
   void add(ExecStepType t, Module* mod) override {
     if (t == ExecStepType::Build) {
       if (mod->requiresBuild()) {
-        _buildFolders.add(mod->buildFolder());
-        auto cmdLine = _toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
-                                                CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
-        auto node = _horde.addNode(cmdLine, {});
-        _execNodes.add(mod->objectPath(), node);
+        m_build_folders.add(mod->buildFolder());
+        auto cmdLine = m_toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
+                                                 CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
+        auto node = m_horde.addNode(cmdLine, {});
+        m_exec_nodes.add(mod->objectPath(), node);
         mod->updateObjectTimestamp(kl::DateTime::MAX);
       }
     } else if (t == ExecStepType::Link) {
       if (mod->requiresLink()) {
         auto objects = getDependentObjects(mod);
-        auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return _execNodes.get(o); })
+        auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return m_exec_nodes.get(o); })
                             .select([](const kl::ExecutionNode* t) { return t != nullptr; });
-        auto cmdLine = _toolchain->linkCmdLine(objects, mod->executablePath(),
-                                               CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
-        auto node = _horde.addNode(cmdLine, depNodes);
-        _execNodes.add(mod->executablePath(), node);
+        auto cmdLine = m_toolchain->linkCmdLine(objects, mod->executablePath(),
+                                                CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
+        auto node = m_horde.addNode(cmdLine, depNodes);
+        m_exec_nodes.add(mod->executablePath(), node);
       } else if (CMD.verbose) {
         kl::log("Module {} requires no linking");
       }
@@ -70,20 +70,20 @@ public:
       auto exe = mod->executablePath();
       kl::List<kl::ExecutionNode*> nodes;
       if (mod->requiresLink()) {
-        nodes.add(_execNodes[exe]);
+        nodes.add(m_exec_nodes[exe]);
       }
-      auto node = _horde.addNode({exe}, nodes);
-      _execNodes.add("RUN_"_t + mod->executablePath(), node);
+      auto node = m_horde.addNode({exe}, nodes);
+      m_exec_nodes.add("RUN_"_t + mod->executablePath(), node);
     }
   }
 
   bool execute() override {
     createBuildFolders();
-    return _horde.run(CMD.nJobs.value_or(2), true);
+    return m_horde.run(CMD.nJobs.value_or(2), true);
   }
 
   void createBuildFolders() {
-    auto list = _buildFolders.toList().sortInPlace();
+    auto list = m_build_folders.toList().sortInPlace();
 
     for (const auto& dir: list) {
       bool made = kl::FileSystem::makeDirectory(dir);
