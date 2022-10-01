@@ -52,18 +52,8 @@ build/klblog/klblog.o: src/klblog/klblog.cpp src/ff/textscanner.h src/ff/poorcon
 	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/klblog/klblog.o src/klblog/klblog.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/klblog
 build/tests/klfs-lsrec.o: src/tests/klfs-lsrec.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klfs.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h
 	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/klfs-lsrec.o src/tests/klfs-lsrec.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests
-build/tests/kldate.o: src/tests/kldate.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h src/tests/timecounter.h
-	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kldate.o src/tests/kldate.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests
-build/tests/klfs.o: src/tests/klfs.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klfs.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h
-	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/klfs.o src/tests/klfs.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests
-build/tests/kltext.o: src/tests/kltext.cpp src/kl/kltext.h src/kl/kl.h src/kl/klds.h
-	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kltext.o src/tests/kltext.cpp -Isrc -Isrc/kl -Isrc/tests
-build/tests/testklio.o: src/tests/testklio.cpp src/kl/kltext.h src/kl/klexcept.h src/kl/klio.h src/kl/kl.h src/kl/klds.h
-	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/testklio.o src/tests/testklio.cpp -Isrc -Isrc/kl -Isrc/tests
-build/tests/timecounter.o: src/tests/timecounter.cpp src/kl/kl.h src/kl/klds.h src/kl/klexcept.h src/kl/kltext.h src/kl/kltime.h src/tests/timecounter.h
-	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/timecounter.o src/tests/timecounter.cpp -Isrc -Isrc/kl -Isrc/tests
-build/tests/klvalue.o: src/tests/klvalue.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klfs.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h src/kl/klvalue.h
-	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/klvalue.o src/tests/klvalue.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests
+build/tests/klio.o: src/tests/klio.cpp src/kl/kltext.h src/kl/klexcept.h src/kl/klio.h src/kl/kl.h src/kl/klds.h
+	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/klio.o src/tests/klio.cpp -Isrc -Isrc/kl -Isrc/tests
 build/tests/klnet.o: src/tests/klnet.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klexcept.h src/kl/klio.h src/kl/kl.h src/kl/klds.h src/kl/klnet.h src/kl/kltime.h
 	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/klnet.o src/tests/klnet.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests
 build/tests/process-test.o: src/tests/process-test.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klfs.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h src/kl/klprocess.h
@@ -76,6 +66,16 @@ build/tests/file-formats/test-scanner.o: src/tests/file-formats/test-scanner.cpp
 	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/file-formats/test-scanner.o src/tests/file-formats/test-scanner.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests/file-formats
 build/tests/file-formats/test-poorconfig.o: src/tests/file-formats/test-poorconfig.cpp src/ff/textscanner.h src/ff/poorconfig.h src/kl/kltext.h src/kl/klfs.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h src/kl/klvalue.h
 	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/file-formats/test-poorconfig.o src/tests/file-formats/test-poorconfig.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests/file-formats
+build/tests/kl/kldate-test.o: src/tests/kl/kldate-test.cpp src/kl/kl.h src/kl/klds.h src/kl/klexcept.h src/kl/kltext.h src/kl/kltime.h
+	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kl/kldate-test.o src/tests/kl/kldate-test.cpp -Isrc -Isrc/kl -DGTEST_HAS_PTHREAD=1
+build/tests/kl/klfs-test.o: src/tests/kl/klfs-test.cpp src/kl/kl.h src/kl/klds.h src/kl/klexcept.h src/kl/klfs.h src/kl/kltext.h src/kl/kltime.h
+	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kl/klfs-test.o src/tests/kl/klfs-test.cpp -Isrc -Isrc/kl -DGTEST_HAS_PTHREAD=1
+build/tests/kl/klvalue-test.o: src/tests/kl/klvalue-test.cpp src/kl/kl.h src/kl/klds.h src/kl/kltext.h src/kl/klvalue.h
+	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kl/klvalue-test.o src/tests/kl/klvalue-test.cpp -Isrc -Isrc/kl -DGTEST_HAS_PTHREAD=1
+build/tests/kl/kltest.o: src/tests/kl/kltest.cpp src/ff/textscanner.h src/kl/kltext.h src/kl/klfs.h src/kl/klexcept.h src/kl/kl.h src/kl/klds.h src/kl/kltime.h src/kl/klvalue.h src/tests/kl/kldate-test.h src/tests/kl/klfs-test.h src/tests/kl/klvalue-test.h src/tests/kl/kltext-test.h
+	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kl/kltest.o src/tests/kl/kltest.cpp -Isrc -Isrc/ff -Isrc/kl -Isrc/tests/kl -DGTEST_HAS_PTHREAD=1
+build/tests/kl/kltext-test.o: src/tests/kl/kltext-test.cpp src/kl/kl.h src/kl/klds.h src/kl/kltext.h
+	g++ -Wall -Wextra -c -std=c++20 -g3 -O2 -flto -Werror -o build/tests/kl/kltext-test.o src/tests/kl/kltext-test.cpp -Isrc -Isrc/kl -DGTEST_HAS_PTHREAD=1
 build/genmakefile/klb-genmakefile.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/genmakefile/klb-genmakefile.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
 	g++ -flto -Werror -ltcmalloc -o build/genmakefile/klb-genmakefile.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/genmakefile/klb-genmakefile.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -lfmt
 build/klb/klb.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klb.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
@@ -84,16 +84,8 @@ build/klblog/klblog.exe: build/ff/poorconfig.o build/ff/textscanner.o build/kl/k
 	g++ -flto -Werror -ltcmalloc -o build/klblog/klblog.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klblog/klblog.o build/klblog/settings.o -lfmt
 build/tests/klfs-lsrec.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs-lsrec.o
 	g++ -flto -Werror -ltcmalloc -o build/tests/klfs-lsrec.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs-lsrec.o -lfmt
-build/tests/kldate.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/kltext.o build/kl/kltime.o build/tests/kldate.o build/tests/timecounter.o
-	g++ -flto -Werror -ltcmalloc -o build/tests/kldate.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/kltext.o build/kl/kltime.o build/tests/kldate.o build/tests/timecounter.o -lfmt
-build/tests/klfs.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs.o
-	g++ -flto -Werror -ltcmalloc -o build/tests/klfs.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs.o -lfmt
-build/tests/kltext.exe: build/kl/kltext.o build/tests/kltext.o
-	g++ -flto -Werror -ltcmalloc -o build/tests/kltext.exe build/kl/kltext.o build/tests/kltext.o -lfmt
-build/tests/testklio.exe: build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/testklio.o
-	g++ -flto -Werror -ltcmalloc -o build/tests/testklio.exe build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/testklio.o -lfmt
-build/tests/klvalue.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/klvalue.o
-	g++ -flto -Werror -ltcmalloc -o build/tests/klvalue.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/klvalue.o -lfmt
+build/tests/klio.exe: build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/klio.o
+	g++ -flto -Werror -ltcmalloc -o build/tests/klio.exe build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/klio.o -lfmt
 build/tests/klnet.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klio.o build/kl/klnet.o build/kl/kltext.o build/kl/kltime.o build/tests/klnet.o
 	g++ -flto -Werror -ltcmalloc -o build/tests/klnet.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klio.o build/kl/klnet.o build/kl/kltext.o build/kl/kltime.o build/tests/klnet.o -lfmt -lssl -lcrypto
 build/tests/process-test.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/tests/process-test.o
@@ -104,6 +96,8 @@ build/tests/file-formats/test-scanner.exe: build/ff/textscanner.o build/kl/kltex
 	g++ -flto -Werror -ltcmalloc -o build/tests/file-formats/test-scanner.exe build/ff/textscanner.o build/kl/kltext.o build/tests/file-formats/test-scanner.o -lfmt
 build/tests/file-formats/test-poorconfig.exe: build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-poorconfig.o
 	g++ -flto -Werror -ltcmalloc -o build/tests/file-formats/test-poorconfig.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-poorconfig.o -lfmt
-executables: build/genmakefile/klb-genmakefile.exe build/klb/klb.exe build/klblog/klblog.exe build/tests/klfs-lsrec.exe build/tests/kldate.exe build/tests/klfs.exe build/tests/kltext.exe build/tests/testklio.exe build/tests/klvalue.exe build/tests/klnet.exe build/tests/process-test.exe build/tests/file-formats/test-markwrite.exe build/tests/file-formats/test-scanner.exe build/tests/file-formats/test-poorconfig.exe
+build/tests/kl/kltest.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o
+	g++ -flto -Werror -ltcmalloc -o build/tests/kl/kltest.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o -lgtest -lfmt
+executables: build/genmakefile/klb-genmakefile.exe build/klb/klb.exe build/klblog/klblog.exe build/tests/klfs-lsrec.exe build/tests/klio.exe build/tests/klnet.exe build/tests/process-test.exe build/tests/file-formats/test-markwrite.exe build/tests/file-formats/test-scanner.exe build/tests/file-formats/test-poorconfig.exe build/tests/kl/kltest.exe
 makedirs:
-	mkdir -p build/ff build/ff/mw build/genmakefile build/kl build/klb build/klblog build/tests build/tests/file-formats
+	mkdir -p build/ff build/ff/mw build/genmakefile build/kl build/klb build/klblog build/tests build/tests/file-formats build/tests/kl
