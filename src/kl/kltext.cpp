@@ -1,6 +1,7 @@
 #include "kltext.h"
 #include <stdexcept>
 #include <algorithm>
+#include <utility>
 
 using namespace std::literals;
 
