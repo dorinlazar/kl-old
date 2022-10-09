@@ -454,15 +454,21 @@ Text Text::trimRight() const {
 }
 
 bool Text::startsWith(const Text& tv) const { return toView().starts_with(tv.toView()); }
-
 bool Text::startsWith(const char* v) const {
   if (v == nullptr) [[unlikely]] {
     return false;
   }
   return toView().starts_with(v);
 }
+bool Text::startsWith(char c) const { return size() > 0 && *begin() == c; }
 
 bool Text::endsWith(const Text& tv) const { return toView().ends_with(tv.toView()); }
+bool Text::endsWith(char c) const {
+  if (size() > 0) {
+    return c == *(begin() + size() - 1);
+  }
+  return false;
+}
 
 bool Text::contains(char c) const { return toTextView().contains(c); }
 

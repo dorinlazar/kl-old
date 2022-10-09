@@ -157,7 +157,9 @@ public:
 
   bool startsWith(const Text& tv) const;
   bool startsWith(const char*) const;
+  bool startsWith(char c) const;
   bool endsWith(const Text& tv) const;
+  bool endsWith(char c) const;
 
   std::string toString() const;
   std::string_view toView() const;
