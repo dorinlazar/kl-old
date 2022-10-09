@@ -49,7 +49,7 @@ public:
       if (mod->requiresBuild()) {
         m_build_folders.add(mod->buildFolder());
         auto cmdLine = m_toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
-                                                 CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
+                                                 CMD.SysFlags().cxxflags(mod->sourceSystemHeaders()));
         auto node = m_horde.addNode(cmdLine, {});
         m_exec_nodes.add(mod->objectPath(), node);
         mod->updateObjectTimestamp(kl::DateTime::MAX);
@@ -60,10 +60,10 @@ public:
         auto depNodes = objects.transform<kl::ExecutionNode*>([this](const kl::Text& o) { return m_exec_nodes.get(o); })
                             .select([](const kl::ExecutionNode* t) { return t != nullptr; });
         auto cmdLine = m_toolchain->linkCmdLine(objects, mod->executablePath(),
-                                                CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
+                                                CMD.SysFlags().ldflags(mod->recursiveSystemHeaders()));
         auto node = m_horde.addNode(cmdLine, depNodes);
         m_exec_nodes.add(mod->executablePath(), node);
-      } else if (CMD.verbose) {
+      } else if (CMD.Verbose()) {
         kl::log("Module {} requires no linking");
       }
     } else if (t == ExecStepType::Run) {
@@ -79,7 +79,7 @@ public:
 
   bool execute() override {
     createBuildFolders();
-    return m_horde.run(CMD.nJobs.value_or(2), true);
+    return m_horde.run(CMD.JobsCount(), true);
   }
 
   void createBuildFolders() {
@@ -87,7 +87,7 @@ public:
 
     for (const auto& dir: list) {
       bool made = kl::FileSystem::makeDirectory(dir);
-      if (CMD.verbose && made) {
+      if (CMD.Verbose() && made) {
         kl::log("Created folder", dir);
       }
     }
@@ -127,7 +127,7 @@ void GenMakefileStrategy::build(Module* mod) {
   _output << mod->objectPath().toView() << ": " << mod->sourcePath().toView() << " "
           << kl::TextChain(deps).join(' ').toView() << "\n\t";
   auto cmdLine = toolchain.buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
-                                        CMD.sysFlags->cxxflags(mod->sourceSystemHeaders()));
+                                        CMD.SysFlags().cxxflags(mod->sourceSystemHeaders()));
   _output << kl::TextChain(cmdLine).join(' ').toView() << "\n";
 }
 
@@ -146,7 +146,7 @@ void GenMakefileStrategy::link(Module* mod) {
   Gcc toolchain;
   auto objects = getDepObjects(mod);
   auto cmdLine =
-      toolchain.linkCmdLine(objects, mod->executablePath(), CMD.sysFlags->ldflags(mod->recursiveSystemHeaders()));
+      toolchain.linkCmdLine(objects, mod->executablePath(), CMD.SysFlags().ldflags(mod->recursiveSystemHeaders()));
   _output << mod->executablePath().toView() << ": " << kl::TextChain(objects).join(' ').toView() << "\n\t"
           << kl::TextChain(cmdLine).join(' ').toView() << "\n";
   _build_targets.add(mod->executablePath());

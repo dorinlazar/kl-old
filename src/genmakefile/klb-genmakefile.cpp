@@ -13,13 +13,13 @@ kl::uptr<ModuleCollection> discoverModules(kl::ptr<FSCache> cache) {
 
 int main(int argc, char** argv, char** envp) {
   CMD.Init(argc, argv, envp);
-  auto fscache = std::make_shared<FSCache>(CMD.sourceFolder, CMD.buildFolder);
+  auto fscache = std::make_shared<FSCache>(CMD.SourceFolder(), CMD.BuildFolder());
 
   auto mc = discoverModules(fscache);
   auto modules = mc->getTargetModules({});
   kl::Text target_makefile = "Makefile";
-  if (CMD.targets.size() > 0) {
-    target_makefile = CMD.targets[0];
+  if (CMD.Targets().size() > 0) {
+    target_makefile = CMD.Targets()[0];
   }
   GenMakefileStrategy sched(mc.get(), target_makefile);
 

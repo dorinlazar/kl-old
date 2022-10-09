@@ -73,7 +73,7 @@ struct SystemFlags::SFImpl {
     }
 
     for (const auto& [name, description]: settings->asMap()) {
-      if (CMD.verbose) {
+      if (CMD.Verbose()) {
         log("SYSFLAGS: Processing external dependency", name);
       }
       CHECK(description->isMap(), "Expecting external package as map in settings");
@@ -86,7 +86,7 @@ struct SystemFlags::SFImpl {
         auto ldf = m.get("ldflags");
         rules.add({rule, Flags(cxxf ? cxxf->getValue() : ""_t, ldf ? ldf->getValue() : ""_t)});
       }
-      if (CMD.verbose) {
+      if (CMD.Verbose()) {
         log("SYSFLAGS: ", name, " cxxflags: ", rules.last().flags.cxxflags);
         log("SYSFLAGS: ", name, "  ldflags: ", rules.last().flags.ldflags);
       }
@@ -115,5 +115,5 @@ struct SystemFlags::SFImpl {
 
 SystemFlags::SystemFlags(Value* val) { d = std::make_unique<SFImpl>(val); }
 SystemFlags::~SystemFlags() {}
-List<Text> SystemFlags::cxxflags(const List<Text>& headers) { return d->cxxflags(headers); }
-List<Text> SystemFlags::ldflags(const List<Text>& headers) { return d->ldflags(headers); }
+List<Text> SystemFlags::cxxflags(const List<Text>& headers) const { return d->cxxflags(headers); }
+List<Text> SystemFlags::ldflags(const List<Text>& headers) const { return d->ldflags(headers); }

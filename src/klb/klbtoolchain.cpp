@@ -5,11 +5,11 @@ using namespace kl::literals;
 
 Gcc::Gcc() {
   _cCompileBase.add({"gcc"_t, "-Wall"_t, "-Wextra"_t, "-c"_t});
-  _cCompileBase.add(CMD.cFlags);
+  _cCompileBase.add(CMD.CFlags());
   _cppCompileBase.add({"g++"_t, "-Wall"_t, "-Wextra"_t, "-c"_t});
-  _cppCompileBase.add(CMD.cxxFlags);
+  _cppCompileBase.add(CMD.CxxFlags());
   _linkBase.add({"g++"_t});
-  _linkBase.add(CMD.linkFlags);
+  _linkBase.add(CMD.LinkFlags());
 }
 
 kl::List<kl::Text> Gcc::buildCmdLine(const kl::Text& source, const kl::Text& destination,
@@ -18,7 +18,7 @@ kl::List<kl::Text> Gcc::buildCmdLine(const kl::Text& source, const kl::Text& des
   command.add("-o"_t);
   command.add(destination);
   command.add(source);
-  command.add("-I"_t + CMD.sourceFolder.fullPath());
+  command.add("-I"_t + CMD.SourceFolder().fullPath());
   command.add(include.transform<kl::Text>([](const kl::Text& t) { return "-I"_t + t; }));
   command.add(extraflags);
   return command;

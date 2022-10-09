@@ -13,19 +13,19 @@ kl::uptr<ModuleCollection> discoverModules(kl::ptr<FSCache> cache) {
 
 int main(int argc, char** argv, char** envp) {
   CMD.Init(argc, argv, envp);
-  auto fscache = std::make_shared<FSCache>(CMD.sourceFolder, CMD.buildFolder);
+  auto fscache = std::make_shared<FSCache>(CMD.SourceFolder(), CMD.BuildFolder());
 
   auto mc = discoverModules(fscache);
 
   kl::Set<kl::Text> targets;
 
-  for (const auto& target: CMD.targets) {
+  for (const auto& target: CMD.Targets()) {
     kl::FilePath fp(target);
     // TODO implement a FilePath::startsWith that does this per path component
-    if (target.startsWith(CMD.buildFolder.fullPath())) {
-      fp = fp.remove_base_folder(CMD.buildFolder.folderDepth());
-    } else if (target.startsWith(CMD.sourceFolder.fullPath())) {
-      fp = fp.remove_base_folder(CMD.sourceFolder.folderDepth());
+    if (target.startsWith(CMD.BuildFolder().fullPath())) {
+      fp = fp.remove_base_folder(CMD.BuildFolder().folderDepth());
+    } else if (target.startsWith(CMD.BuildFolder().fullPath())) {
+      fp = fp.remove_base_folder(CMD.BuildFolder().folderDepth());
     }
 
     targets.add(mc->getModuleNames(fp.fullPath()));
@@ -44,7 +44,7 @@ int main(int argc, char** argv, char** envp) {
     }
   }
 
-  if (CMD.runMode) {
+  if (CMD.DoRun()) {
     for (const auto& mod: modules) {
       if (mod->hasMain()) {
         sched.run(mod);

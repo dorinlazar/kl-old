@@ -5,30 +5,42 @@
 #include "systemflags.h"
 
 struct CommandParameters {
-  bool verbose = false;
-  kl::FilePath buildFolder;
-  kl::FilePath sourceFolder;
+  void Init(int argc, char** argv, char** envp);
+  bool Verbose() const;
+  kl::FilePath BuildFolder() const;
+  kl::FilePath SourceFolder() const;
+  const kl::List<kl::Text>& Targets() const;
+  const kl::List<kl::Text>& CFlags() const;
+  const kl::List<kl::Text>& CxxFlags() const;
+  const kl::List<kl::Text>& LinkFlags() const;
+  bool DoRun() const;
+
+  const SystemFlags& SysFlags() const;
+  uint32_t JobsCount() const;
+
+private:
+  bool m_verbose = false;
+  kl::FilePath m_build_folder;
+  kl::FilePath m_source_folder;
   int32_t processorCount = 0;
-  std::optional<int32_t> nJobs;
-  bool runMode = false;
-  kl::List<kl::Text> cxxFlags;
-  kl::List<kl::Text> cFlags;
-  kl::List<kl::Text> linkFlags;
-  kl::uptr<SystemFlags> sysFlags;
+  uint32_t m_n_jobs;
+  bool m_run_mode = false;
+  kl::List<kl::Text> m_cxx_flags;
+  kl::List<kl::Text> m_c_flags;
+  kl::List<kl::Text> m_link_flags;
+  kl::uptr<SystemFlags> m_sys_flags;
 
   kl::List<kl::Text> arguments;
   kl::Dict<kl::Text, kl::Text> environment;
   kl::PValue configurationFile;
 
-  kl::List<kl::Text> targets;
-
-  void Init(int argc, char** argv, char** envp);
+  kl::List<kl::Text> m_targets;
 
 private:
-  void _updateFlags();
-  void _updateSysEnv(char** envp);
-  void _readDepotFile();
-  void _processArguments(int argc, char** argv);
+  void UpdateFlags();
+  void UpdateSysEnv(char** envp);
+  void ReadDepotFile();
+  void ProcessArguments(int argc, char** argv);
 };
 
 extern CommandParameters CMD;

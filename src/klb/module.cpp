@@ -47,8 +47,8 @@ Module::Module(ModuleCollection* parent, const kl::Text& seed) {
   d = std::make_unique<Module::ModuleInternals>();
   d->name = seed;
   d->parent = parent;
-  d->sourcePath = CMD.sourceFolder.add(seed).replace_extension(""_t);
-  d->buildPath = CMD.buildFolder.add(seed).replace_extension(""_t);
+  d->sourcePath = CMD.SourceFolder().add(seed).replace_extension(""_t);
+  d->buildPath = CMD.BuildFolder().add(seed).replace_extension(""_t);
 }
 
 Module::~Module() {}
@@ -71,12 +71,12 @@ void Module::readDirectRequirements() {
 
 void Module::_scanHeader() {
   if (!d->header.has_value()) {
-    if (CMD.verbose) {
+    if (CMD.Verbose()) {
       kl::log("For module {} we have no header", d->name);
     }
     return;
   }
-  if (CMD.verbose) {
+  if (CMD.Verbose()) {
     kl::log("For module {} header is {}", d->name, headerPath());
   }
 
@@ -89,12 +89,12 @@ void Module::_scanHeader() {
 
 void Module::_scanSource() {
   if (!d->source.has_value()) {
-    if (CMD.verbose) {
+    if (CMD.Verbose()) {
       kl::log("For module {} we have no source", d->name);
     }
     return;
   }
-  if (CMD.verbose) {
+  if (CMD.Verbose()) {
     kl::log("For module {} source is {}", d->name, sourcePath());
   }
 
@@ -265,7 +265,7 @@ const kl::List<Module*>& Module::requiredModules() const { return d->requiredMod
 kl::List<kl::Text> Module::includeFolders() const {
   kl::Set<kl::Text> inc;
   for (const auto& mod: d->requiredModules) {
-    inc.add(CMD.sourceFolder.add(mod->name()).folderName());
+    inc.add(CMD.SourceFolder().add(mod->name()).folderName());
   }
   return inc.toList();
 }

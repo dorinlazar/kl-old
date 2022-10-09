@@ -20,7 +20,7 @@ void ModuleItem::_updateModuleType() {
 }
 
 ModuleItem::ModuleItem(const kl::FileSystemEntryInfo& fi) : _timestamp(fi.lastWrite), _extension(fi.path.extension()) {
-  if (CMD.verbose) {
+  if (CMD.Verbose()) {
     kl::log("Adding module item {}", fi.path.fullPath());
   }
   _updateModuleType();

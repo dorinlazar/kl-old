@@ -24,11 +24,11 @@ void ModuleCollection::discoverModules() {
 }
 
 void ModuleCollection::_scanAllModules() {
-  uint32_t srcDepth = CMD.sourceFolder.folderDepth();
-  uint32_t bldDepth = CMD.buildFolder.folderDepth();
+  uint32_t srcDepth = CMD.SourceFolder().folderDepth();
+  uint32_t bldDepth = CMD.BuildFolder().folderDepth();
   for (auto folder: _cache->getAllSourceFolders()) {
     auto path = folder->fullPath();
-    auto modFld = path == CMD.sourceFolder ? ""_t : path.remove_base_folder(srcDepth);
+    auto modFld = path == CMD.SourceFolder() ? ""_t : path.remove_base_folder(srcDepth);
     for (const auto& file: folder->files()) {
       auto mod = getOrCreateModule(modFld, file.path.stem());
       mod->addFile(file);
@@ -36,7 +36,7 @@ void ModuleCollection::_scanAllModules() {
   }
   for (auto folder: _cache->getAllBuildFolders()) {
     auto path = folder->fullPath();
-    auto moduleFolder = path == CMD.buildFolder ? ""_t : path.remove_base_folder(bldDepth);
+    auto moduleFolder = path == CMD.BuildFolder() ? ""_t : path.remove_base_folder(bldDepth);
     for (const auto& file: folder->files()) {
       auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
       if (mod) {
@@ -69,13 +69,13 @@ kl::ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& folder, 
 }
 
 kl::FilePath ModuleCollection::resolvePath(const kl::Text& name, Module* origin) const {
-  auto path = CMD.sourceFolder.add(name);
+  auto path = CMD.SourceFolder().add(name);
   if (!_cache->fileExists(path)) {
-    path = kl::FilePath(CMD.sourceFolder.add(origin->name()).folderName()).add(name);
+    path = kl::FilePath(CMD.SourceFolder().add(origin->name()).folderName()).add(name);
     CHECK(_cache->fileExists(path), "Unable to locate dependency {} included in module {}. Tried: {} {}", name,
-          origin->name(), CMD.sourceFolder.add(name).fullPath(), path.fullPath());
+          origin->name(), CMD.SourceFolder().add(name).fullPath(), path.fullPath());
   }
-  return path.remove_base_folder(CMD.sourceFolder.folderDepth());
+  return path.remove_base_folder(CMD.SourceFolder().folderDepth());
 }
 
 kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& targets) {
