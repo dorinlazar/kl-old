@@ -12,7 +12,7 @@ kl::uptr<ModuleCollection> discoverModules(kl::ptr<FSCache> cache) {
 }
 
 int main(int argc, char** argv, char** envp) {
-  CMD.init(argc, argv, envp);
+  CMD.Init(argc, argv, envp);
   auto fscache = std::make_shared<FSCache>(CMD.sourceFolder, CMD.buildFolder);
 
   auto mc = discoverModules(fscache);

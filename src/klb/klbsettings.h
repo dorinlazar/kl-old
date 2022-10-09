@@ -22,7 +22,7 @@ struct CommandParameters {
 
   kl::List<kl::Text> targets;
 
-  void init(int argc, char** argv, char** envp);
+  void Init(int argc, char** argv, char** envp);
 
 private:
   void _updateFlags();
@@ -32,4 +32,4 @@ private:
 };
 
 extern CommandParameters CMD;
-#define VERSION_STRING "0.2-alpha"
+constexpr std::string_view VERSION_STRING = "0.2-alpha";

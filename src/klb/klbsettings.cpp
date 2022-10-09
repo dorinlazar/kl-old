@@ -97,13 +97,13 @@ void CommandParameters::_processArguments(int argc, char** argv) {
   }
 }
 
-void CommandParameters::init(int argc, char** argv, char** envp) {
+void CommandParameters::Init(int argc, char** argv, char** envp) {
   buildFolder = kl::FilePath("build"_t);
   sourceFolder = kl::FilePath("src"_t);
   _processArguments(argc, argv);
 
   if (verbose) {
-    kl::log("klb v" VERSION_STRING " - KeyLocked Build tool ©2021 Dorin Lazăr");
+    kl::log("klb v{} - KeyLocked Build tool ©2021 Dorin Lazăr", VERSION_STRING);
   }
 
   _readDepotFile();
