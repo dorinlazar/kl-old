@@ -50,7 +50,7 @@ public:
         m_build_folders.add(mod->buildFolder());
         auto cmdLine = m_toolchain->buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
                                                  CMD.SysFlags().cxxflags(mod->sourceSystemHeaders()));
-        auto node = m_horde.addNode(cmdLine, {});
+        auto node = m_horde.add_node(cmdLine, {});
         m_exec_nodes.add(mod->objectPath(), node);
         mod->updateObjectTimestamp(kl::DateTime::MAX);
       }
@@ -61,7 +61,7 @@ public:
                             .select([](const kl::ExecutionNode* t) { return t != nullptr; });
         auto cmdLine = m_toolchain->linkCmdLine(objects, mod->executablePath(),
                                                 CMD.SysFlags().ldflags(mod->recursiveSystemHeaders()));
-        auto node = m_horde.addNode(cmdLine, depNodes);
+        auto node = m_horde.add_node(cmdLine, depNodes);
         m_exec_nodes.add(mod->executablePath(), node);
       } else if (CMD.Verbose()) {
         kl::log("Module {} requires no linking");
@@ -72,7 +72,7 @@ public:
       if (mod->requiresLink()) {
         nodes.add(m_exec_nodes[exe]);
       }
-      auto node = m_horde.addNode({exe}, nodes);
+      auto node = m_horde.add_node({exe}, nodes);
       m_exec_nodes.add("RUN_"_t + mod->executablePath(), node);
     }
   }

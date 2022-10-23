@@ -48,7 +48,7 @@ class ProcessHorde {
   List<ExecutionNode*> m_waiting_queue;
 
 public:
-  ExecutionNode* addNode(const List<Text>& params, const List<ExecutionNode*>& deps);
+  ExecutionNode* add_node(const List<Text>& params, const List<ExecutionNode*>& deps);
   bool run(uint32_t nJobs, bool verbose = false);
 };
 

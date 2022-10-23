@@ -16,7 +16,8 @@ struct SystemSettings {
   kl::List<kl::Text> arguments;
   kl::Text version = KLBLOG_VERSION;
   VerbosityLevel verbosity = VerbosityLevel::Quiet;
-  kl::Text targetFolder = ".";
+  kl::Text source_folder = ".";
+  kl::Text destination_folder = "blog/";
 };
 
 } // namespace klblog

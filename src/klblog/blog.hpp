@@ -1,9 +1,15 @@
 #pragma once
+#include "systemsettings.hpp"
+#include "blogsettings.hpp"
 
 namespace klblog {
 
 class Blog {
-  BlogSettings settings;
+  Settings settings;
+
+public:
+  Blog(std::shared_ptr<SystemSettings> sys);
+  void process() const;
 };
 
 } // namespace klblog

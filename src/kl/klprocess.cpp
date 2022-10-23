@@ -118,7 +118,7 @@ public:
   ExecutionMonitorNode(ExecutionNode* n) : node(n), process(node->m_params) {}
 };
 
-ExecutionNode* ProcessHorde::addNode(const List<Text>& params, const List<ExecutionNode*>& deps) {
+ExecutionNode* ProcessHorde::add_node(const List<Text>& params, const List<ExecutionNode*>& deps) {
   m_nodes.add(std::make_unique<ExecutionNode>(params, deps));
   auto p = m_nodes[m_nodes.size() - 1].get();
   if (deps.size() == 0) {

@@ -24,11 +24,14 @@ SystemSettings::SystemSettings(int argc, char** argv, char** envp) {
     while (!args.empty()) {
       auto arg = args.pop();
       if (arg == "-d") {
-        targetFolder = args.pop();
+        source_folder = args.pop();
+      }
+      if (arg == "-o") {
+        destination_folder = args.pop();
       }
     }
   } catch (...) {
-    FATAL("usage: {} [-d <start_folder>]", argv[0]);
+    FATAL("usage: {} [-d <source>] [-o <target>]", argv[0]);
   }
 }
 } // namespace klblog
