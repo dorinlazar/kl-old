@@ -1,19 +1,13 @@
-#include "settings.h"
+#include "systemsettings.hpp"
 
-using namespace klblog;
+namespace klblog {
 using namespace kl;
 
-Text Settings::version = "0.0.1";
-Text Settings::targetFolder = ""_t;
-bool Settings::verbose = false;
-Dict<Text, Text> Settings::environment;
-List<Text> Settings::arguments;
-
-void Settings::parseCommandLine(int argc, char** argv, char** envp) {
-  CHECK(argc > 0, "internal error: invalid number of arguments:", argc);
+SystemSettings::SystemSettings(int argc, char** argv, char** envp) {
+  CHECK(argc > 0, "internal error: invalid number of arguments: {}", argc);
   for (int i = 1; i < argc; i++) {
     if ("-v"_t == argv[i]) {
-      verbose = true;
+      verbosity = VerbosityLevel::Verbose;
     } else {
       arguments.add(argv[i]);
     }
@@ -25,7 +19,7 @@ void Settings::parseCommandLine(int argc, char** argv, char** envp) {
   }
 
   try {
-    Queue<Text> args;
+    kl::Queue<kl::Text> args;
     args.push(arguments);
     while (!args.empty()) {
       auto arg = args.pop();
@@ -34,6 +28,7 @@ void Settings::parseCommandLine(int argc, char** argv, char** envp) {
       }
     }
   } catch (...) {
-    FATAL("usage:", argv[0], "[-d <start_folder>]");
+    FATAL("usage: {} [-d <start_folder>]", argv[0]);
   }
 }
+} // namespace klblog

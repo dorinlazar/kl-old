@@ -683,7 +683,7 @@ Text TextChain::join(char splitchar) {
   }
   size_t size = _length + (splitchar != '\0' ? (_chain.size() - 1) : 0);
 
-  auto memblock = TextRefCounter::allocate(_length);
+  auto memblock = TextRefCounter::allocate(size);
   char* ptr = memblock->text_data();
 
   size_t offset = 0;

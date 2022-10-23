@@ -28,6 +28,9 @@ static Text _readFile(const Text& filename) {
   std::ifstream is;
   is.exceptions(std::ios_base::failbit | std::ios_base::badbit);
   is.open(p, std::ifstream::binary);
+  if (is.bad()) {
+    return {};
+  }
   char a, b, c;
   a = is.get();
   b = is.get();

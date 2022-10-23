@@ -1,12 +1,10 @@
-#include "settings.h"
+#include "systemsettings.hpp"
 #include "ff/poorconfig.h"
 
-using namespace klblog;
-
 int main(int argc, char** argv, char** envp) {
-  Settings::parseCommandLine(argc, argv, envp);
-  if (Settings::verbose) {
-    kl::log(("KLBlog v"_t + Settings::version + "© 2021 Dorin Lazăr, released under GPL v.2.1").toText().toView());
+  klblog::SystemSettings system_settings(argc, argv, envp);
+  if (system_settings.verbosity == klblog::VerbosityLevel::Verbose) {
+    kl::log("KLBlog v{} © 2022 Dorin Lazăr, released under GPL v2.1", system_settings.version);
   }
 
   return 0;
