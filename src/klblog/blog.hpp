@@ -1,6 +1,7 @@
 #pragma once
 #include "systemsettings.hpp"
 #include "blogsettings.hpp"
+#include "ff/poorconfig.h"
 
 namespace klblog {
 

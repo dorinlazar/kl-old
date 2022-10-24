@@ -34,4 +34,7 @@ SystemSettings::SystemSettings(int argc, char** argv, char** envp) {
     FATAL("usage: {} [-d <source>] [-o <target>]", argv[0]);
   }
 }
+
+bool SystemSettings::verbose() const { return verbosity == VerbosityLevel::Verbose; }
+
 } // namespace klblog
