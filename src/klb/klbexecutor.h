@@ -30,12 +30,14 @@ public:
 };
 
 class GenMakefileStrategy final : public BuildStrategy {
-  std::ofstream _output;
+  std::ofstream m_makefile_output;
+  std::ofstream m_compilation_db_output;
   kl::List<kl::Text> _build_targets;
   kl::Set<kl::Text> _build_dirs;
+  bool m_first_operation = true;
 
 public:
-  GenMakefileStrategy(ModuleCollection* coll, kl::Text filename);
+  GenMakefileStrategy(ModuleCollection* coll, kl::Text makefile_filename, kl::Text compilation_db_filename);
   ~GenMakefileStrategy() override;
   void build(Module* module) override;
   void link(Module* module) override;

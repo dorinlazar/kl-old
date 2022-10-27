@@ -643,6 +643,13 @@ size_t Text::count(char t) const {
   return count;
 }
 
+Text Text::quote_escaped() {
+  auto escapes = count("\"\\");
+  if (escapes == 0) {
+    return TextChain{"\"", *this, "\""};
+  }
+}
+
 void TextChain::_updateLength() {
   _length = 0;
   for (const auto& t: _chain) {

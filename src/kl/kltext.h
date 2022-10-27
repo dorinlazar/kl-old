@@ -204,6 +204,10 @@ public:
   void fill_c_buffer(char* dest, size_t bufsize) const;
   // how many times the character c appears in the text
   size_t count(char c) const;
+  size_t count(Text t) const;
+
+  // Quote escaped: x="He\llo" becomes "x=\"He\\llo\""
+  Text quote_escaped();
 };
 
 class TextChain {
