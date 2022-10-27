@@ -12,6 +12,8 @@ enum class VerbosityLevel { Verbose, Quiet };
 struct SystemSettings {
   SystemSettings(int argc, char** argv, char** envp);
 
+  bool verbose() const;
+
   kl::Dict<kl::Text, kl::Text> environment;
   kl::List<kl::Text> arguments;
   kl::Text version = KLBLOG_VERSION;
