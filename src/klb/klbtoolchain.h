@@ -13,12 +13,6 @@ public:
 };
 
 class Gcc : public Toolchain {
-  bool _staticBuild = true;
-
-  kl::List<kl::Text> _cCompileBase;
-  kl::List<kl::Text> _cppCompileBase;
-  kl::List<kl::Text> _linkBase;
-
 public:
   Gcc();
   ~Gcc() override = default;

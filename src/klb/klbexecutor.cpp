@@ -168,7 +168,7 @@ void GenMakefileStrategy::link(Module* mod) {
   auto cmdLine =
       toolchain.linkCmdLine(objects, mod->executablePath(), CMD.SysFlags().ldflags(mod->recursiveSystemHeaders()));
   m_makefile_output << mod->executablePath().toView() << ": " << kl::TextChain(objects).join(' ').toView() << "\n\t"
-                    << kl::TextChain(cmdLine).join(' ').toView() << "\n";
+                    << kl::TextChain(cmdLine).join(' ').toView() << "\n\n";
   _build_targets.add(mod->executablePath());
 }
 
