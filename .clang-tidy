@@ -7,7 +7,9 @@ Checks: >
   modernize-*,
   performance-*,
   portability-*,
-  readability-*
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-identifier-length
 # Turn all the warnings from the checks above into errors.
 WarningsAsErrors: "*"
 

@@ -11,7 +11,7 @@ class PoorConfigParser {
 
   bool _uselessLine() {
     auto startOfLine = _scanner.location();
-    auto line = _scanner.readLine().trimLeft();
+    auto line = _scanner.readLine().trim_left();
     if (line.size() == 0 || line[0] == _comment) {
       return true;
     }

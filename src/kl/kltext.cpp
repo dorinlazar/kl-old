@@ -14,9 +14,9 @@ TextView::TextView(std::string_view v) : m_view(v) {}
 TextView::TextView(const char* text) : m_view(text) {}
 TextView::TextView(const char* text, size_t length) : m_view(text, length) {}
 
-TextView TextView::trim() const { return trimLeft().trimRight(); }
-TextView TextView::trimLeft() const { return skip(WHITESPACE); }
-TextView TextView::trimRight() const {
+TextView TextView::trim() const { return trim_left().trim_right(); }
+TextView TextView::trim_left() const { return skip(WHITESPACE); }
+TextView TextView::trim_right() const {
   auto position = m_view.find_last_not_of(WHITESPACE);
   if (position == std::string_view::npos) {
     return {};
@@ -212,7 +212,7 @@ std::optional<TextView> TextView::expect(const TextView& t) const {
   return {};
 }
 
-std::optional<TextView> TextView::expectws(const TextView& t) const { return trimLeft().expect(t); }
+std::optional<TextView> TextView::expectws(const TextView& t) const { return trim_left().expect(t); }
 
 std::optional<TextView> TextView::skipIndent(size_t indentLevel) const {
   if (size() < indentLevel) [[unlikely]] {
@@ -444,9 +444,9 @@ TextView Text::toTextView() const { return TextView(toView()); }
 std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), (uint8_t*)end()}; }
 int64_t Text::toInt() const { return std::stoll(toString()); }
 
-Text Text::trim() const { return trimLeft().trimRight(); }
-Text Text::trimLeft() const { return skip(WHITESPACE); }
-Text Text::trimRight() const {
+Text Text::trim() const { return trim_left().trim_right(); }
+Text Text::trim_left() const { return skip(WHITESPACE); }
+Text Text::trim_right() const {
   auto position = toView().find_last_not_of(WHITESPACE);
   if (position == std::string_view::npos) {
     return {};
@@ -597,7 +597,7 @@ std::optional<Text> Text::expect(const Text& t) const {
   return {};
 }
 
-std::optional<Text> Text::expectws(const Text& t) const { return trimLeft().expect(t); }
+std::optional<Text> Text::expectws(const Text& t) const { return trim_left().expect(t); }
 
 std::optional<Text> Text::skipIndent(size_t indentLevel) const {
   if (size() < indentLevel) [[unlikely]] {

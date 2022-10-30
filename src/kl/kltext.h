@@ -31,8 +31,8 @@ public:
 
 public:
   TextView trim() const;
-  TextView trimLeft() const;
-  TextView trimRight() const;
+  TextView trim_left() const;
+  TextView trim_right() const;
 
   bool startsWith(char c) const;
   bool startsWith(const TextView& tv) const;
@@ -152,8 +152,8 @@ public:
   const char* end() const;
 
   Text trim() const;
-  Text trimLeft() const;
-  Text trimRight() const;
+  Text trim_left() const;
+  Text trim_right() const;
 
   bool startsWith(const Text& tv) const;
   bool startsWith(const char*) const;

@@ -113,7 +113,7 @@ GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text makefi
       m_compilation_db_output(compilation_db_filename.toString(), std::ios::trunc) {
   m_makefile_output << ".PHONY: executables makedirs\n";
   m_makefile_output << "all: makedirs executables\n";
-  m_compilation_db_output << "[\n";
+  m_compilation_db_output << "[";
 }
 
 GenMakefileStrategy::~GenMakefileStrategy() {
@@ -142,6 +142,8 @@ void GenMakefileStrategy::build(Module* mod) {
   m_compilation_db_output << "\n{\n";
   m_compilation_db_output << " \"directory\": " << CMD.CurrentWorkingDirectory().fullPath().quote_escaped() << ",\n";
   m_compilation_db_output << " \"file\": " << mod->sourcePath().quote_escaped() << ",\n";
+  cmdLine.add("-isystem"_t);
+  cmdLine.add("/usr/include"_t);
   m_compilation_db_output << " \"arguments\": [" << kl::TextChain(cmdLine.transform<kl::Text>([](const kl::Text& t) {
                                                       return t.quote_escaped();
                                                     })).join(", ")
