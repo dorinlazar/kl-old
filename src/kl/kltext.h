@@ -31,8 +31,8 @@ public:
 
 public:
   TextView trim() const;
-  TextView trimLeft() const;
-  TextView trimRight() const;
+  TextView trim_left() const;
+  TextView trim_right() const;
 
   bool startsWith(char c) const;
   bool startsWith(const TextView& tv) const;
@@ -152,8 +152,8 @@ public:
   const char* end() const;
 
   Text trim() const;
-  Text trimLeft() const;
-  Text trimRight() const;
+  Text trim_left() const;
+  Text trim_right() const;
 
   bool startsWith(const Text& tv) const;
   bool startsWith(const char*) const;
@@ -204,6 +204,10 @@ public:
   void fill_c_buffer(char* dest, size_t bufsize) const;
   // how many times the character c appears in the text
   size_t count(char c) const;
+  size_t count(Text t) const;
+
+  // Quote escaped: x="He\llo" becomes "x=\"He\\llo\""
+  Text quote_escaped() const;
 };
 
 class TextChain {
@@ -234,6 +238,7 @@ public:
 
   void clear();
   kl::Text join(char splitchar = '\0');
+  kl::Text join(kl::Text split_text);
 };
 
 inline namespace literals {

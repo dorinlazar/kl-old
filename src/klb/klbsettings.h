@@ -9,6 +9,7 @@ struct CommandParameters {
   bool Verbose() const;
   kl::FilePath BuildFolder() const;
   kl::FilePath SourceFolder() const;
+  kl::FilePath CurrentWorkingDirectory() const;
   const kl::List<kl::Text>& Targets() const;
   const kl::List<kl::Text>& CFlags() const;
   const kl::List<kl::Text>& CxxFlags() const;
@@ -22,6 +23,7 @@ private:
   bool m_verbose = false;
   kl::FilePath m_build_folder;
   kl::FilePath m_source_folder;
+  kl::FilePath m_current_working_directory;
   int32_t processorCount = 0;
   uint32_t m_n_jobs;
   bool m_run_mode = false;

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <utility>
+#include <numeric>
 
 using namespace std::literals;
 
@@ -13,9 +14,9 @@ TextView::TextView(std::string_view v) : m_view(v) {}
 TextView::TextView(const char* text) : m_view(text) {}
 TextView::TextView(const char* text, size_t length) : m_view(text, length) {}
 
-TextView TextView::trim() const { return trimLeft().trimRight(); }
-TextView TextView::trimLeft() const { return skip(WHITESPACE); }
-TextView TextView::trimRight() const {
+TextView TextView::trim() const { return trim_left().trim_right(); }
+TextView TextView::trim_left() const { return skip(WHITESPACE); }
+TextView TextView::trim_right() const {
   auto position = m_view.find_last_not_of(WHITESPACE);
   if (position == std::string_view::npos) {
     return {};
@@ -211,7 +212,7 @@ std::optional<TextView> TextView::expect(const TextView& t) const {
   return {};
 }
 
-std::optional<TextView> TextView::expectws(const TextView& t) const { return trimLeft().expect(t); }
+std::optional<TextView> TextView::expectws(const TextView& t) const { return trim_left().expect(t); }
 
 std::optional<TextView> TextView::skipIndent(size_t indentLevel) const {
   if (size() < indentLevel) [[unlikely]] {
@@ -443,9 +444,9 @@ TextView Text::toTextView() const { return TextView(toView()); }
 std::span<uint8_t> Text::toRawData() const { return {(uint8_t*)begin(), (uint8_t*)end()}; }
 int64_t Text::toInt() const { return std::stoll(toString()); }
 
-Text Text::trim() const { return trimLeft().trimRight(); }
-Text Text::trimLeft() const { return skip(WHITESPACE); }
-Text Text::trimRight() const {
+Text Text::trim() const { return trim_left().trim_right(); }
+Text Text::trim_left() const { return skip(WHITESPACE); }
+Text Text::trim_right() const {
   auto position = toView().find_last_not_of(WHITESPACE);
   if (position == std::string_view::npos) {
     return {};
@@ -596,7 +597,7 @@ std::optional<Text> Text::expect(const Text& t) const {
   return {};
 }
 
-std::optional<Text> Text::expectws(const Text& t) const { return trimLeft().expect(t); }
+std::optional<Text> Text::expectws(const Text& t) const { return trim_left().expect(t); }
 
 std::optional<Text> Text::skipIndent(size_t indentLevel) const {
   if (size() < indentLevel) [[unlikely]] {
@@ -634,13 +635,32 @@ void Text::fill_c_buffer(char* dest, size_t bufsize) const {
 }
 
 size_t Text::count(char t) const {
-  size_t count = 0;
-  for (auto c: *this) {
-    if (c == t) {
-      count++;
-    }
+  return std::accumulate(begin(), end(), 0uz, [t](size_t count, char c) { return count + (c == t ? 1 : 0); });
+}
+
+size_t Text::count(Text t) const {
+  return std::accumulate(begin(), end(), 0uz, [&t](size_t count, char c) { return count + (t.contains(c) ? 1 : 0); });
+}
+
+Text Text::quote_escaped() const {
+  auto escapes = count("\"\\");
+  if (escapes == 0) {
+    return TextChain{"\"", *this, "\""};
   }
-  return count;
+  size_t length = escapes + size() + 2;
+  auto memblock = TextRefCounter::allocate(length);
+  auto ptr = memblock->text_data();
+  ptr[0] = '"';
+  size_t offset = 1;
+
+  for (char c: *this) {
+    if (c == '"' || c == '\\') {
+      ptr[offset++] = '\\';
+    }
+    ptr[offset++] = c;
+  }
+  ptr[length - 1] = '"';
+  return Text(memblock, length);
 }
 
 void TextChain::_updateLength() {
@@ -691,6 +711,28 @@ Text TextChain::join(char splitchar) {
     if (splitchar && offset != 0) {
       ptr[offset] = splitchar;
       offset++;
+    }
+    std::copy(t.begin(), t.end(), ptr + offset);
+    offset += t.size();
+  }
+  return Text(memblock, size);
+}
+
+Text TextChain::join(kl::Text split_text) {
+  if (_length == 0) {
+    return ""_t;
+  }
+  size_t size = _length + split_text.size() * (_chain.size() - 1);
+
+  auto memblock = TextRefCounter::allocate(size);
+  char* ptr = memblock->text_data();
+
+  size_t offset = 0;
+  size_t split_size = split_text.size();
+  for (const auto& t: _chain) {
+    if (split_size > 0 && offset != 0) {
+      std::copy(split_text.begin(), split_text.end(), ptr + offset);
+      offset += split_size;
     }
     std::copy(t.begin(), t.end(), ptr + offset);
     offset += t.size();

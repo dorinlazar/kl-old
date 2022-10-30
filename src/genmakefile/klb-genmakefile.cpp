@@ -18,10 +18,11 @@ int main(int argc, char** argv, char** envp) {
   auto mc = discoverModules(fscache);
   auto modules = mc->getTargetModules({});
   kl::Text target_makefile = "Makefile";
+  kl::Text target_compilation_database = CMD.BuildFolder().fullPath() + "/compile_commands.json";
   if (CMD.Targets().size() > 0) {
     target_makefile = CMD.Targets()[0];
   }
-  GenMakefileStrategy sched(mc.get(), target_makefile);
+  GenMakefileStrategy sched(mc.get(), target_makefile, target_compilation_database);
 
   for (const auto& mod: modules) {
     sched.build(mod);

@@ -38,18 +38,18 @@ TEST(kltext, test_text_construction) {
 TEST(kltext, test_trimming) {
   Text txt(" \t hello   \n ");
   EXPECT_EQ(txt.trim().toString(), "hello"s);
-  EXPECT_EQ(txt.trimLeft().toString(), "hello   \n "s);
-  EXPECT_EQ(txt.trimRight().toString(), " \t hello"s);
+  EXPECT_EQ(txt.trim_left().toString(), "hello   \n "s);
+  EXPECT_EQ(txt.trim_right().toString(), " \t hello"s);
 
   Text txt2("hello");
   EXPECT_EQ(txt2.trim().toString(), "hello"s);
-  EXPECT_EQ(txt2.trimLeft().toString(), "hello"s);
-  EXPECT_EQ(txt2.trimRight().toString(), "hello"s);
+  EXPECT_EQ(txt2.trim_left().toString(), "hello"s);
+  EXPECT_EQ(txt2.trim_right().toString(), "hello"s);
 
   Text txt3;
   EXPECT_EQ(txt3.trim().toString(), ""s);
-  EXPECT_EQ(txt3.trimLeft().toString(), ""s);
-  EXPECT_EQ(txt3.trimRight().toString(), ""s);
+  EXPECT_EQ(txt3.trim_left().toString(), ""s);
+  EXPECT_EQ(txt3.trim_right().toString(), ""s);
 }
 
 TEST(kltext, test_starts_with) {

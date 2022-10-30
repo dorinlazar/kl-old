@@ -107,15 +107,19 @@ void DefaultBuildStrategy::link(Module* mod) { impl->add(ExecStepType::Link, mod
 void DefaultBuildStrategy::run(Module* mod) { impl->add(ExecStepType::Run, mod); }
 bool DefaultBuildStrategy::execute() { return impl->execute(); }
 
-GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text filename)
-    : BuildStrategy(coll), _output(filename.toString(), std::ios::trunc) {
-  _output << ".PHONY: executables makedirs\n";
-  _output << "all: makedirs executables\n";
+GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text makefile_filename,
+                                         kl::Text compilation_db_filename)
+    : BuildStrategy(coll), m_makefile_output(makefile_filename.toString(), std::ios::trunc),
+      m_compilation_db_output(compilation_db_filename.toString(), std::ios::trunc) {
+  m_makefile_output << ".PHONY: executables makedirs\n";
+  m_makefile_output << "all: makedirs executables\n";
+  m_compilation_db_output << "[";
 }
 
 GenMakefileStrategy::~GenMakefileStrategy() {
-  _output << "executables: " << kl::TextChain(_build_targets).join(' ').toView() << "\n";
-  _output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ').toView() << "\n";
+  m_makefile_output << "executables: " << kl::TextChain(_build_targets).join(' ').toView() << "\n";
+  m_makefile_output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ').toView() << "\n";
+  m_compilation_db_output << "\n]\n";
 }
 
 void GenMakefileStrategy::build(Module* mod) {
@@ -124,11 +128,27 @@ void GenMakefileStrategy::build(Module* mod) {
   auto deps = mod->requiredModules()
                   .select([](Module* pmod) { return pmod->hasHeader(); })
                   .transform<kl::Text>([](Module* ptr) { return ptr->headerPath(); });
-  _output << mod->objectPath().toView() << ": " << mod->sourcePath().toView() << " "
-          << kl::TextChain(deps).join(' ').toView() << "\n\t";
+  m_makefile_output << mod->objectPath().toView() << ": " << mod->sourcePath().toView() << " "
+                    << kl::TextChain(deps).join(' ').toView() << "\n\t";
+
   auto cmdLine = toolchain.buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
                                         CMD.SysFlags().cxxflags(mod->sourceSystemHeaders()));
-  _output << kl::TextChain(cmdLine).join(' ').toView() << "\n";
+  m_makefile_output << kl::TextChain(cmdLine).join(' ').toView() << "\n\n";
+  if (m_first_operation) {
+    m_first_operation = false;
+  } else {
+    m_compilation_db_output << ",";
+  }
+  m_compilation_db_output << "\n{\n";
+  m_compilation_db_output << " \"directory\": " << CMD.CurrentWorkingDirectory().fullPath().quote_escaped() << ",\n";
+  m_compilation_db_output << " \"file\": " << mod->sourcePath().quote_escaped() << ",\n";
+  cmdLine.add("-isystem"_t);
+  cmdLine.add("/usr/include"_t);
+  m_compilation_db_output << " \"arguments\": [" << kl::TextChain(cmdLine.transform<kl::Text>([](const kl::Text& t) {
+                                                      return t.quote_escaped();
+                                                    })).join(", ")
+                          << "]\n";
+  m_compilation_db_output << "}";
 }
 
 kl::List<kl::Text> getDepObjects(Module* mod) {
@@ -147,8 +167,8 @@ void GenMakefileStrategy::link(Module* mod) {
   auto objects = getDepObjects(mod);
   auto cmdLine =
       toolchain.linkCmdLine(objects, mod->executablePath(), CMD.SysFlags().ldflags(mod->recursiveSystemHeaders()));
-  _output << mod->executablePath().toView() << ": " << kl::TextChain(objects).join(' ').toView() << "\n\t"
-          << kl::TextChain(cmdLine).join(' ').toView() << "\n";
+  m_makefile_output << mod->executablePath().toView() << ": " << kl::TextChain(objects).join(' ').toView() << "\n\t"
+                    << kl::TextChain(cmdLine).join(' ').toView() << "\n\n";
   _build_targets.add(mod->executablePath());
 }
 
