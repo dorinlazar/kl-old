@@ -65,7 +65,7 @@
     "typeinfo": "cpp"
   },
   "C_Cpp.clang_format_path": "/usr/bin/clang-format",
-  "C_Cpp.default.cppStandard": "c++20",
+  "C_Cpp.default.cppStandard": "c++23",
   "C_Cpp.default.cStandard": "c17",
   "editor.tabSize": 2
 }

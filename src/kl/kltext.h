@@ -207,7 +207,7 @@ public:
   size_t count(Text t) const;
 
   // Quote escaped: x="He\llo" becomes "x=\"He\\llo\""
-  Text quote_escaped();
+  Text quote_escaped() const;
 };
 
 class TextChain {
@@ -238,6 +238,7 @@ public:
 
   void clear();
   kl::Text join(char splitchar = '\0');
+  kl::Text join(kl::Text split_text);
 };
 
 inline namespace literals {

@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <utility>
+#include <numeric>
 
 using namespace std::literals;
 
@@ -634,20 +635,32 @@ void Text::fill_c_buffer(char* dest, size_t bufsize) const {
 }
 
 size_t Text::count(char t) const {
-  size_t count = 0;
-  for (auto c: *this) {
-    if (c == t) {
-      count++;
-    }
-  }
-  return count;
+  return std::accumulate(begin(), end(), 0uz, [t](size_t count, char c) { return count + (c == t ? 1 : 0); });
 }
 
-Text Text::quote_escaped() {
+size_t Text::count(Text t) const {
+  return std::accumulate(begin(), end(), 0uz, [&t](size_t count, char c) { return count + (t.contains(c) ? 1 : 0); });
+}
+
+Text Text::quote_escaped() const {
   auto escapes = count("\"\\");
   if (escapes == 0) {
     return TextChain{"\"", *this, "\""};
   }
+  size_t length = escapes + size() + 2;
+  auto memblock = TextRefCounter::allocate(length);
+  auto ptr = memblock->text_data();
+  ptr[0] = '"';
+  size_t offset = 1;
+
+  for (char c: *this) {
+    if (c == '"' || c == '\\') {
+      ptr[offset++] = '\\';
+    }
+    ptr[offset++] = c;
+  }
+  ptr[length - 1] = '"';
+  return Text(memblock, length);
 }
 
 void TextChain::_updateLength() {
@@ -698,6 +711,28 @@ Text TextChain::join(char splitchar) {
     if (splitchar && offset != 0) {
       ptr[offset] = splitchar;
       offset++;
+    }
+    std::copy(t.begin(), t.end(), ptr + offset);
+    offset += t.size();
+  }
+  return Text(memblock, size);
+}
+
+Text TextChain::join(kl::Text split_text) {
+  if (_length == 0) {
+    return ""_t;
+  }
+  size_t size = _length + split_text.size() * (_chain.size() - 1);
+
+  auto memblock = TextRefCounter::allocate(size);
+  char* ptr = memblock->text_data();
+
+  size_t offset = 0;
+  size_t split_size = split_text.size();
+  for (const auto& t: _chain) {
+    if (split_size > 0 && offset != 0) {
+      std::copy(split_text.begin(), split_text.end(), ptr + offset);
+      offset += split_size;
     }
     std::copy(t.begin(), t.end(), ptr + offset);
     offset += t.size();

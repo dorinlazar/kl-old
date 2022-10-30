@@ -119,7 +119,7 @@ GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text makefi
 GenMakefileStrategy::~GenMakefileStrategy() {
   m_makefile_output << "executables: " << kl::TextChain(_build_targets).join(' ').toView() << "\n";
   m_makefile_output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ').toView() << "\n";
-  m_compilation_db_output << "]\n";
+  m_compilation_db_output << "\n]\n";
 }
 
 void GenMakefileStrategy::build(Module* mod) {
@@ -130,8 +130,9 @@ void GenMakefileStrategy::build(Module* mod) {
                   .transform<kl::Text>([](Module* ptr) { return ptr->headerPath(); });
   m_makefile_output << mod->objectPath().toView() << ": " << mod->sourcePath().toView() << " "
                     << kl::TextChain(deps).join(' ').toView() << "\n\t";
-  auto cmdLine =
-      toolchain.buildCmdLine("$^", "$@", mod->includeFolders(), CMD.SysFlags().cxxflags(mod->sourceSystemHeaders()));
+
+  auto cmdLine = toolchain.buildCmdLine(mod->sourcePath(), mod->objectPath(), mod->includeFolders(),
+                                        CMD.SysFlags().cxxflags(mod->sourceSystemHeaders()));
   m_makefile_output << kl::TextChain(cmdLine).join(' ').toView() << "\n\n";
   if (m_first_operation) {
     m_first_operation = false;
@@ -139,9 +140,14 @@ void GenMakefileStrategy::build(Module* mod) {
     m_compilation_db_output << ",";
   }
   m_compilation_db_output << "\n  {\n";
-  m_compilation_db_output << "     \"directory\": \"" << CMD.SourceFolder().fullPath() << "\",\n";
-  m_compilation_db_output << "     \"file\": \"" << mod->sourcePath() << "\",\n";
-  m_compilation_db_output << "     \"arguments\": \"" << mod->sourcePath() << "\",\n";
+  m_compilation_db_output << "     \"directory\": " << CMD.SourceFolder().fullPath().quote_escaped() << ",\n";
+  m_compilation_db_output << "     \"file\": " << mod->sourcePath().quote_escaped() << ",\n";
+  m_compilation_db_output << "     \"arguments\": ["
+                          << kl::TextChain(cmdLine.transform<kl::Text>([](const kl::Text& t) {
+                               return t.quote_escaped();
+                             })).join(", ")
+                          << "],\n";
+  m_compilation_db_output << "    }";
 }
 
 kl::List<kl::Text> getDepObjects(Module* mod) {
