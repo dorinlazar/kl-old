@@ -1,6 +1,7 @@
 #include "klbsettings.h"
 #include "kl/klfs.h"
 #include <thread>
+#include <filesystem>
 #include "ff/poorconfig.h"
 using namespace kl::literals;
 
@@ -65,6 +66,7 @@ void CommandParameters::UpdateSysEnv(char** envp) {
   if (processorCount < 1) {
     processorCount = 1;
   }
+  m_current_working_directory = kl::Text(std::filesystem::current_path().c_str());
 }
 
 void CommandParameters::ReadDepotFile() {
@@ -110,6 +112,7 @@ void CommandParameters::Init(int argc, char** argv, char** envp) {
 }
 
 bool CommandParameters::Verbose() const { return m_verbose; }
+kl::FilePath CommandParameters::CurrentWorkingDirectory() const { return m_current_working_directory; }
 kl::FilePath CommandParameters::BuildFolder() const { return m_build_folder; }
 kl::FilePath CommandParameters::SourceFolder() const { return m_source_folder; }
 const kl::List<kl::Text>& CommandParameters::Targets() const { return m_targets; }

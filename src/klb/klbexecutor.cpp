@@ -139,15 +139,14 @@ void GenMakefileStrategy::build(Module* mod) {
   } else {
     m_compilation_db_output << ",";
   }
-  m_compilation_db_output << "\n  {\n";
-  m_compilation_db_output << "     \"directory\": " << CMD.SourceFolder().fullPath().quote_escaped() << ",\n";
-  m_compilation_db_output << "     \"file\": " << mod->sourcePath().quote_escaped() << ",\n";
-  m_compilation_db_output << "     \"arguments\": ["
-                          << kl::TextChain(cmdLine.transform<kl::Text>([](const kl::Text& t) {
-                               return t.quote_escaped();
-                             })).join(", ")
-                          << "],\n";
-  m_compilation_db_output << "    }";
+  m_compilation_db_output << "\n{\n";
+  m_compilation_db_output << " \"directory\": " << CMD.CurrentWorkingDirectory().fullPath().quote_escaped() << ",\n";
+  m_compilation_db_output << " \"file\": " << mod->sourcePath().quote_escaped() << ",\n";
+  m_compilation_db_output << " \"arguments\": [" << kl::TextChain(cmdLine.transform<kl::Text>([](const kl::Text& t) {
+                                                      return t.quote_escaped();
+                                                    })).join(", ")
+                          << "]\n";
+  m_compilation_db_output << "}";
 }
 
 kl::List<kl::Text> getDepObjects(Module* mod) {
