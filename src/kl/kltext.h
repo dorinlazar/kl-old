@@ -24,9 +24,9 @@ public:
   TextView(const char* text);
   TextView(const char* text, size_t length);
   TextView(const TextView&) = default;
-  TextView(TextView&&) = default;
+  TextView(TextView&&) noexcept = default;
   TextView& operator=(const TextView&) = default;
-  TextView& operator=(TextView&&) = default;
+  TextView& operator=(TextView&&) noexcept = default;
   ~TextView() = default;
 
 public:
@@ -119,9 +119,9 @@ public:
   Text();
   ~Text();
   Text(const Text&);
-  Text(Text&&);
+  Text(Text&&) noexcept;
   Text& operator=(const Text& v);
-  Text& operator=(Text&& v);
+  Text& operator=(Text&& v) noexcept;
 
   Text(char c);
   Text(const std::string& s);

@@ -268,13 +268,13 @@ TextRefCounter* TextRefCounter::allocate(size_t text_size) {
 
 TextRefCounter TextRefCounter::s_empty;
 
-Text::Text() : m_memblock(&TextRefCounter::s_empty), m_start(0), m_end(0) {}
+Text::Text() : m_memblock(&TextRefCounter::s_empty) {}
 
 Text::~Text() { reset(); }
 
 Text::Text(const Text& t) : m_memblock(t.m_memblock->acquire()), m_start(t.m_start), m_end(t.m_end) {}
 
-Text::Text(Text&& dying)
+Text::Text(Text&& dying) noexcept
     : m_memblock(std::exchange(dying.m_memblock, &TextRefCounter::s_empty)), m_start(std::exchange(dying.m_start, 0)),
       m_end(std::exchange(dying.m_end, 0)) {}
 
@@ -288,7 +288,7 @@ Text& Text::operator=(const Text& t) {
   return *this;
 }
 
-Text& Text::operator=(Text&& dying) {
+Text& Text::operator=(Text&& dying) noexcept {
   reset();
   if (dying.size() > 0) {
     m_memblock = std::exchange(dying.m_memblock, &TextRefCounter::s_empty);
@@ -316,7 +316,7 @@ Text::Text(const std::string& s) {
 }
 
 Text::Text(const char* ptr) {
-  if (ptr && (*ptr != '\0')) {
+  if ((ptr != nullptr) && (*ptr != '\0')) {
     m_end = std::strlen(ptr);
     m_memblock = TextRefCounter::allocate(m_end);
     std::copy(ptr, ptr + m_end, m_memblock->text_data());
@@ -326,7 +326,7 @@ Text::Text(const char* ptr) {
 }
 
 Text::Text(const char* ptr, size_t size) {
-  if (ptr && size > 0) {
+  if ((ptr != nullptr) && size > 0) {
     m_end = size;
     m_memblock = TextRefCounter::allocate(m_end);
     std::copy(ptr, ptr + m_end, m_memblock->text_data());
@@ -360,10 +360,10 @@ void Text::reset() {
   m_end = 0;
 }
 
-Text Text::copy() const { return Text(m_memblock->text_data() + m_start, size()); }
+Text Text::copy() const { return {m_memblock->text_data() + m_start, size()}; }
 
 char Text::operator[](ssize_t index) const {
-  if (index >= (ssize_t)size() || (-index > (ssize_t)size())) [[unlikely]] {
+  if (index >= static_cast<ssize_t>(size()) || (-index > static_cast<ssize_t>(size()))) [[unlikely]] {
     throw std::out_of_range(fmt::format("Requested index {} out of {}", index, size()));
   }
   return *(m_memblock->text_data() + m_start + index + ((index < 0) ? size() : 0));
@@ -763,8 +763,8 @@ void TextChain::clear() {
 
 Text Text::skipBOM() const {
   if (size() >= 3) {
-    auto buf = begin();
-    if (buf[0] == (char)0xEF && buf[1] == (char)0xBB && buf[2] == (char)0xBF) {
+    const auto* buf = begin();
+    if (buf[0] == static_cast<char>(0xEF) && buf[1] == static_cast<char>(0xBB) && buf[2] == static_cast<char>(0xBF)) {
       return skip(3);
     }
   }
@@ -772,7 +772,7 @@ Text Text::skipBOM() const {
 }
 
 inline namespace literals {
-Text operator"" _t(const char* p, size_t s) { return Text(p, s); }
+Text operator"" _t(const char* p, size_t s) { return {p, s}; }
 } // namespace literals
 
 std::ostream& operator<<(std::ostream& os, const TextView& tv) { return os << tv.view(); }
