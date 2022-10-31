@@ -118,10 +118,10 @@ class Text {
 public:
   Text();
   ~Text();
-  Text(const Text&);
-  Text(Text&&) noexcept;
-  Text& operator=(const Text& v);
-  Text& operator=(Text&& v) noexcept;
+  Text(const Text& value);
+  Text(Text&& dying) noexcept;
+  Text& operator=(const Text& value);
+  Text& operator=(Text&& dying) noexcept;
 
   Text(char c);
   Text(const std::string& s);

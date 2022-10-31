@@ -272,18 +272,18 @@ Text::Text() : m_memblock(&TextRefCounter::s_empty) {}
 
 Text::~Text() { reset(); }
 
-Text::Text(const Text& t) : m_memblock(t.m_memblock->acquire()), m_start(t.m_start), m_end(t.m_end) {}
+Text::Text(const Text& value) : m_memblock(value.m_memblock->acquire()), m_start(value.m_start), m_end(value.m_end) {}
 
 Text::Text(Text&& dying) noexcept
     : m_memblock(std::exchange(dying.m_memblock, &TextRefCounter::s_empty)), m_start(std::exchange(dying.m_start, 0)),
       m_end(std::exchange(dying.m_end, 0)) {}
 
-Text& Text::operator=(const Text& t) {
+Text& Text::operator=(const Text& value) {
   reset();
-  if (t.size() > 0) {
-    m_memblock = t.m_memblock->acquire();
-    m_start = t.m_start;
-    m_end = t.m_end;
+  if (value.size() > 0) {
+    m_memblock = value.m_memblock->acquire();
+    m_start = value.m_start;
+    m_end = value.m_end;
   }
   return *this;
 }
@@ -764,6 +764,7 @@ void TextChain::clear() {
 Text Text::skipBOM() const {
   if (size() >= 3) {
     const auto* buf = begin();
+    // NOLINTNEXTLINE(readability-magic-numbers): BOM is 0xEFBBBF for UTF8
     if (buf[0] == static_cast<char>(0xEF) && buf[1] == static_cast<char>(0xBB) && buf[2] == static_cast<char>(0xBF)) {
       return skip(3);
     }
