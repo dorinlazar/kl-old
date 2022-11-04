@@ -9,9 +9,6 @@ build/ff/codescanner.o: src/ff/codescanner.cpp src/ff/codescanner.h src/ff/texts
 build/ff/textscanner.o: src/ff/textscanner.cpp src/ff/textscanner.h src/kl/kl.h src/kl/klds.h src/kl/kltext.h
 	g++ -c src/ff/textscanner.cpp -o build/ff/textscanner.o -Isrc -Isrc/ff -Isrc/kl -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
 
-build/genmakefile/klb-genmakefile.o: src/genmakefile/klb-genmakefile.cpp src/ff/poorconfig.h src/ff/codescanner.h src/ff/textscanner.h src/kl/klfs.h src/kl/klprocess.h src/kl/kl.h src/kl/kltime.h src/kl/klexcept.h src/kl/kltext.h src/kl/klds.h src/kl/klvalue.h src/klb/modulecollection.h src/klb/systemflags.h src/klb/klbfs.h src/klb/module.h src/klb/moduleitem.h src/klb/klbtoolchain.h src/klb/klbsettings.h src/klb/klbexecutor.h
-	g++ -c src/genmakefile/klb-genmakefile.cpp -o build/genmakefile/klb-genmakefile.o -Isrc -Isrc/ff -Isrc/genmakefile -Isrc/kl -Isrc/klb -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
-
 build/kl/klfs.o: src/kl/klfs.cpp src/kl/kl.h src/kl/klds.h src/kl/klexcept.h src/kl/klfs.h src/kl/kltext.h src/kl/kltime.h
 	g++ -c src/kl/klfs.cpp -o build/kl/klfs.o -Isrc -Isrc/kl -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
 
@@ -72,6 +69,9 @@ build/klb/klbexecutor.o: src/klb/klbexecutor.cpp src/kl/kl.h src/kl/klds.h src/k
 build/klb/klb.o: src/klb/klb.cpp src/ff/poorconfig.h src/ff/codescanner.h src/ff/textscanner.h src/kl/klfs.h src/kl/klprocess.h src/kl/kl.h src/kl/kltime.h src/kl/klexcept.h src/kl/kltext.h src/kl/klds.h src/kl/klvalue.h src/klb/modulecollection.h src/klb/systemflags.h src/klb/klbfs.h src/klb/module.h src/klb/moduleitem.h src/klb/klbtoolchain.h src/klb/klbsettings.h src/klb/klbexecutor.h
 	g++ -c src/klb/klb.cpp -o build/klb/klb.o -Isrc -Isrc/ff -Isrc/kl -Isrc/klb -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
 
+build/klb/genmakefile.o: src/klb/genmakefile.cpp src/ff/poorconfig.h src/ff/codescanner.h src/ff/textscanner.h src/kl/klfs.h src/kl/klprocess.h src/kl/kl.h src/kl/kltime.h src/kl/klexcept.h src/kl/kltext.h src/kl/klds.h src/kl/klvalue.h src/klb/modulecollection.h src/klb/systemflags.h src/klb/klbfs.h src/klb/module.h src/klb/moduleitem.h src/klb/klbtoolchain.h src/klb/klbsettings.h src/klb/klbexecutor.h
+	g++ -c src/klb/genmakefile.cpp -o build/klb/genmakefile.o -Isrc -Isrc/ff -Isrc/kl -Isrc/klb -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
+
 build/klblog/blogsettings.o: src/klblog/blogsettings.cpp src/ff/poorconfig.h src/ff/textscanner.h src/kl/kl.h src/kl/klds.h src/kl/kltext.h src/kl/klvalue.h src/klblog/blogsettings.hpp
 	g++ -c src/klblog/blogsettings.cpp -o build/klblog/blogsettings.o -Isrc -Isrc/ff -Isrc/kl -Isrc/klblog -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
 
@@ -123,11 +123,11 @@ build/tests/kl/klfs-test.o: src/tests/kl/klfs-test.cpp src/kl/kl.h src/kl/klds.h
 build/tests/kl/kltest.o: src/tests/kl/kltest.cpp src/ff/textscanner.h src/kl/klfs.h src/kl/kl.h src/kl/kltime.h src/kl/klexcept.h src/kl/kltext.h src/kl/klds.h src/kl/klvalue.h src/tests/kl/klvalue-test.h src/tests/kl/kldate-test.h src/tests/kl/kltext-test.h src/tests/kl/klfs-test.h
 	g++ -c src/tests/kl/kltest.cpp -o build/tests/kl/kltest.o -Isrc -Isrc/ff -Isrc/kl -Isrc/tests/kl -DGTEST_HAS_PTHREAD=1 -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
 
-build/genmakefile/klb-genmakefile.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/genmakefile/klb-genmakefile.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
-	g++ -o build/genmakefile/klb-genmakefile.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/genmakefile/klb-genmakefile.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -ltcmalloc -lfmt
-
 build/klb/klb.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klb.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
 	g++ -o build/klb/klb.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klb.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -ltcmalloc -lfmt
+
+build/klb/genmakefile.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/genmakefile.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
+	g++ -o build/klb/genmakefile.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/genmakefile.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -ltcmalloc -lfmt
 
 build/klblog/klblog.exe: build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/kltimecounter.o build/kl/klvalue.o build/klblog/blog.o build/klblog/blogsettings.o build/klblog/klblog.o build/klblog/systemsettings.o
 	g++ -o build/klblog/klblog.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/kltimecounter.o build/kl/klvalue.o build/klblog/blog.o build/klblog/blogsettings.o build/klblog/klblog.o build/klblog/systemsettings.o -flto=auto -ltcmalloc -lfmt
@@ -156,6 +156,6 @@ build/tests/file-formats/test-scanner.exe: build/ff/textscanner.o build/kl/kltex
 build/tests/kl/kltest.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o
 	g++ -o build/tests/kl/kltest.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o -flto=auto -ltcmalloc -lgtest -lfmt
 
-executables: build/genmakefile/klb-genmakefile.exe build/klb/klb.exe build/klblog/klblog.exe build/tests/klio.exe build/tests/klnet.exe build/tests/klfs-lsrec.exe build/tests/process-test.exe build/tests/file-formats/test-markwrite.exe build/tests/file-formats/test-poorconfig.exe build/tests/file-formats/test-scanner.exe build/tests/kl/kltest.exe
+executables: build/klb/klb.exe build/klb/genmakefile.exe build/klblog/klblog.exe build/tests/klio.exe build/tests/klnet.exe build/tests/klfs-lsrec.exe build/tests/process-test.exe build/tests/file-formats/test-markwrite.exe build/tests/file-formats/test-poorconfig.exe build/tests/file-formats/test-scanner.exe build/tests/kl/kltest.exe
 makedirs:
-	mkdir -p build/ff build/ff/mw build/genmakefile build/kl build/klb build/klblog build/tests build/tests/file-formats build/tests/kl
+	mkdir -p build/ff build/ff/mw build/kl build/klb build/klblog build/tests build/tests/file-formats build/tests/kl

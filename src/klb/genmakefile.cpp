@@ -1,7 +1,7 @@
-#include "klb/modulecollection.h"
-#include "klb/klbsettings.h"
-#include "klb/klbexecutor.h"
-#include "klb/klbsettings.h"
+#include "modulecollection.h"
+#include "klbsettings.h"
+#include "klbexecutor.h"
+#include "klbsettings.h"
 
 using namespace kl;
 
