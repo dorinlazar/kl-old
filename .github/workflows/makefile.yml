@@ -1,0 +1,23 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: sudo apt install -y libfmt-dev libgoogle-perftools-dev libssl-dev libgtest-dev
+
+    - name: Build
+      run: make
+
+    - name: Run checks
+      run: build/tests/kl/kltest.exe
