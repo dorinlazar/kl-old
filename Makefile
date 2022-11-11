@@ -124,37 +124,37 @@ build/tests/kl/kltest.o: src/tests/kl/kltest.cpp src/ff/textscanner.h src/kl/klf
 	g++ -c src/tests/kl/kltest.cpp -o build/tests/kl/kltest.o -Isrc -Isrc/ff -Isrc/kl -Isrc/tests/kl -DGTEST_HAS_PTHREAD=1 -std=c++23 -g3 -O2 -flto -Werror -Wall -Wextra
 
 build/klb/klb.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klb.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
-	g++ -o build/klb/klb.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klb.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/klb/klb.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/klb.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -lfmt
 
 build/klb/genmakefile.exe: build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/genmakefile.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o
-	g++ -o build/klb/genmakefile.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/genmakefile.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/klb/genmakefile.exe build/ff/codescanner.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/klb/genmakefile.o build/klb/klbexecutor.o build/klb/klbfs.o build/klb/klbsettings.o build/klb/klbtoolchain.o build/klb/module.o build/klb/modulecollection.o build/klb/moduleitem.o build/klb/systemflags.o -flto=auto -lfmt
 
 build/klblog/klblog.exe: build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/kltimecounter.o build/kl/klvalue.o build/klblog/blog.o build/klblog/blogsettings.o build/klblog/klblog.o build/klblog/systemsettings.o
-	g++ -o build/klblog/klblog.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/kltimecounter.o build/kl/klvalue.o build/klblog/blog.o build/klblog/blogsettings.o build/klblog/klblog.o build/klblog/systemsettings.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/klblog/klblog.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/kltimecounter.o build/kl/klvalue.o build/klblog/blog.o build/klblog/blogsettings.o build/klblog/klblog.o build/klblog/systemsettings.o -flto=auto -lfmt
 
 build/tests/klio.exe: build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/klio.o
-	g++ -o build/tests/klio.exe build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/klio.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/tests/klio.exe build/kl/klexcept.o build/kl/klio.o build/kl/kltext.o build/tests/klio.o -flto=auto -lfmt
 
 build/tests/klnet.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klio.o build/kl/klnet.o build/kl/kltext.o build/kl/kltime.o build/tests/klnet.o
-	g++ -o build/tests/klnet.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klio.o build/kl/klnet.o build/kl/kltext.o build/kl/kltime.o build/tests/klnet.o -flto=auto -ltcmalloc -lfmt -lssl -lcrypto
+	g++ -o build/tests/klnet.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klio.o build/kl/klnet.o build/kl/kltext.o build/kl/kltime.o build/tests/klnet.o -flto=auto -lfmt -lssl -lcrypto
 
 build/tests/klfs-lsrec.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs-lsrec.o
-	g++ -o build/tests/klfs-lsrec.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs-lsrec.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/tests/klfs-lsrec.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/tests/klfs-lsrec.o -flto=auto -lfmt
 
 build/tests/process-test.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/tests/process-test.o
-	g++ -o build/tests/process-test.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/tests/process-test.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/tests/process-test.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/klprocess.o build/kl/kltext.o build/kl/kltime.o build/tests/process-test.o -flto=auto -lfmt
 
 build/tests/file-formats/test-markwrite.exe: build/ff/mw/markwrite.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-markwrite.o
-	g++ -o build/tests/file-formats/test-markwrite.exe build/ff/mw/markwrite.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-markwrite.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/tests/file-formats/test-markwrite.exe build/ff/mw/markwrite.o build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-markwrite.o -flto=auto -lfmt
 
 build/tests/file-formats/test-poorconfig.exe: build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-poorconfig.o
-	g++ -o build/tests/file-formats/test-poorconfig.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-poorconfig.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/tests/file-formats/test-poorconfig.exe build/ff/poorconfig.o build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/file-formats/test-poorconfig.o -flto=auto -lfmt
 
 build/tests/file-formats/test-scanner.exe: build/ff/textscanner.o build/kl/kltext.o build/tests/file-formats/test-scanner.o
-	g++ -o build/tests/file-formats/test-scanner.exe build/ff/textscanner.o build/kl/kltext.o build/tests/file-formats/test-scanner.o -flto=auto -ltcmalloc -lfmt
+	g++ -o build/tests/file-formats/test-scanner.exe build/ff/textscanner.o build/kl/kltext.o build/tests/file-formats/test-scanner.o -flto=auto -lfmt
 
 build/tests/kl/kltest.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o
-	g++ -o build/tests/kl/kltest.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o -flto=auto -ltcmalloc -lgtest -lfmt
+	g++ -o build/tests/kl/kltest.exe build/ff/textscanner.o build/kl/klexcept.o build/kl/klfs.o build/kl/kltext.o build/kl/kltime.o build/kl/klvalue.o build/tests/kl/kldate-test.o build/tests/kl/klfs-test.o build/tests/kl/kltest.o build/tests/kl/kltext-test.o build/tests/kl/klvalue-test.o -flto=auto -lgtest -lfmt
 
 executables: build/klb/klb.exe build/klb/genmakefile.exe build/klblog/klblog.exe build/tests/klio.exe build/tests/klnet.exe build/tests/klfs-lsrec.exe build/tests/process-test.exe build/tests/file-formats/test-markwrite.exe build/tests/file-formats/test-poorconfig.exe build/tests/file-formats/test-scanner.exe build/tests/kl/kltest.exe
 makedirs:

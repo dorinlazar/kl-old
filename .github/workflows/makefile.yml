@@ -14,10 +14,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
-      run: sudo apt install -y libfmt-dev libgoogle-perftools-dev libssl-dev libgtest-dev
+      run: sudo apt install -y libfmt-dev libssl-dev libgtest-dev
 
     - name: Build
-      run: make
+      run: make -j3
 
     - name: Run checks
       run: build/tests/kl/kltest.exe
