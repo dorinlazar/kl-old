@@ -119,6 +119,9 @@ GenMakefileStrategy::GenMakefileStrategy(ModuleCollection* coll, kl::Text makefi
 GenMakefileStrategy::~GenMakefileStrategy() {
   m_makefile_output << "executables: " << kl::TextChain(_build_targets).join(' ').toView() << "\n";
   m_makefile_output << "makedirs:\n\tmkdir -p " << kl::TextChain(_build_dirs.toList()).join(' ').toView() << "\n";
+  for (const auto& [target, s]: _extra_targets) {
+    m_makefile_output << target << ":\n\t" << kl::TextChain(s.toList()).join("\n\t").toView() << "\n";
+  }
   m_compilation_db_output << "\n]\n";
 }
 
@@ -170,6 +173,10 @@ void GenMakefileStrategy::link(Module* mod) {
   m_makefile_output << mod->executablePath().toView() << ": " << kl::TextChain(objects).join(' ').toView() << "\n\t"
                     << kl::TextChain(cmdLine).join(' ').toView() << "\n\n";
   _build_targets.add(mod->executablePath());
+  auto targets = CMD.SysFlags().ExtraTargets(mod->recursiveSystemHeaders());
+  for (const auto& target: targets) {
+    _extra_targets[target].add(mod->executablePath());
+  }
 }
 
 void GenMakefileStrategy::run(Module*) {}

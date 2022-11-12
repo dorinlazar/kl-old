@@ -20,4 +20,4 @@ jobs:
       run: make -j3
 
     - name: Run checks
-      run: build/tests/kl/kltest.exe
+      run: make test

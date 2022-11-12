@@ -34,6 +34,7 @@ class GenMakefileStrategy final : public BuildStrategy {
   std::ofstream m_compilation_db_output;
   kl::List<kl::Text> _build_targets;
   kl::Set<kl::Text> _build_dirs;
+  std::map<kl::Text, kl::Set<kl::Text>> _extra_targets;
   bool m_first_operation = true;
 
 public:

@@ -42,8 +42,9 @@ private:
 struct Rule {
   Text rule;
   Flags flags;
+  Text extra_target;
 
-  Rule(const Text& r, Flags f) : rule(r), flags(f) {}
+  Rule(const Text& r, Flags f, const Text& t) : rule(r), flags(f), extra_target(t) {}
 
   bool applies(const List<Text>& headers) const {
     if (rule.endsWith("/"_t)) {
@@ -79,12 +80,13 @@ struct SystemFlags::SFImpl {
       CHECK(description->isMap(), "Expecting external package as map in settings");
       const auto& m = description->asMap();
       auto rule = m["header"]->getValue();
+      auto t = m.get("target") ? m.get("target")->getValue() : ""_t;
       if (m.has("pkg-config")) {
-        rules.add({rule, Flags(m["pkg-config"]->getValue())});
+        rules.add({rule, Flags(m["pkg-config"]->getValue()), t});
       } else {
         auto cxxf = m.get("cxxflags");
         auto ldf = m.get("ldflags");
-        rules.add({rule, Flags(cxxf ? cxxf->getValue() : ""_t, ldf ? ldf->getValue() : ""_t)});
+        rules.add(Rule{rule, Flags(cxxf ? cxxf->getValue() : ""_t, ldf ? ldf->getValue() : ""_t), t});
       }
       if (CMD.Verbose()) {
         log("SYSFLAGS: ", name, " cxxflags: ", rules.last().flags.cxxflags);
@@ -93,7 +95,7 @@ struct SystemFlags::SFImpl {
     }
   }
 
-  List<Text> cxxflags(const List<Text>& headers) {
+  List<Text> cxxflags(const List<Text>& headers) const {
     List<Text> res;
     for (const auto& r: rules) {
       if (r.applies(headers)) {
@@ -102,7 +104,8 @@ struct SystemFlags::SFImpl {
     }
     return res;
   }
-  List<Text> ldflags(const List<Text>& headers) {
+
+  List<Text> ldflags(const List<Text>& headers) const {
     List<Text> res;
     for (const auto& r: rules) {
       if (r.applies(headers)) {
@@ -111,9 +114,20 @@ struct SystemFlags::SFImpl {
     }
     return res;
   }
+
+  List<Text> ExtraTargets(const List<Text>& headers) const {
+    Set<Text> res;
+    for (const auto& r: rules) {
+      if (r.applies(headers) && r.extra_target.size() > 0) {
+        res.add(r.extra_target);
+      }
+    }
+    return res.toList();
+  }
 };
 
 SystemFlags::SystemFlags(Value* val) { d = std::make_unique<SFImpl>(val); }
 SystemFlags::~SystemFlags() {}
 List<Text> SystemFlags::cxxflags(const List<Text>& headers) const { return d->cxxflags(headers); }
 List<Text> SystemFlags::ldflags(const List<Text>& headers) const { return d->ldflags(headers); }
+List<Text> SystemFlags::ExtraTargets(const List<Text>& headers) const { return d->ExtraTargets(headers); }

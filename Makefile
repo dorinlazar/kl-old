@@ -159,3 +159,5 @@ build/tests/kl/kltest.exe: build/ff/textscanner.o build/kl/klexcept.o build/kl/k
 executables: build/klb/klb.exe build/klb/genmakefile.exe build/klblog/klblog.exe build/tests/klio.exe build/tests/klnet.exe build/tests/klfs-lsrec.exe build/tests/process-test.exe build/tests/file-formats/test-markwrite.exe build/tests/file-formats/test-poorconfig.exe build/tests/file-formats/test-scanner.exe build/tests/kl/kltest.exe
 makedirs:
 	mkdir -p build/ff build/ff/mw build/kl build/klb build/klblog build/tests build/tests/file-formats build/tests/kl
+test:
+	build/tests/kl/kltest.exe
