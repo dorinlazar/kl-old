@@ -234,7 +234,7 @@ kl::Text Module::executablePath() const {
   return d->buildPath.replace_extension(ext).fullPath();
 }
 
-kl::Text Module::buildFolder() const { return d->buildPath.folderName(); }
+kl::Text Module::buildFolder() const { return d->buildPath.folder_name(); }
 
 bool Module::hasSource() const { return d->source.has_value(); }
 bool Module::hasHeader() const { return d->header.has_value(); }
@@ -265,7 +265,7 @@ const kl::List<Module*>& Module::requiredModules() const { return d->requiredMod
 kl::List<kl::Text> Module::includeFolders() const {
   kl::Set<kl::Text> inc;
   for (const auto& mod: d->requiredModules) {
-    inc.add(CMD.SourceFolder().add(mod->name()).folderName());
+    inc.add(CMD.SourceFolder().add(mod->name()).folder_name());
   }
   return inc.toList();
 }

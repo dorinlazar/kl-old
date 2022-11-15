@@ -5,9 +5,9 @@ using namespace kl::literals;
 TEST(klfs, test_file_path) {
   kl::FilePath path("/foldername/sub/folder/file.name.txt");
   EXPECT_EQ(path.stem(), "file.name");
-  EXPECT_EQ(path.fileName(), "file.name.txt");
+  EXPECT_EQ(path.filename(), "file.name.txt");
   EXPECT_EQ(path.extension(), "txt");
-  EXPECT_EQ(path.folderName(), "/foldername/sub/folder");
+  EXPECT_EQ(path.folder_name(), "/foldername/sub/folder");
   EXPECT_EQ(path.baseFolder(), "/foldername");
   EXPECT_EQ(path.baseFolder(2), "/foldername/sub");
   EXPECT_EQ(path.baseFolder(3), "/foldername/sub/folder");
@@ -15,9 +15,9 @@ TEST(klfs, test_file_path) {
 
   path = kl::FilePath("/foldername/sub/folder/.filenametxt");
   EXPECT_EQ(path.stem(), ".filenametxt");
-  EXPECT_EQ(path.fileName(), ".filenametxt");
+  EXPECT_EQ(path.filename(), ".filenametxt");
   EXPECT_EQ(path.extension(), ""_t);
-  EXPECT_EQ(path.folderName(), "/foldername/sub/folder");
+  EXPECT_EQ(path.folder_name(), "/foldername/sub/folder");
 }
 
 TEST(klfs, test_replace_components) {

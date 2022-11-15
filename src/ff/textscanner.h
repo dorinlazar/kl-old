@@ -41,7 +41,7 @@ public:
   uint32_t readDigit();
   void expect(char character);
   void expectws(char character, NewLineHandling handling = NewLineHandling::Keep);
-  bool startsWith(const Text& txt);
+  bool starts_with(const Text& txt);
   void skip(uint32_t nChars);
   uint32_t getIndentationLevel() const;
 

@@ -6,15 +6,15 @@
 namespace kl {
 
 class FilePath {
-  Text _fullName;
-  std::optional<uint32_t> _lastSlashPos;
-  std::optional<uint32_t> _lastDotPos;
+  Text m_full_name;
+  std::optional<uint32_t> m_last_slash_pos;
+  std::optional<uint32_t> m_last_dot_pos;
 
 public:
   FilePath() = default;
   FilePath(const Text& path);
-  Text folderName() const;
-  Text fileName() const;
+  Text folder_name() const;
+  Text filename() const;
   Text extension() const;
   Text stem() const;
   Text fullPath() const;
@@ -31,8 +31,8 @@ public:
   List<Text> breadcrumbs() const;
   FilePath add(const kl::Text& component) const;
 
-  auto operator<=>(const FilePath& fp) const { return _fullName <=> fp._fullName; }
-  auto operator==(const FilePath& fp) const { return _fullName == fp._fullName; }
+  std::strong_ordering operator<=>(const FilePath& fp) const;
+  bool operator==(const FilePath& fp) const;
 };
 
 enum class FileType { Directory, File };

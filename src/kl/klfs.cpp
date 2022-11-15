@@ -13,11 +13,11 @@
 using namespace kl;
 namespace fs = std::filesystem;
 
-Text discardable_folders[] = {"."_t, ".."_t};
-Text folder_separator("/");
+Text DISCARDABLE_FOLDERS[] = {"."_t, ".."_t};
+Text FOLDER_SEPARATOR("/");
 
 static Text _readFile(const Text& filename) {
-  fs::path p = filename.startsWith("/") ? filename.toView() : fs::current_path() / filename.toView();
+  fs::path p = filename.starts_with(FOLDER_SEPARATOR[0]) ? filename.toView() : fs::current_path() / filename.toView();
   auto size = fs::file_size(p); // throws if error;
 
   if (size > 0x8FFFFFFFULL) [[unlikely]] {
@@ -31,142 +31,152 @@ static Text _readFile(const Text& filename) {
   if (is.bad()) {
     return {};
   }
-  char a, b, c;
-  a = is.get();
-  b = is.get();
-  c = is.get();
-  if (a != (char)0xEF || b != (char)0xBB || c != (char)0xBF) {
-    is.seekg(0);
-  } else {
-    size -= 3;
+  if (size >= 3) {
+    char a, b, c;
+    a = is.get();
+    b = is.get();
+    c = is.get();
+    if (a != (char)0xEF || b != (char)0xBB || c != (char)0xBF) {
+      is.seekg(0);
+    } else {
+      size -= 3;
+    }
   }
-  auto memblock = TextRefCounter::allocate(size);
-  is.read(memblock->text_data(), size);
-  return Text(memblock, size);
+  if (size > 0) {
+    auto memblock = TextRefCounter::allocate(size);
+    is.read(memblock->text_data(), size);
+    return Text(memblock, size);
+  }
+  return {};
 }
 
 static Text _normalize_path(const Text& filename) {
   TextChain tc;
-  uint32_t lastPos = 0;
-  bool lastWasSlash = false;
-  uint32_t lastSlashPos = 0;
-  bool cutNeeded = false;
+  uint32_t last_pos = 0;
+  bool last_was_slash = false;
+  uint32_t last_slash_pos = 0;
+  bool cut_needed = false;
   for (uint32_t i = 0; i < filename.size(); i++) {
-    if (filename[i] == folder_separator[0]) {
-      if (lastWasSlash) {
-        cutNeeded = true;
+    if (filename[i] == FOLDER_SEPARATOR[0]) {
+      if (last_was_slash) {
+        cut_needed = true;
       } else {
-        lastWasSlash = true;
-        cutNeeded = false;
-        lastSlashPos = i;
+        last_was_slash = true;
+        cut_needed = false;
+        last_slash_pos = i;
       }
     } else {
-      if (cutNeeded) {
-        tc.add(filename.subpos(lastPos, lastSlashPos));
-        lastPos = i;
+      if (cut_needed) {
+        tc.add(filename.subpos(last_pos, last_slash_pos));
+        last_pos = i;
       }
-      cutNeeded = false;
-      lastWasSlash = false;
+      cut_needed = false;
+      last_was_slash = false;
     }
   }
 
-  if (lastWasSlash) {
-    tc.add(filename.subpos(lastPos, lastSlashPos == 0 ? 0 : lastSlashPos - 1)); // don't include the ending /
-    lastPos = filename.size();
+  if (last_was_slash) {
+    tc.add(filename.subpos(last_pos, last_slash_pos == 0 ? 0 : last_slash_pos - 1)); // don't include the ending /
+    last_pos = filename.size();
   }
-  tc.add(filename.skip(lastPos));
+  tc.add(filename.skip(last_pos));
   Text res = tc.toText();
-  if (res.startsWith("./") && res.size() > 2) {
+  if (res.starts_with("./") && res.size() > 2) {
     res = res.skip(2);
   }
   return res;
 }
 
-FilePath::FilePath(const Text& path) : _fullName(_normalize_path(path)) {
-  _lastSlashPos = _fullName.lastPos(folder_separator[0]);
-  _lastDotPos = _fullName.lastPos('.');
-  if (_lastDotPos.has_value() && (*_lastDotPos == 0 || _fullName[*_lastDotPos - 1] == folder_separator[0])) {
-    _lastDotPos = {};
+FilePath::FilePath(const Text& path) : m_full_name(_normalize_path(path)) {
+  m_last_slash_pos = m_full_name.lastPos(FOLDER_SEPARATOR[0]);
+  m_last_dot_pos = m_full_name.lastPos('.');
+  if (m_last_dot_pos.has_value() && (*m_last_dot_pos == 0 || m_full_name[*m_last_dot_pos - 1] == FOLDER_SEPARATOR[0])) {
+    m_last_dot_pos = {};
   }
 }
-Text FilePath::folderName() const {
-  return _lastSlashPos.has_value() ? Text(_fullName, 0, *_lastSlashPos == 0 ? 1 : *_lastSlashPos) : Text();
+Text FilePath::folder_name() const {
+  return m_last_slash_pos.has_value() ? Text(m_full_name, 0, *m_last_slash_pos == 0 ? 1 : *m_last_slash_pos) : Text();
 }
-Text FilePath::fileName() const { return _lastSlashPos.has_value() ? _fullName.skip(*_lastSlashPos + 1) : _fullName; }
-Text FilePath::extension() const { return _lastDotPos.has_value() ? _fullName.skip(*_lastDotPos + 1) : Text(); }
+Text FilePath::filename() const {
+  return m_last_slash_pos.has_value() ? m_full_name.skip(*m_last_slash_pos + 1) : m_full_name;
+}
+Text FilePath::extension() const { return m_last_dot_pos.has_value() ? m_full_name.skip(*m_last_dot_pos + 1) : Text(); }
 Text FilePath::stem() const {
-  uint32_t stem_start = _lastSlashPos.has_value() ? *_lastSlashPos + 1 : 0;
-  uint32_t stem_end = _lastDotPos.value_or(_fullName.size());
-  return Text(_fullName, stem_start, stem_end - stem_start);
+  uint32_t stem_start = m_last_slash_pos.has_value() ? *m_last_slash_pos + 1 : 0;
+  uint32_t stem_end = m_last_dot_pos.value_or(m_full_name.size());
+  return Text(m_full_name, stem_start, stem_end - stem_start);
 }
-Text FilePath::fullPath() const { return _fullName; }
+Text FilePath::fullPath() const { return m_full_name; }
 
 FilePath FilePath::replace_extension(const kl::Text& new_ext) const {
   if (new_ext.size() > 0) {
-    if (_lastDotPos.has_value()) {
-      return FilePath(_fullName.subpos(0, *_lastDotPos) + new_ext);
+    if (m_last_dot_pos.has_value()) {
+      return FilePath(m_full_name.subpos(0, *m_last_dot_pos) + new_ext);
     }
-    return FilePath(_fullName + "."_t + new_ext);
+    return FilePath(m_full_name + "."_t + new_ext);
   }
-  if (_lastDotPos.has_value()) {
-    return FilePath(_fullName.subpos(0, *_lastDotPos - 1));
+  if (m_last_dot_pos.has_value()) {
+    return FilePath(m_full_name.subpos(0, *m_last_dot_pos - 1));
   }
   return *this;
 }
 
 Text FilePath::baseFolder(uint32_t levels) const {
-  if (levels == 0 || _fullName.size() == 0) {
-    return ""_t;
+  if (levels == 0 || m_full_name.size() == 0) {
+    return {};
   }
   if (levels < depth()) {
-    if (_fullName[0] == folder_separator[0]) {
+    if (m_full_name[0] == FOLDER_SEPARATOR[0]) {
       levels++;
     }
-    auto pos = _fullName.pos(folder_separator[0], levels);
+    auto pos = m_full_name.pos(FOLDER_SEPARATOR[0], levels);
     if (pos.has_value()) {
-      return _fullName.subpos(0, *pos - 1);
+      return m_full_name.subpos(0, *pos - 1);
     }
   }
-  return folderName();
+  return folder_name();
 }
 
 FilePath FilePath::remove_base_folder(uint32_t levels) const {
-  if (levels == 0 || _fullName.size() == 0) {
+  if (levels == 0 || m_full_name.size() == 0) {
     return *this;
   }
   if (levels < depth()) {
-    Text p = _fullName[0] == folder_separator[0] ? _fullName.skip(1) : _fullName;
-    auto pos = p.pos(folder_separator[0], levels);
+    Text p = m_full_name[0] == FOLDER_SEPARATOR[0] ? m_full_name.skip(1) : m_full_name;
+    auto pos = p.pos(FOLDER_SEPARATOR[0], levels);
     if (pos.has_value()) {
       return p.subpos(*pos + 1, p.size());
     }
   }
-  return FilePath(fileName());
+  return FilePath(filename());
 }
 
 FilePath FilePath::replace_base_folder(const kl::Text& new_folder, uint32_t levels) const {
   FilePath fp = remove_base_folder(levels);
-  return FilePath(new_folder + folder_separator + fp._fullName);
+  return FilePath(new_folder + FOLDER_SEPARATOR + fp.m_full_name);
 }
 
 uint32_t FilePath::depth() const {
-  return _fullName.count(folder_separator[0]) - (_fullName.startsWith(folder_separator[0]) ? 1 : 0);
+  return m_full_name.count(FOLDER_SEPARATOR[0]) - (m_full_name.starts_with(FOLDER_SEPARATOR[0]) ? 1 : 0);
 }
 uint32_t FilePath::folderDepth() const {
-  if (_fullName.size() == 0 || (_fullName.size() == 1 && _fullName[0] == '.')) {
+  if (m_full_name.size() == 0 || (m_full_name.size() == 1 && m_full_name[0] == '.')) {
     return 0;
   }
   return depth() + 1;
 }
 
-List<Text> FilePath::breadcrumbs() const { return _fullName.splitByChar(folder_separator[0]); }
+List<Text> FilePath::breadcrumbs() const { return m_full_name.splitByChar(FOLDER_SEPARATOR[0]); }
 
 FilePath FilePath::add(const kl::Text& component) const {
-  if (_fullName.size() == 0 || (_fullName.size() == 1 && _fullName[0] == '.')) {
+  if (m_full_name.size() == 0 || (m_full_name.size() == 1 && m_full_name[0] == '.')) {
     return FilePath(component);
   }
-  return FilePath(_fullName + folder_separator + component);
+  return FilePath(m_full_name + FOLDER_SEPARATOR + component);
 }
+
+std::strong_ordering FilePath::operator<=>(const FilePath& fp) const { return m_full_name <=> fp.m_full_name; }
+bool FilePath::operator==(const FilePath& fp) const { return m_full_name == fp.m_full_name; }
 
 std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
   std::vector<FileSystemEntryInfo> res;
@@ -174,10 +184,10 @@ std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
   folder.fill_c_buffer(buffer, 1024);
   DIR* dir = opendir(buffer);
   dirent* de;
-  Text padded_folder = folder + folder_separator;
+  Text padded_folder = folder + FOLDER_SEPARATOR;
   while ((de = readdir(dir))) {
     Text t(de->d_name);
-    if (t == discardable_folders[0] || t == discardable_folders[1]) {
+    if (t == DISCARDABLE_FOLDERS[0] || t == DISCARDABLE_FOLDERS[1]) {
       continue;
     }
     if (de->d_type == DT_REG || de->d_type == DT_DIR || de->d_type == DT_LNK) {
@@ -224,7 +234,7 @@ void FileSystem::navigate_tree(const Text& treeBase,
 }
 
 Text FileSystem::executable_path(const Text& exename) {
-  if (!exename.contains(folder_separator[0])) {
+  if (!exename.contains(FOLDER_SEPARATOR[0])) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
       FilePath fp(f + "/"_t + exename);
@@ -294,7 +304,7 @@ Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
     : _parent(parent), _name(name), _path(path) {}
 
 void Folder::addItem(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath) {
-  if (fi.path.folderName().size() == 0) {
+  if (fi.path.folder_name().size() == 0) {
     if (fi.type == kl::FileType::Directory) {
       _folders.add(fi.path.fullPath(), std::make_shared<Folder>(fi.path.fullPath(), fullPath, this));
     } else {
@@ -333,7 +343,7 @@ const kl::FilePath& Folder::fullPath() const { return _path; }
 const kl::List<kl::FileSystemEntryInfo>& Folder::files() const { return _files; }
 
 bool Folder::hasFile(const kl::Text& file) const {
-  return _files.any([file](const auto& f) { return f.path.fileName() == file; });
+  return _files.any([file](const auto& f) { return f.path.filename() == file; });
 }
 
 // std::ostream& Folder::write(std::ostream& os) const {
@@ -345,7 +355,7 @@ bool Folder::hasFile(const kl::Text& file) const {
 //   }
 //   os << " FullPath: " << _path;
 //   os << "\nFolders: " << _folders.keys();
-//   os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileSystemEntryInfo& fi) { return fi.path.fileName();
+//   os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileSystemEntryInfo& fi) { return fi.path.filename();
 //   }); return os;
 // }
 

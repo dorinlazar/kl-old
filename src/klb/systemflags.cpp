@@ -49,7 +49,7 @@ struct Rule {
   bool applies(const List<Text>& headers) const {
     if (rule.endsWith("/"_t)) {
       for (const auto& h: headers) {
-        if (h.startsWith(rule)) {
+        if (h.starts_with(rule)) {
           return true;
         }
       }

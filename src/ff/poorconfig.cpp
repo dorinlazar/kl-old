@@ -31,7 +31,7 @@ class PoorConfigParser {
 
 public:
   PoorConfigParser(TextScanner& scanner, char split) : _scanner(scanner), _split(split) {
-    if (_scanner.startsWith("---\n"_t)) {
+    if (_scanner.starts_with("---\n"_t)) {
       _scanner.readLine();
       _preamble = true;
     }
@@ -70,7 +70,7 @@ public:
       if (_uselessLine()) {
         continue;
       }
-      if (_preamble && (_scanner.startsWith("---") || _scanner.startsWith("..."))) {
+      if (_preamble && (_scanner.starts_with("---") || _scanner.starts_with("..."))) {
         if (minIndent == 0) {
           _scanner.skip(3);
           auto loc = _scanner.location();

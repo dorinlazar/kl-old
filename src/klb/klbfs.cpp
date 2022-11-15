@@ -15,13 +15,13 @@ Folder* FSCache::getFolder(const kl::FilePath& name) const {
 
 bool FSCache::fileExists(const kl::FilePath& path) const {
   auto where = _parent;
-  for (const auto& subfld: path.folderName().splitByChar('/')) {
+  for (const auto& subfld: path.folder_name().splitByChar('/')) {
     where = where->getFolder(subfld);
     if (where == nullptr) {
       return false;
     }
   }
-  return where->hasFile(path.fileName());
+  return where->hasFile(path.filename());
 }
 
 kl::List<Folder*> getSubfoldersRecursively(Folder* start) {
