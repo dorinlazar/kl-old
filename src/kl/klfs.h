@@ -21,12 +21,12 @@ public:
 
   FilePath replace_extension(const kl::Text& new_ext) const;
 
-  Text baseFolder(uint32_t levels = 1) const;
+  Text base_folder(uint32_t levels = 1) const;
   FilePath remove_base_folder(uint32_t levels = 1) const;
   FilePath replace_base_folder(const kl::Text& new_folder, uint32_t levels = 1) const;
 
   uint32_t depth() const;
-  uint32_t folderDepth() const; // depth if path is folder (usually depth()+1).
+  uint32_t folder_depth() const; // depth if path is folder (usually depth()+1).
 
   List<Text> breadcrumbs() const;
   FilePath add(const kl::Text& component) const;

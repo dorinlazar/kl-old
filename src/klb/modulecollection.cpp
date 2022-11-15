@@ -24,8 +24,8 @@ void ModuleCollection::discoverModules() {
 }
 
 void ModuleCollection::_scanAllModules() {
-  uint32_t srcDepth = CMD.SourceFolder().folderDepth();
-  uint32_t bldDepth = CMD.BuildFolder().folderDepth();
+  uint32_t srcDepth = CMD.SourceFolder().folder_depth();
+  uint32_t bldDepth = CMD.BuildFolder().folder_depth();
   for (auto folder: _cache->getAllSourceFolders()) {
     auto path = folder->fullPath();
     auto modFld = path == CMD.SourceFolder() ? ""_t : path.remove_base_folder(srcDepth);
@@ -75,7 +75,7 @@ kl::FilePath ModuleCollection::resolvePath(const kl::Text& name, Module* origin)
     CHECK(_cache->fileExists(path), "Unable to locate dependency {} included in module {}. Tried: {} {}", name,
           origin->name(), CMD.SourceFolder().add(name).full_path(), path.full_path());
   }
-  return path.remove_base_folder(CMD.SourceFolder().folderDepth());
+  return path.remove_base_folder(CMD.SourceFolder().folder_depth());
 }
 
 kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& targets) {

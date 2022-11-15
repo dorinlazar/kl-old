@@ -121,7 +121,7 @@ FilePath FilePath::replace_extension(const kl::Text& new_ext) const {
   return *this;
 }
 
-Text FilePath::baseFolder(uint32_t levels) const {
+Text FilePath::base_folder(uint32_t levels) const {
   if (levels == 0 || m_full_name.size() == 0) {
     return {};
   }
@@ -159,7 +159,7 @@ FilePath FilePath::replace_base_folder(const kl::Text& new_folder, uint32_t leve
 uint32_t FilePath::depth() const {
   return m_full_name.count(FOLDER_SEPARATOR[0]) - (m_full_name.starts_with(FOLDER_SEPARATOR[0]) ? 1 : 0);
 }
-uint32_t FilePath::folderDepth() const {
+uint32_t FilePath::folder_depth() const {
   if (m_full_name.size() == 0 || (m_full_name.size() == 1 && m_full_name[0] == '.')) {
     return 0;
   }
@@ -312,7 +312,7 @@ void Folder::addItem(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath
     }
   } else {
     auto fi2 = fi;
-    auto baseFolder = fi.path.baseFolder();
+    auto baseFolder = fi.path.base_folder();
     CHECK(_folders.has(baseFolder), "Sanity check: File in folder", baseFolder, "added, but folder not recorded");
     fi2.path = fi2.path.remove_base_folder();
     _folders[baseFolder]->addItem(fi2, fullPath);

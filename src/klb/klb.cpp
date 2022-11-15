@@ -23,9 +23,9 @@ int main(int argc, char** argv, char** envp) {
     kl::FilePath fp(target);
     // TODO implement a FilePath::starts_with that does this per path component
     if (target.starts_with(CMD.BuildFolder().full_path())) {
-      fp = fp.remove_base_folder(CMD.BuildFolder().folderDepth());
+      fp = fp.remove_base_folder(CMD.BuildFolder().folder_depth());
     } else if (target.starts_with(CMD.BuildFolder().full_path())) {
-      fp = fp.remove_base_folder(CMD.BuildFolder().folderDepth());
+      fp = fp.remove_base_folder(CMD.BuildFolder().folder_depth());
     }
 
     targets.add(mc->getModuleNames(fp.full_path()));

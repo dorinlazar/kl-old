@@ -8,10 +8,10 @@ TEST(klfs, test_file_path) {
   EXPECT_EQ(path.filename(), "file.name.txt");
   EXPECT_EQ(path.extension(), "txt");
   EXPECT_EQ(path.folder_name(), "/foldername/sub/folder");
-  EXPECT_EQ(path.baseFolder(), "/foldername");
-  EXPECT_EQ(path.baseFolder(2), "/foldername/sub");
-  EXPECT_EQ(path.baseFolder(3), "/foldername/sub/folder");
-  EXPECT_EQ(path.baseFolder(10), "/foldername/sub/folder");
+  EXPECT_EQ(path.base_folder(), "/foldername");
+  EXPECT_EQ(path.base_folder(2), "/foldername/sub");
+  EXPECT_EQ(path.base_folder(3), "/foldername/sub/folder");
+  EXPECT_EQ(path.base_folder(10), "/foldername/sub/folder");
 
   path = kl::FilePath("/foldername/sub/folder/.filenametxt");
   EXPECT_EQ(path.stem(), ".filenametxt");
@@ -31,9 +31,9 @@ TEST(klfs, test_replace_components) {
   kl::FilePath p3("file"_t);
   kl::FilePath p4("/1/2/3/4/5/6/7/file"_t);
   kl::FilePath p5("1/2/3/4/5/6/7/file"_t);
-  EXPECT_EQ(p5.baseFolder(), "1");
-  EXPECT_EQ(p5.baseFolder(2), "1/2");
-  EXPECT_EQ(p5.baseFolder(3), "1/2/3");
+  EXPECT_EQ(p5.base_folder(), "1");
+  EXPECT_EQ(p5.base_folder(2), "1/2");
+  EXPECT_EQ(p5.base_folder(3), "1/2/3");
   EXPECT_EQ(p.depth(), 1);
   EXPECT_EQ(p.remove_base_folder(3).full_path(), "file.txt"_t);
   EXPECT_EQ(p.remove_base_folder(0).full_path(), "/test1/file.txt"_t);

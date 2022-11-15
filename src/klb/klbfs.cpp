@@ -69,7 +69,7 @@ kl::ptr<Folder> _readFolder(const kl::FilePath& folderName, kl::ptr<Folder> pare
     return nullptr;
   }
   auto folder = parent->createFolder(folderName);
-  uint32_t depth = folderName.folderDepth();
+  uint32_t depth = folderName.folder_depth();
   kl::FileSystem::navigate_tree(folderName.full_path(),
                                 [folder, depth](const kl::FileSystemEntryInfo& file) -> kl::NavigateInstructions {
                                   auto f = file;
