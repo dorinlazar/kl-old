@@ -17,7 +17,7 @@ public:
   Text filename() const;
   Text extension() const;
   Text stem() const;
-  Text fullPath() const;
+  Text full_path() const;
 
   FilePath replace_extension(const kl::Text& new_ext) const;
 

@@ -106,7 +106,7 @@ Text FilePath::stem() const {
   uint32_t stem_end = m_last_dot_pos.value_or(m_full_name.size());
   return Text(m_full_name, stem_start, stem_end - stem_start);
 }
-Text FilePath::fullPath() const { return m_full_name; }
+Text FilePath::full_path() const { return m_full_name; }
 
 FilePath FilePath::replace_extension(const kl::Text& new_ext) const {
   if (new_ext.size() > 0) {
@@ -220,7 +220,7 @@ void FileSystem::navigate_tree(const Text& treeBase,
   while (!to_process.empty()) {
     FileSystemEntryInfo fi = to_process.front();
     to_process.pop();
-    auto entries = _get_directory_entries(fi.path.fullPath());
+    auto entries = _get_directory_entries(fi.path.full_path());
     for (const auto& entry: entries) {
       auto res = processor(entry);
       if (res == NavigateInstructions::Continue && entry.type == FileType::Directory) {
@@ -238,8 +238,8 @@ Text FileSystem::executable_path(const Text& exename) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
       FilePath fp(f + "/"_t + exename);
-      if (FileSystem::exists(fp.fullPath())) {
-        return fp.fullPath();
+      if (FileSystem::exists(fp.full_path())) {
+        return fp.full_path();
       }
     }
   }
@@ -306,7 +306,7 @@ Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
 void Folder::addItem(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath) {
   if (fi.path.folder_name().size() == 0) {
     if (fi.type == kl::FileType::Directory) {
-      _folders.add(fi.path.fullPath(), std::make_shared<Folder>(fi.path.fullPath(), fullPath, this));
+      _folders.add(fi.path.full_path(), std::make_shared<Folder>(fi.path.full_path(), fullPath, this));
     } else {
       _files.add(fi);
     }
@@ -322,7 +322,7 @@ void Folder::addItem(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath
 kl::ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
 kl::List<kl::ptr<Folder>> Folder::getFolders() const { return _folders.values(); }
 kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
-  if (fp.fullPath().size() == 0) {
+  if (fp.full_path().size() == 0) {
     return nullptr;
   }
   kl::ptr<Folder> where = nullptr;

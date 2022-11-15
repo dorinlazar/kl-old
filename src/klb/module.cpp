@@ -84,7 +84,7 @@ void Module::_scanHeader() {
   d->header->systemIncludes =
       scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); });
   d->header->localIncludes = scanner.localIncludes().transform<kl::Text>(
-      [this](const kl::Text& tr) { return d->parent->resolvePath(tr.copy(), this).fullPath(); });
+      [this](const kl::Text& tr) { return d->parent->resolvePath(tr.copy(), this).full_path(); });
 }
 
 void Module::_scanSource() {
@@ -103,7 +103,7 @@ void Module::_scanSource() {
   d->source->systemIncludes =
       scanner.systemIncludes().transform<kl::Text>([](const kl::Text& tr) { return tr.copy(); });
   d->source->localIncludes = scanner.localIncludes().transform<kl::Text>(
-      [this](const kl::Text& tr) { return d->parent->resolvePath(tr.copy(), this).fullPath(); });
+      [this](const kl::Text& tr) { return d->parent->resolvePath(tr.copy(), this).full_path(); });
 }
 
 void Module::updateHeaderDependencies() {
@@ -111,7 +111,7 @@ void Module::updateHeaderDependencies() {
     return;
   }
 
-  auto modh = kl::FilePath(d->name).replace_extension(d->header->extension()).fullPath();
+  auto modh = kl::FilePath(d->name).replace_extension(d->header->extension()).full_path();
 
   kl::Set<kl::Text> resolved;
   kl::Set<kl::Text> resolvedSystem;
@@ -216,22 +216,22 @@ bool Module::requiresLink() const {
 
 kl::Text Module::headerPath() const {
   auto ext = d->header ? d->header->extension() : "h"_t;
-  return d->sourcePath.replace_extension(ext).fullPath();
+  return d->sourcePath.replace_extension(ext).full_path();
 }
 
 kl::Text Module::sourcePath() const {
   auto ext = d->source ? d->source->extension() : "cpp"_t;
-  return d->sourcePath.replace_extension(ext).fullPath();
+  return d->sourcePath.replace_extension(ext).full_path();
 }
 
 kl::Text Module::objectPath() const {
   auto ext = d->object ? d->object->extension() : "o"_t;
-  return d->buildPath.replace_extension(ext).fullPath();
+  return d->buildPath.replace_extension(ext).full_path();
 }
 
 kl::Text Module::executablePath() const {
   auto ext = d->executable ? d->executable->extension() : "exe"_t;
-  return d->buildPath.replace_extension(ext).fullPath();
+  return d->buildPath.replace_extension(ext).full_path();
 }
 
 kl::Text Module::buildFolder() const { return d->buildPath.folder_name(); }

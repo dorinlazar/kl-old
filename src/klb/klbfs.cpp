@@ -62,19 +62,19 @@ kl::List<Folder*> FSCache::getAllBuildFolders() const {
 }
 
 kl::ptr<Folder> _readFolder(const kl::FilePath& folderName, kl::ptr<Folder> parent) {
-  if (!kl::FileSystem::is_directory(folderName.fullPath())) {
+  if (!kl::FileSystem::is_directory(folderName.full_path())) {
     if (CMD.Verbose()) {
-      kl::log("{} folder doesn't exist. Skipping", folderName.fullPath());
+      kl::log("{} folder doesn't exist. Skipping", folderName.full_path());
     }
     return nullptr;
   }
   auto folder = parent->createFolder(folderName);
   uint32_t depth = folderName.folderDepth();
-  kl::FileSystem::navigate_tree(folderName.fullPath(),
+  kl::FileSystem::navigate_tree(folderName.full_path(),
                                 [folder, depth](const kl::FileSystemEntryInfo& file) -> kl::NavigateInstructions {
                                   auto f = file;
                                   f.path = file.path.remove_base_folder(depth);
-                                  folder->addItem(f, file.path.fullPath());
+                                  folder->addItem(f, file.path.full_path());
                                   return kl::NavigateInstructions::Continue;
                                 });
 

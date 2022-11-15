@@ -143,7 +143,7 @@ void GenMakefileStrategy::build(Module* mod) {
     m_compilation_db_output << ",";
   }
   m_compilation_db_output << "\n{\n";
-  m_compilation_db_output << " \"directory\": " << CMD.CurrentWorkingDirectory().fullPath().quote_escaped() << ",\n";
+  m_compilation_db_output << " \"directory\": " << CMD.CurrentWorkingDirectory().full_path().quote_escaped() << ",\n";
   m_compilation_db_output << " \"file\": " << mod->sourcePath().quote_escaped() << ",\n";
   cmdLine.add("-isystem"_t);
   cmdLine.add("/usr/include"_t);
