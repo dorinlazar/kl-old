@@ -45,13 +45,13 @@ struct FileSystemEntryInfo {
 enum class NavigateInstructions { Continue, Skip, Stop };
 
 struct FileSystem {
-  static Text getExecutablePath(const Text& exename);
-  static bool makeDirectory(const Text& path);
-  static bool isDirectory(const Text& path);
-  static bool isFile(const Text& path);
+  static Text executable_path(const Text& exename);
+  static bool make_directory(const Text& path);
+  static bool is_directory(const Text& path);
+  static bool is_file(const Text& path);
   static bool exists(const Text& path);
 
-  static void navigateTree(const Text& treeBase, std::function<NavigateInstructions(const FileSystemEntryInfo& file)>);
+  static void navigate_tree(const Text& treeBase, std::function<NavigateInstructions(const FileSystemEntryInfo& file)>);
 };
 
 struct InputSource {

@@ -86,7 +86,7 @@ public:
     auto list = m_build_folders.toList().sortInPlace();
 
     for (const auto& dir: list) {
-      bool made = kl::FileSystem::makeDirectory(dir);
+      bool made = kl::FileSystem::make_directory(dir);
       if (CMD.Verbose() && made) {
         kl::log("Created folder", dir);
       }

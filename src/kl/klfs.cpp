@@ -203,8 +203,8 @@ std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
   return res;
 }
 
-void FileSystem::navigateTree(const Text& treeBase,
-                              std::function<NavigateInstructions(const FileSystemEntryInfo& file)> processor) {
+void FileSystem::navigate_tree(const Text& treeBase,
+                               std::function<NavigateInstructions(const FileSystemEntryInfo& file)> processor) {
   std::queue<FileSystemEntryInfo> to_process;
   to_process.push({.type = FileType::Directory, .lastWrite = DateTime::UnixEpoch, .path = FilePath(treeBase)});
   while (!to_process.empty()) {
@@ -223,7 +223,7 @@ void FileSystem::navigateTree(const Text& treeBase,
   }
 }
 
-Text FileSystem::getExecutablePath(const Text& exename) {
+Text FileSystem::executable_path(const Text& exename) {
   if (!exename.contains(folder_separator[0])) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
@@ -236,17 +236,17 @@ Text FileSystem::getExecutablePath(const Text& exename) {
   return exename;
 }
 
-bool FileSystem::makeDirectory(const Text& path) {
+bool FileSystem::make_directory(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::create_directories(path.toView());
 }
 
-bool FileSystem::isDirectory(const Text& path) {
+bool FileSystem::is_directory(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::is_directory(path.toView());
 }
 
-bool FileSystem::isFile(const Text& path) {
+bool FileSystem::is_file(const Text& path) {
   // TODO try to not do it like a lazy individual that we all know you are.
   return std::filesystem::is_regular_file(path.toView());
 }
