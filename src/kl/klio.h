@@ -19,10 +19,10 @@ public:
   virtual ~Stream();
 
 public: // capabilities
-  virtual bool canRead();
-  virtual bool canWrite();
-  virtual bool canSeek();
-  virtual bool canTimeout();
+  virtual bool can_read();
+  virtual bool can_write();
+  virtual bool can_seek();
+  virtual bool can_timeout();
 
 public: // properties
   virtual size_t size();
@@ -33,8 +33,8 @@ public: // operations
   virtual void write(std::span<uint8_t> what);
 
   virtual void seek(size_t offset);
-  virtual bool dataAvailable();
-  virtual bool endOfStream();
+  virtual bool data_available();
+  virtual bool end_of_stream();
   virtual void flush();
 
   virtual void close();
@@ -51,7 +51,7 @@ public:
   size_t read(std::span<uint8_t> where);
   Text readLine();
   Text readAll();
-  bool endOfStream();
+  bool end_of_stream();
 };
 
 class StreamWriter {
@@ -87,9 +87,9 @@ public: // operations
   void write(std::span<uint8_t> what) override;
 
   void seek(size_t offset) override;
-  bool dataAvailable() override;
+  bool data_available() override;
   void flush() override;
-  bool endOfStream() override;
+  bool end_of_stream() override;
 
   void close() override;
   int fileDescriptor();
@@ -102,9 +102,9 @@ public:
   FileStream(const Text& filename, FileOpenMode mode);
 
 public: // capabilities
-  bool canRead() override final;
-  bool canWrite() override final;
-  bool canSeek() override final;
+  bool can_read() override final;
+  bool can_write() override final;
+  bool can_seek() override final;
 };
 
 } // namespace kl

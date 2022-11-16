@@ -21,7 +21,7 @@ bool FSCache::fileExists(const kl::FilePath& path) const {
       return false;
     }
   }
-  return where->hasFile(path.filename());
+  return where->has_file(path.filename());
 }
 
 kl::List<Folder*> getSubfoldersRecursively(Folder* start) {

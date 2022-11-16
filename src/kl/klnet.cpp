@@ -46,19 +46,19 @@ static int connect_to_server(const Text& server, uint16_t port) {
 
 TcpClient::TcpClient(const Text& server, uint16_t port) : PosixFileStream(connect_to_server(server, port)) {}
 
-bool TcpClient::canRead() { return true; }
-bool TcpClient::canWrite() { return true; }
-bool TcpClient::canSeek() { return false; }
-bool TcpClient::canTimeout() { return true; }
+bool TcpClient::can_read() { return true; }
+bool TcpClient::can_write() { return true; }
+bool TcpClient::can_seek() { return false; }
+bool TcpClient::can_timeout() { return true; }
 size_t TcpClient::size() { throw OperationNotSupported("TcpClient::size()", ""); }
 size_t TcpClient::position() { throw OperationNotSupported("TcpClient::size()", ""); }
 
-bool TcpClient::dataAvailable() {
+bool TcpClient::data_available() {
   struct pollfd pfd = {.fd = _fd, .events = POLLIN, .revents = 0};
   return ::poll(&pfd, 1, 0) > 0;
 }
 
-bool TcpClient::endOfStream() { throw OperationNotSupported("TcpClient::endOfStream()", ""); }
+bool TcpClient::end_of_stream() { throw OperationNotSupported("TcpClient::end_of_stream()", ""); }
 void TcpClient::flush() { throw OperationNotSupported("TcpClient::flush()", ""); }
 
 TimeSpan TcpClient::readTimeout() {
@@ -152,10 +152,10 @@ SslClient::SslClient(const Text& server, uint16_t port)
 
 SslClient::~SslClient() {}
 
-bool SslClient::canRead() { return true; }
-bool SslClient::canWrite() { return true; }
-bool SslClient::canSeek() { return false; }
-bool SslClient::canTimeout() { return true; }
+bool SslClient::can_read() { return true; }
+bool SslClient::can_write() { return true; }
+bool SslClient::can_seek() { return false; }
+bool SslClient::can_timeout() { return true; }
 size_t SslClient::read(std::span<uint8_t> where) { return _impl->read(where); }
 void SslClient::write(std::span<uint8_t> what) { _impl->write(what); }
 

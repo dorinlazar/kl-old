@@ -12,18 +12,18 @@ public:
   TcpClient(const Text& server, uint16_t port);
 
 public: // capabilities
-  bool canRead() override final;
-  bool canWrite() override final;
-  bool canSeek() override final;
-  bool canTimeout() override final;
+  bool can_read() override final;
+  bool can_write() override final;
+  bool can_seek() override final;
+  bool can_timeout() override final;
 
 public: // properties
   size_t size() override final;
   size_t position() override final;
 
 public: // operations
-  bool dataAvailable() override final;
-  bool endOfStream() override final;
+  bool data_available() override final;
+  bool end_of_stream() override final;
   void flush() override final;
 
 public:
@@ -42,10 +42,10 @@ public:
   virtual ~SslClient();
 
 public: // capabilities
-  bool canRead() override;
-  bool canWrite() override;
-  bool canSeek() override;
-  bool canTimeout() override;
+  bool can_read() override;
+  bool can_write() override;
+  bool can_seek() override;
+  bool can_timeout() override;
 
 public: // operations
   size_t read(std::span<uint8_t> where) override;

@@ -10,13 +10,13 @@
 
 #include "klfs.h"
 
-using namespace kl;
+namespace kl {
 namespace fs = std::filesystem;
 
 Text DISCARDABLE_FOLDERS[] = {"."_t, ".."_t};
 Text FOLDER_SEPARATOR("/");
 
-static Text _readFile(const Text& filename) {
+static Text read_file_impl(const Text& filename) {
   fs::path p = filename.starts_with(FOLDER_SEPARATOR[0]) ? filename.toView() : fs::current_path() / filename.toView();
   auto size = fs::file_size(p); // throws if error;
 
@@ -266,9 +266,9 @@ bool FileSystem::exists(const Text& path) {
   return std::filesystem::exists(path.toView());
 }
 
-FileReader::FileReader(const Text& name) { _unreadContent = _readFile(name); }
+FileReader::FileReader(const Text& name) { _unreadContent = read_file_impl(name); }
 
-std::optional<Text> FileReader::readLine() {
+std::optional<Text> FileReader::read_line() {
   if (_unreadContent.size()) [[likely]] {
     auto [res, next] = _unreadContent.splitNextLine();
     _unreadContent = next;
@@ -298,7 +298,7 @@ std::optional<char> FileReader::readChar() {
   return {};
 }
 
-bool FileReader::hasData() { return _unreadContent.size(); }
+bool FileReader::has_data() { return _unreadContent.size(); }
 
 Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
     : _parent(parent), _name(name), _path(path) {}
@@ -339,26 +339,11 @@ kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
   return where;
 }
 
-const kl::FilePath& Folder::fullPath() const { return _path; }
-const kl::List<kl::FileSystemEntryInfo>& Folder::files() const { return _files; }
+const FilePath& Folder::fullPath() const { return _path; }
+const List<FileSystemEntryInfo>& Folder::files() const { return _files; }
 
-bool Folder::hasFile(const kl::Text& file) const {
+bool Folder::has_file(const kl::Text& file) const {
   return _files.any([file](const auto& f) { return f.path.filename() == file; });
 }
 
-// std::ostream& Folder::write(std::ostream& os) const {
-//   os << "Folder: " << _name << " with ";
-//   if (_parent) {
-//     os << "parent: " << _parent->_name;
-//   } else {
-//     os << "no parent";
-//   }
-//   os << " FullPath: " << _path;
-//   os << "\nFolders: " << _folders.keys();
-//   os << "\nFiles: " << _files.transform<kl::Text>([](const kl::FileSystemEntryInfo& fi) { return fi.path.filename();
-//   }); return os;
-// }
-
-// std::ostream& operator<<(std::ostream& os, const kl::FilePath& p) { return os << p.fullPath(); }
-// inline std::ostream& operator<<(std::ostream& os, const kl::ptr<kl::Folder> l) { return l->write(os); }
-// inline std::ostream& operator<<(std::ostream& os, const kl::Folder& l) { return l.write(os); }
+} // namespace kl

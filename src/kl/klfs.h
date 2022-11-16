@@ -55,20 +55,20 @@ struct FileSystem {
 };
 
 struct InputSource {
-  virtual std::optional<Text> readLine() = 0;
+  virtual std::optional<Text> read_line() = 0;
   virtual std::optional<char> readChar() = 0;
   virtual List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) = 0;
   virtual Text readAll() = 0;
-  virtual bool hasData() = 0;
+  virtual bool has_data() = 0;
 };
 
 struct FileReader : public InputSource {
   FileReader(const Text& name);
-  std::optional<Text> readLine() override final;
+  std::optional<Text> read_line() override final;
   std::optional<char> readChar() override final;
   List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) override final;
   Text readAll() override final;
-  bool hasData() override final;
+  bool has_data() override final;
 
 private:
   Text _unreadContent; // we can do away with this.
@@ -91,7 +91,7 @@ public:
   kl::ptr<Folder> createFolder(const kl::FilePath& path);
   const kl::FilePath& fullPath() const;
   const kl::List<kl::FileSystemEntryInfo>& files() const;
-  bool hasFile(const kl::Text& file) const;
+  bool has_file(const kl::Text& file) const;
 };
 
 } // namespace kl

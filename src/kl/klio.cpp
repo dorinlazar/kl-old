@@ -10,20 +10,20 @@ static Text s_notImplemented = "Not implemented by derived class"_t;
 
 Stream::~Stream() { close(); }
 
-bool Stream::canRead() { return false; }
-bool Stream::canWrite() { return false; }
-bool Stream::canSeek() { return false; }
-bool Stream::canTimeout() { return false; }
+bool Stream::can_read() { return false; }
+bool Stream::can_write() { return false; }
+bool Stream::can_seek() { return false; }
+bool Stream::can_timeout() { return false; }
 
 size_t Stream::size() { throw OperationNotSupported("Stream::size"_t, s_notImplemented); }
 size_t Stream::position() { throw OperationNotSupported("Stream::position"_t, s_notImplemented); }
 size_t Stream::read(std::span<uint8_t>) { throw OperationNotSupported("Stream::read"_t, s_notImplemented); }
 void Stream::write(std::span<uint8_t>) { throw OperationNotSupported("Stream::write"_t, s_notImplemented); }
 void Stream::seek(size_t) { throw OperationNotSupported("Stream::seek"_t, s_notImplemented); }
-bool Stream::dataAvailable() { throw OperationNotSupported("Stream::dataAvailable"_t, s_notImplemented); }
+bool Stream::data_available() { throw OperationNotSupported("Stream::data_available"_t, s_notImplemented); }
 void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImplemented); }
 void Stream::close() {}
-bool Stream::endOfStream() { return false; }
+bool Stream::end_of_stream() { return false; }
 
 StreamReader::StreamReader(Stream* stream) : _stream(stream) {}
 Stream* StreamReader::stream() const { return _stream; }
@@ -82,7 +82,7 @@ Text StreamReader::readAll() {
   return tc.toText();
 }
 
-bool StreamReader::endOfStream() { return _stream->endOfStream(); }
+bool StreamReader::end_of_stream() { return _stream->end_of_stream(); }
 
 StreamWriter::StreamWriter(Stream* stream) : _stream(stream) {}
 Stream* StreamWriter::stream() const { return _stream; }
@@ -121,9 +121,9 @@ static int openFile(const Text& filename, FileOpenMode mode) {
 FileStream::FileStream(const Text& filename, FileOpenMode mode)
     : PosixFileStream(openFile(filename, mode)), _mode(mode) {}
 
-bool FileStream::canRead() { return _mode != FileOpenMode::WriteOnly; }
-bool FileStream::canWrite() { return _mode != FileOpenMode::ReadOnly; }
-bool FileStream::canSeek() { return true; }
+bool FileStream::can_read() { return _mode != FileOpenMode::WriteOnly; }
+bool FileStream::can_write() { return _mode != FileOpenMode::ReadOnly; }
+bool FileStream::can_seek() { return true; }
 
 size_t PosixFileStream::size() {
   if (_regular) {
@@ -173,7 +173,7 @@ void PosixFileStream::seek(size_t offset) {
   }
 }
 
-bool PosixFileStream::dataAvailable() {
+bool PosixFileStream::data_available() {
   if (_regular) {
     return position() < size();
   }
@@ -181,7 +181,7 @@ bool PosixFileStream::dataAvailable() {
   return poll(&pfd, 1, 0) > 0;
 }
 
-bool PosixFileStream::endOfStream() {
+bool PosixFileStream::end_of_stream() {
   if (_regular) [[likely]] {
     return position() >= size();
   }
