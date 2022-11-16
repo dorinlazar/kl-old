@@ -97,7 +97,7 @@ public: // operations
 };
 
 class FileStream final : public PosixFileStream {
-  FileOpenMode _mode;
+  FileOpenMode m_mode;
 
 public:
   FileStream(const Text& filename, FileOpenMode mode);

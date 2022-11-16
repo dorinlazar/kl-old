@@ -119,10 +119,10 @@ static int openFile(const Text& filename, FileOpenMode mode) {
 }
 
 FileStream::FileStream(const Text& filename, FileOpenMode mode)
-    : PosixFileStream(openFile(filename, mode)), _mode(mode) {}
+    : PosixFileStream(openFile(filename, mode)), m_mode(mode) {}
 
-bool FileStream::can_read() { return _mode != FileOpenMode::WriteOnly; }
-bool FileStream::can_write() { return _mode != FileOpenMode::ReadOnly; }
+bool FileStream::can_read() { return m_mode != FileOpenMode::WriteOnly; }
+bool FileStream::can_write() { return m_mode != FileOpenMode::ReadOnly; }
 bool FileStream::can_seek() { return true; }
 
 size_t PosixFileStream::size() {
