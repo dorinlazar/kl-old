@@ -22,7 +22,7 @@ struct SourceCodeScannerImpl {
       } else if (checkForMain()) {
         _hasMain = true;
       }
-      _scanner.readLine();
+      _scanner.read_line();
       _scanner.skipWhitespace();
     }
   }

@@ -138,8 +138,8 @@ void test_read_escaped_char() {
 
 void test_read_new_line() {
   kl::TextScanner scanner1("A long line\nand all good");
-  CHECKST(scanner1.readLine() == "A long line");
-  CHECKST(scanner1.readLine() == "and all good");
+  CHECKST(scanner1.read_line() == "A long line");
+  CHECKST(scanner1.read_line() == "and all good");
   CHECKST(scanner1.empty());
 
   kl::log("SCANNER read new line [OK]");
@@ -158,7 +158,7 @@ void test_indentation() {
 
   kl::TextScanner sc2("  \n    ");
   CHECKST(sc2.getIndentationLevel() == 2);
-  sc2.readLine();
+  sc2.read_line();
   CHECKST(sc2.getIndentationLevel() == 4);
 
   kl::log("SCANNER indentation [OK]");

@@ -11,7 +11,7 @@ class PoorConfigParser {
 
   bool _uselessLine() {
     auto startOfLine = _scanner.location();
-    auto line = _scanner.readLine().trim_left();
+    auto line = _scanner.read_line().trim_left();
     if (line.size() == 0 || line[0] == _comment) {
       return true;
     }
@@ -25,14 +25,14 @@ class PoorConfigParser {
       if (_scanner.topChar() != _comment && _scanner.topChar() != '\n') {
         _scanner.error("Trash at the end of the value");
       }
-      _scanner.readLine();
+      _scanner.read_line();
     }
   }
 
 public:
   PoorConfigParser(TextScanner& scanner, char split) : _scanner(scanner), _split(split) {
     if (_scanner.starts_with("---\n"_t)) {
-      _scanner.readLine();
+      _scanner.read_line();
       _preamble = true;
     }
   }
@@ -74,7 +74,7 @@ public:
         if (minIndent == 0) {
           _scanner.skip(3);
           auto loc = _scanner.location();
-          if (_scanner.readLine().trim().size() != 0) {
+          if (_scanner.read_line().trim().size() != 0) {
             _scanner.restoreLocation(loc);
           }
         }
@@ -102,7 +102,7 @@ public:
       _scanner.skipWhitespace(NewLineHandling::Keep);
       char topChar = _scanner.topChar();
       if (topChar == '\n' || topChar == _comment) { // we'll have a map value
-        _scanner.readLine();
+        _scanner.read_line();
         value->add(key, readMap(*indentLevel));
       } else if (topChar == '"') {
         Text v = _scanner.readQuotedString();
@@ -111,7 +111,7 @@ public:
       } else if (topChar == '[') {
         value->add(key, readArray());
       } else {
-        auto [v, comment] = _scanner.readLine().splitNextChar(_comment);
+        auto [v, comment] = _scanner.read_line().splitNextChar(_comment);
         value->add(key, v.trim());
       }
     }

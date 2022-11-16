@@ -36,7 +36,7 @@ public:
   Text readQuotedString();
   Text readUntil(char character);
   Text readWord();
-  Text readLine();
+  Text read_line();
   Text remainder() const;
   uint32_t readDigit();
   void expect(char character);

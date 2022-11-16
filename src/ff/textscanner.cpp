@@ -142,7 +142,7 @@ Text TextScanner::readWord() {
 }
 
 // TODO make this smarter, to support the \rs as well
-Text TextScanner::readLine() {
+Text TextScanner::read_line() {
   auto start = loc._offset;
   while (!empty()) {
     if (*loc._current == '\n') {

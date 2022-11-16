@@ -41,15 +41,16 @@ public: // operations
 };
 
 class StreamReader {
-  size_t _offset = 0, _readSize = 0;
-  std::array<uint8_t, 4096> _buffer;
-  Stream* _stream;
+  size_t m_offset = 0, m_read_size = 0;
+  constexpr static size_t kBufferSize = 4096;
+  std::array<uint8_t, kBufferSize> m_buffer;
+  Stream* m_stream;
 
 public:
   StreamReader(Stream* stream);
   Stream* stream() const;
   size_t read(std::span<uint8_t> where);
-  Text readLine();
+  Text read_line();
   Text readAll();
   bool end_of_stream();
 };

@@ -13,7 +13,7 @@ int main() {
     std::array<uint8_t, 1024> buffer;
     std::span<uint8_t> bufspan(buffer.data(), buffer.size());
     while (true) {
-      auto line = reader.readLine();
+      auto line = reader.read_line();
       log("{} -- {}", line[0], line);
       if (line.trim().size() == 0) {
         break;

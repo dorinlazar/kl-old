@@ -25,42 +25,42 @@ void Stream::flush() { throw OperationNotSupported("Stream::flush"_t, s_notImple
 void Stream::close() {}
 bool Stream::end_of_stream() { return false; }
 
-StreamReader::StreamReader(Stream* stream) : _stream(stream) {}
-Stream* StreamReader::stream() const { return _stream; }
+StreamReader::StreamReader(Stream* stream) : m_stream(stream) {}
+Stream* StreamReader::stream() const { return m_stream; }
 size_t StreamReader::read(std::span<uint8_t> where) {
-  if (_offset >= _readSize) { // skip the buffer
-    return _stream->read(where);
+  if (m_offset >= m_read_size) { // skip the buffer
+    return m_stream->read(where);
   }
-  auto bufsize = std::min(_readSize - _offset, where.size());
-  std::copy(_buffer.data() + _offset, _buffer.data() + _offset + bufsize, where.data());
-  _offset += bufsize;
+  auto bufsize = std::min(m_read_size - m_offset, where.size());
+  std::copy(m_buffer.data() + m_offset, m_buffer.data() + m_offset + bufsize, where.data());
+  m_offset += bufsize;
   if (bufsize < where.size()) {
-    _offset = 0;
-    _readSize = 0;
-    return bufsize + _stream->read(where.subspan(bufsize));
+    m_offset = 0;
+    m_read_size = 0;
+    return bufsize + m_stream->read(where.subspan(bufsize));
   }
   return bufsize;
 }
 
-Text StreamReader::readLine() {
+Text StreamReader::read_line() {
   TextChain tc;
   while (true) {
-    if (_offset >= _readSize) {
-      _offset = 0;
-      _readSize = _stream->read(_buffer);
-      if (_readSize == 0) {
+    if (m_offset >= m_read_size) {
+      m_offset = 0;
+      m_read_size = m_stream->read(m_buffer);
+      if (m_read_size == 0) {
         break;
       }
     }
-    auto _startOffset = _offset;
-    for (; _offset < _readSize; _offset++) {
-      if (_buffer[_offset] == '\n') { // TODO identify newlines based on encoding.
-        tc.add(Text((const char*)_buffer.data() + _startOffset, _offset - _startOffset));
-        _offset++;
+    auto _startOffset = m_offset;
+    for (; m_offset < m_read_size; m_offset++) {
+      if (m_buffer[m_offset] == '\n') { // TODO identify newlines based on encoding.
+        tc.add(Text((const char*)m_buffer.data() + _startOffset, m_offset - _startOffset));
+        m_offset++;
         return tc.toText();
       }
     }
-    tc.add(Text((const char*)_buffer.data() + _startOffset, _offset - _startOffset));
+    tc.add(Text((const char*)m_buffer.data() + _startOffset, m_offset - _startOffset));
   }
   return tc.toText();
 }
@@ -68,21 +68,21 @@ Text StreamReader::readLine() {
 Text StreamReader::readAll() {
   TextChain tc;
   while (true) {
-    if (_offset >= _readSize) {
-      _offset = 0;
-      _readSize = _stream->read(_buffer);
-      if (_readSize == 0) {
+    if (m_offset >= m_read_size) {
+      m_offset = 0;
+      m_read_size = m_stream->read(m_buffer);
+      if (m_read_size == 0) {
         break;
       }
     }
-    tc.add(Text((const char*)_buffer.data() + _offset, _readSize - _offset));
-    _readSize = 0;
-    _offset = 0;
+    tc.add(Text((const char*)m_buffer.data() + m_offset, m_read_size - m_offset));
+    m_read_size = 0;
+    m_offset = 0;
   }
   return tc.toText();
 }
 
-bool StreamReader::end_of_stream() { return _stream->end_of_stream(); }
+bool StreamReader::end_of_stream() { return m_stream->end_of_stream(); }
 
 StreamWriter::StreamWriter(Stream* stream) : _stream(stream) {}
 Stream* StreamWriter::stream() const { return _stream; }
