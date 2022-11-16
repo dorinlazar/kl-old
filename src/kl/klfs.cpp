@@ -283,7 +283,7 @@ List<Text> FileReader::readAllLines(SplitEmpty onEmpty) {
   return res;
 }
 
-Text FileReader::readAll() {
+Text FileReader::read_all() {
   auto res = _unreadContent;
   _unreadContent.reset();
   return res;

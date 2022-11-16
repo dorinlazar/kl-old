@@ -12,7 +12,7 @@ struct SourceCodeScannerImpl {
   Set<Text> _system;
   bool _hasMain = false;
 
-  SourceCodeScannerImpl(const Text& file) : _scanner(kl::FileReader(file).readAll()), _filename(file) { _scanFile(); }
+  SourceCodeScannerImpl(const Text& file) : _scanner(kl::FileReader(file).read_all()), _filename(file) { _scanFile(); }
 
   void _scanFile() {
     _scanner.skipWhitespace();

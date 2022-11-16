@@ -110,7 +110,7 @@ struct SslClient::SslClientImpl {
   TcpClient client;
   SSL* sslHandler;
   SslClientImpl(const Text& server, uint16_t port) : client(server, port), sslHandler(SSLHandler::create()) {
-    SSL_set_fd(sslHandler, client.fileDescriptor());
+    SSL_set_fd(sslHandler, client.file_descriptor());
     auto res = SSL_connect(sslHandler);
     if (res <= 0) {
       throw IOException("SSL Connect error "_t + std::to_string(SSL_get_error(sslHandler, res)));

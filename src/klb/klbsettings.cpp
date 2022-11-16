@@ -71,7 +71,7 @@ void CommandParameters::UpdateSysEnv(char** envp) {
 
 void CommandParameters::ReadDepotFile() {
   try {
-    auto cfg = kl::FileReader(".depot.conf").readAll();
+    auto cfg = kl::FileReader(".depot.conf").read_all();
 
     configurationFile = kl::PoorConfig::parse(cfg);
   } catch (...) {

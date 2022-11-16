@@ -130,5 +130,5 @@ PValue PoorConfig::parse(TextScanner& scanner, char split) {
   return parser.readMap();
 }
 
-PoorConfig::PoorConfig(const Text& filename) { _value = parse(FileReader(filename).readAll()); }
+PoorConfig::PoorConfig(const Text& filename) { _value = parse(FileReader(filename).read_all()); }
 PValue PoorConfig::top() const { return _value; }

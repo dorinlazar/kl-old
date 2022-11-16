@@ -65,7 +65,7 @@ Text StreamReader::read_line() {
   return tc.toText();
 }
 
-Text StreamReader::readAll() {
+Text StreamReader::read_all() {
   TextChain tc;
   while (true) {
     if (m_offset >= m_read_size) {
@@ -88,7 +88,7 @@ StreamWriter::StreamWriter(Stream* stream) : _stream(stream) {}
 Stream* StreamWriter::stream() const { return _stream; }
 void StreamWriter::write(std::span<uint8_t> what) { _stream->write(what); }
 void StreamWriter::write(const Text& what) { _stream->write(what.toRawData()); }
-void StreamWriter::writeLine(const Text& what) {
+void StreamWriter::write_line(const Text& what) {
   static char eol[] = "\n";
   _stream->write(what.toRawData());
   _stream->write(std::span<uint8_t>((uint8_t*)&eol[0], 1));
@@ -203,4 +203,4 @@ void PosixFileStream::close() {
 
 PosixFileStream::~PosixFileStream() { close(); }
 
-int PosixFileStream::fileDescriptor() { return _fd; }
+int PosixFileStream::file_descriptor() { return _fd; }

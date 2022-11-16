@@ -51,7 +51,7 @@ public:
   Stream* stream() const;
   size_t read(std::span<uint8_t> where);
   Text read_line();
-  Text readAll();
+  Text read_all();
   bool end_of_stream();
 };
 
@@ -63,7 +63,7 @@ public:
   Stream* stream() const;
   void write(std::span<uint8_t> what);
   void write(const Text& what);
-  void writeLine(const Text& what);
+  void write_line(const Text& what);
   void write(const TextChain& what);
   void flush();
 };
@@ -93,7 +93,7 @@ public: // operations
   bool end_of_stream() override;
 
   void close() override;
-  int fileDescriptor();
+  int file_descriptor();
 };
 
 class FileStream final : public PosixFileStream {
