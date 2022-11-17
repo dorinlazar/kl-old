@@ -11,7 +11,8 @@
             "intelliSenseMode": "linux-gcc-x64",
             "cppStandard": "c++20",
             "cStandard": "c17",
-            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json",
+            "configurationProvider": "ms-vscode.makefile-tools"
         }
     ],
     "version": 4

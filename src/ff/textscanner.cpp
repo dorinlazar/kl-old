@@ -60,7 +60,7 @@ char TextScanner::topChar() const {
   return *loc._current;
 }
 
-ParsedCharacter TextScanner::readChar() {
+ParsedCharacter TextScanner::read_char() {
   if (empty()) [[unlikely]] {
     error("Reading from empty data");
   }
@@ -121,7 +121,7 @@ Text TextScanner::readQuotedString() {
 Text TextScanner::readUntil(char character) {
   auto _start = loc._offset;
   while (true) {
-    auto ch = readChar();
+    auto ch = read_char();
     if (ch.character == character) {
       return _originalSource.subpos(_start, loc._offset - 2);
     }

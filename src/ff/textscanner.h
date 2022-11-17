@@ -31,7 +31,7 @@ public:
   void skipWhitespace(NewLineHandling handling = NewLineHandling::Skip);
   bool empty() const;
   char topChar() const;
-  ParsedCharacter readChar();
+  ParsedCharacter read_char();
   ParsedCharacter readCharEscaped();
   Text readQuotedString();
   Text readUntil(char character);

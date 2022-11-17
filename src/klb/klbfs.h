@@ -5,7 +5,7 @@
 class FSCache {
   kl::ptr<kl::Folder> _build;
   kl::ptr<kl::Folder> _source;
-  kl::ptr<kl::Folder> _parent;
+  kl::ptr<kl::Folder> m_parent;
 
   kl::ptr<kl::Folder> _addFolder(const kl::Text& path);
 
@@ -15,6 +15,6 @@ public:
   kl::List<kl::Folder*> getAllSourceFolders() const;
   kl::List<kl::Folder*> getAllBuildFolders() const;
 
-  kl::Folder* getFolder(const kl::FilePath& name) const;
+  kl::Folder* get_folder(const kl::FilePath& name) const;
   bool fileExists(const kl::FilePath& path) const;
 };

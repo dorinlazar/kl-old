@@ -277,7 +277,7 @@ std::optional<Text> FileReader::read_line() {
   return {};
 }
 
-List<Text> FileReader::readAllLines(SplitEmpty onEmpty) {
+List<Text> FileReader::read_all_lines(SplitEmpty onEmpty) {
   auto res = _unreadContent.splitLines(onEmpty);
   _unreadContent.reset();
   return res;
@@ -289,7 +289,7 @@ Text FileReader::read_all() {
   return res;
 }
 
-std::optional<char> FileReader::readChar() {
+std::optional<char> FileReader::read_char() {
   if (_unreadContent.size()) [[likely]] {
     char c = _unreadContent[0];
     _unreadContent = _unreadContent.skip(1);
@@ -301,27 +301,27 @@ std::optional<char> FileReader::readChar() {
 bool FileReader::has_data() { return _unreadContent.size(); }
 
 Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
-    : _parent(parent), _name(name), _path(path) {}
+    : m_parent(parent), m_name(name), _path(path) {}
 
-void Folder::addItem(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath) {
+void Folder::add_item(const kl::FileSystemEntryInfo& fi, const kl::Text& full_path) {
   if (fi.path.folder_name().size() == 0) {
     if (fi.type == kl::FileType::Directory) {
-      _folders.add(fi.path.full_path(), std::make_shared<Folder>(fi.path.full_path(), fullPath, this));
+      m_folders.add(fi.path.full_path(), std::make_shared<Folder>(fi.path.full_path(), full_path, this));
     } else {
-      _files.add(fi);
+      m_files.add(fi);
     }
   } else {
     auto fi2 = fi;
     auto baseFolder = fi.path.base_folder();
-    CHECK(_folders.has(baseFolder), "Sanity check: File in folder", baseFolder, "added, but folder not recorded");
+    CHECK(m_folders.has(baseFolder), "Sanity check: File in folder", baseFolder, "added, but folder not recorded");
     fi2.path = fi2.path.remove_base_folder();
-    _folders[baseFolder]->addItem(fi2, fullPath);
+    m_folders[baseFolder]->add_item(fi2, full_path);
   }
 }
 
-kl::ptr<Folder> Folder::getFolder(const kl::Text& name) { return _folders.get(name, nullptr); }
-kl::List<kl::ptr<Folder>> Folder::getFolders() const { return _folders.values(); }
-kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
+kl::ptr<Folder> Folder::get_folder(const kl::Text& name) { return m_folders.get(name, nullptr); }
+kl::List<kl::ptr<Folder>> Folder::get_folders() const { return m_folders.values(); }
+kl::ptr<Folder> Folder::create_folder(const kl::FilePath& fp) {
   if (fp.full_path().size() == 0) {
     return nullptr;
   }
@@ -330,20 +330,20 @@ kl::ptr<Folder> Folder::createFolder(const kl::FilePath& fp) {
   for (const auto& fld: fp.breadcrumbs()) {
     currentPath = currentPath.add(fld);
     Folder* ptr = where != nullptr ? where.get() : this;
-    where = ptr->getFolder(fld);
+    where = ptr->get_folder(fld);
     if (where == nullptr) {
       where = std::make_shared<Folder>();
-      ptr->_folders.add(fld, where);
+      ptr->m_folders.add(fld, where);
     }
   }
   return where;
 }
 
-const FilePath& Folder::fullPath() const { return _path; }
-const List<FileSystemEntryInfo>& Folder::files() const { return _files; }
+const FilePath& Folder::full_path() const { return _path; }
+const List<FileSystemEntryInfo>& Folder::files() const { return m_files; }
 
 bool Folder::has_file(const kl::Text& file) const {
-  return _files.any([file](const auto& f) { return f.path.filename() == file; });
+  return m_files.any([file](const auto& f) { return f.path.filename() == file; });
 }
 
 } // namespace kl

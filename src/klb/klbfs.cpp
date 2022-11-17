@@ -2,10 +2,10 @@
 #include "klbsettings.h"
 using namespace kl;
 
-Folder* FSCache::getFolder(const kl::FilePath& name) const {
-  auto where = _parent;
+Folder* FSCache::get_folder(const kl::FilePath& name) const {
+  auto where = m_parent;
   for (const auto& subfld: name.breadcrumbs()) {
-    where = where->getFolder(subfld);
+    where = where->get_folder(subfld);
     if (where == nullptr) {
       return nullptr;
     }
@@ -14,9 +14,9 @@ Folder* FSCache::getFolder(const kl::FilePath& name) const {
 }
 
 bool FSCache::fileExists(const kl::FilePath& path) const {
-  auto where = _parent;
+  auto where = m_parent;
   for (const auto& subfld: path.folder_name().splitByChar('/')) {
-    where = where->getFolder(subfld);
+    where = where->get_folder(subfld);
     if (where == nullptr) {
       return false;
     }
@@ -31,7 +31,7 @@ kl::List<Folder*> getSubfoldersRecursively(Folder* start) {
   while (!queue.empty()) {
     auto fld = queue.pop();
     res.add(fld);
-    for (const auto& f: fld->getFolders()) {
+    for (const auto& f: fld->get_folders()) {
       queue.push(f.get());
     }
   }
@@ -39,7 +39,7 @@ kl::List<Folder*> getSubfoldersRecursively(Folder* start) {
 }
 
 kl::List<Folder*> FSCache::getAllSubFolders(const kl::FilePath& base) const {
-  Folder* baseFolder = getFolder(base);
+  Folder* baseFolder = get_folder(base);
   if (baseFolder) {
     return getSubfoldersRecursively(baseFolder);
   }
@@ -68,13 +68,13 @@ kl::ptr<Folder> _readFolder(const kl::FilePath& folderName, kl::ptr<Folder> pare
     }
     return nullptr;
   }
-  auto folder = parent->createFolder(folderName);
+  auto folder = parent->create_folder(folderName);
   uint32_t depth = folderName.folder_depth();
   kl::FileSystem::navigate_tree(folderName.full_path(),
                                 [folder, depth](const kl::FileSystemEntryInfo& file) -> kl::NavigateInstructions {
                                   auto f = file;
                                   f.path = file.path.remove_base_folder(depth);
-                                  folder->addItem(f, file.path.full_path());
+                                  folder->add_item(f, file.path.full_path());
                                   return kl::NavigateInstructions::Continue;
                                 });
 
@@ -82,7 +82,7 @@ kl::ptr<Folder> _readFolder(const kl::FilePath& folderName, kl::ptr<Folder> pare
 }
 
 FSCache::FSCache(const kl::FilePath& source, const kl::FilePath& build) {
-  _parent = std::make_shared<Folder>("[BASE FOLDER]"_t, ""_t, nullptr);
-  _source = _readFolder(source, _parent);
-  _build = _readFolder(build, _parent);
+  m_parent = std::make_shared<Folder>("[BASE FOLDER]"_t, ""_t, nullptr);
+  _source = _readFolder(source, m_parent);
+  _build = _readFolder(build, m_parent);
 }

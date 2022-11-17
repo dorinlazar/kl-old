@@ -56,8 +56,8 @@ struct FileSystem {
 
 struct InputSource {
   virtual std::optional<Text> read_line() = 0;
-  virtual std::optional<char> readChar() = 0;
-  virtual List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) = 0;
+  virtual std::optional<char> read_char() = 0;
+  virtual List<Text> read_all_lines(SplitEmpty onEmpty = SplitEmpty::Keep) = 0;
   virtual Text read_all() = 0;
   virtual bool has_data() = 0;
 };
@@ -65,8 +65,8 @@ struct InputSource {
 struct FileReader : public InputSource {
   FileReader(const Text& name);
   std::optional<Text> read_line() override final;
-  std::optional<char> readChar() override final;
-  List<Text> readAllLines(SplitEmpty onEmpty = SplitEmpty::Keep) override final;
+  std::optional<char> read_char() override final;
+  List<Text> read_all_lines(SplitEmpty onEmpty = SplitEmpty::Keep) override final;
   Text read_all() override final;
   bool has_data() override final;
 
@@ -75,21 +75,21 @@ private:
 };
 
 struct Folder {
-  const Folder* _parent = nullptr;
-  kl::Text _name;
+  const Folder* m_parent = nullptr;
+  kl::Text m_name;
   kl::FilePath _path;
-  kl::Dict<kl::Text, kl::ptr<Folder>> _folders;
-  kl::List<kl::FileSystemEntryInfo> _files;
+  kl::Dict<kl::Text, kl::ptr<Folder>> m_folders;
+  kl::List<kl::FileSystemEntryInfo> m_files;
 
 public:
   Folder() = default;
   Folder(const kl::Text& name, const kl::Text& path, const Folder* parent);
-  void addItem(const kl::FileSystemEntryInfo& file, const kl::Text& path);
+  void add_item(const kl::FileSystemEntryInfo& file, const kl::Text& path);
 
-  kl::ptr<Folder> getFolder(const kl::Text& folder);
-  kl::List<kl::ptr<Folder>> getFolders() const;
-  kl::ptr<Folder> createFolder(const kl::FilePath& path);
-  const kl::FilePath& fullPath() const;
+  kl::ptr<Folder> get_folder(const kl::Text& folder);
+  kl::List<kl::ptr<Folder>> get_folders() const;
+  kl::ptr<Folder> create_folder(const kl::FilePath& path);
+  const kl::FilePath& full_path() const;
   const kl::List<kl::FileSystemEntryInfo>& files() const;
   bool has_file(const kl::Text& file) const;
 };

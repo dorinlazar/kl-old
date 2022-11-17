@@ -27,7 +27,7 @@ void ModuleCollection::_scanAllModules() {
   uint32_t srcDepth = CMD.SourceFolder().folder_depth();
   uint32_t bldDepth = CMD.BuildFolder().folder_depth();
   for (auto folder: _cache->getAllSourceFolders()) {
-    auto path = folder->fullPath();
+    auto path = folder->full_path();
     auto modFld = path == CMD.SourceFolder() ? ""_t : path.remove_base_folder(srcDepth);
     for (const auto& file: folder->files()) {
       auto mod = getOrCreateModule(modFld, file.path.stem());
@@ -35,7 +35,7 @@ void ModuleCollection::_scanAllModules() {
     }
   }
   for (auto folder: _cache->getAllBuildFolders()) {
-    auto path = folder->fullPath();
+    auto path = folder->full_path();
     auto moduleFolder = path == CMD.BuildFolder() ? ""_t : path.remove_base_folder(bldDepth);
     for (const auto& file: folder->files()) {
       auto mod = getModule(moduleFolder.full_path(), file.path.stem());

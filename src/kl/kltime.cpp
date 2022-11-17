@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <chrono>
 #include "ff/textscanner.h"
-//#include <format>
+// #include <format>
 
 using namespace kl;
 
@@ -183,7 +183,7 @@ inline std::tuple<uint32_t, uint32_t, uint32_t, uint64_t> _readTime(TextScanner&
   }
 
   if (sc.topChar() == 'T' || sc.topChar() == ' ') [[likely]] {
-    sc.readChar();
+    sc.read_char();
   } else {
     sc.error("Expected Date-Time split");
   }
@@ -236,7 +236,7 @@ std::tuple<bool, uint32_t, uint32_t> _readTimeZone(TextScanner& sc) {
   bool plus = false;
   if (!sc.empty()) {
     if (sc.topChar() == '+' || sc.topChar() == '-') {
-      plus = sc.readChar().character == '+';
+      plus = sc.read_char().character == '+';
       tshours += sc.readDigit() * 10;
       tshours += sc.readDigit();
       sc.expect(':');

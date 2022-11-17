@@ -6,7 +6,7 @@ void test_line_column() {
   sc.skipWhitespace(kl::NewLineHandling::Keep);
   CHECKST(sc.line() == 1);
   CHECKST(sc.column() == 4);
-  CHECKST(sc.readChar().character == '\n');
+  CHECKST(sc.read_char().character == '\n');
   CHECKST(sc.line() == 2);
   CHECKST(sc.column() == 1);
   sc.rewind();
@@ -14,7 +14,7 @@ void test_line_column() {
   CHECKST(sc.column() == 1);
   sc.skipWhitespace(kl::NewLineHandling::Skip);
   CHECKST(sc.line() == 2 && sc.column() == 4);
-  CHECKST(sc.readChar().character == 'x');
+  CHECKST(sc.read_char().character == 'x');
   CHECKST(sc.line() == 2 && sc.column() == 5);
   sc.skipWhitespace();
   CHECKST(sc.line() == 2 && sc.column() == 10);
@@ -25,7 +25,7 @@ void test_line_column() {
 void test_scanner_whitespace() {
   kl::TextScanner scanner1("     a");
   scanner1.skipWhitespace();
-  CHECKST(scanner1.readChar().character == 'a');
+  CHECKST(scanner1.read_char().character == 'a');
 
   kl::TextScanner scanner2("     ");
   scanner2.skipWhitespace();
@@ -33,19 +33,19 @@ void test_scanner_whitespace() {
 
   kl::TextScanner scanner3("x     ");
   scanner3.skipWhitespace();
-  CHECKST(scanner3.readChar().character == 'x');
+  CHECKST(scanner3.read_char().character == 'x');
   scanner3.skipWhitespace();
   CHECKST(scanner3.empty());
 
   kl::TextScanner scanner4("   \n   x     ");
   scanner4.skipWhitespace(kl::NewLineHandling::Keep);
-  CHECKST(scanner4.readChar().character == '\n');
+  CHECKST(scanner4.read_char().character == '\n');
   scanner4.rewind();
   scanner4.skipWhitespace(kl::NewLineHandling::Skip);
-  CHECKST(scanner4.readChar().character == 'x');
+  CHECKST(scanner4.read_char().character == 'x');
   scanner4.rewind();
   scanner4.skipWhitespace();
-  CHECKST(scanner4.readChar().character == 'x');
+  CHECKST(scanner4.read_char().character == 'x');
 
   kl::log("SCANNER Whitespace [OK]");
 }
@@ -68,10 +68,10 @@ void test_read_quoted_string() {
   kl::TextScanner scanner4("\"This is a quoted string\" that has something behind it");
   CHECKST(scanner4.readQuotedString() == "This is a quoted string");
   CHECKST(!scanner4.empty());
-  CHECKST(scanner4.readChar().character == ' ');
-  CHECKST(scanner4.readChar().character == 't');
-  CHECKST(scanner4.readChar().character == 'h');
-  CHECKST(scanner4.readChar().character == 'a');
+  CHECKST(scanner4.read_char().character == ' ');
+  CHECKST(scanner4.read_char().character == 't');
+  CHECKST(scanner4.read_char().character == 'h');
+  CHECKST(scanner4.read_char().character == 'a');
 
   kl::TextScanner scannerEmpty("\"\"");
   CHECKST(scannerEmpty.readQuotedString() == ""_t);
@@ -88,7 +88,7 @@ void test_read_word() {
   kl::TextScanner scanner1("This word");
   CHECKST(scanner1.readWord() == "This");
   CHECKST(scanner1.readWord() == "");
-  CHECKST(scanner1.readChar().character == ' ');
+  CHECKST(scanner1.read_char().character == ' ');
   CHECKST(scanner1.readWord() == "word");
   CHECKST(scanner1.empty());
   kl::TextScanner scanner2("Thisword");
@@ -97,7 +97,7 @@ void test_read_word() {
 
   kl::TextScanner scanner3("This_long012_ISword indeed");
   CHECKST(scanner3.readWord() == "This_long012_ISword");
-  CHECKST(scanner3.readChar().character == ' ');
+  CHECKST(scanner3.read_char().character == ' ');
   CHECKST(scanner3.readWord() == "indeed");
   CHECKST(scanner3.empty());
 
@@ -148,7 +148,7 @@ void test_read_new_line() {
 void test_indentation() {
   kl::TextScanner sc1("      text");
   CHECKST(sc1.getIndentationLevel() == 6);
-  sc1.readChar();
+  sc1.read_char();
   CHECKST(sc1.getIndentationLevel() == 5);
   sc1.skipWhitespace();
   CHECKST(sc1.getIndentationLevel() == 0);
@@ -169,7 +169,7 @@ void test_remainder() {
   CHECKST(scanner1.remainder() == "This word");
   CHECKST(scanner1.readWord() == "This");
   CHECKST(scanner1.remainder() == " word");
-  CHECKST(scanner1.readChar().character == ' ');
+  CHECKST(scanner1.read_char().character == ' ');
   CHECKST(scanner1.remainder() == "word");
   CHECKST(scanner1.readWord() == "word");
   CHECKST(scanner1.empty());

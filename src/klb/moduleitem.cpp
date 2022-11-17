@@ -26,8 +26,8 @@ ModuleItem::ModuleItem(const kl::FileSystemEntryInfo& fi) : _timestamp(fi.lastWr
   _updateModuleType();
 }
 
-ModuleItem::ModuleItem(const kl::FilePath& fullPath, kl::DateTime ts)
-    : _timestamp(ts), _extension(fullPath.extension()) {
+ModuleItem::ModuleItem(const kl::FilePath& full_path, kl::DateTime ts)
+    : _timestamp(ts), _extension(full_path.extension()) {
   _updateModuleType();
 }
 

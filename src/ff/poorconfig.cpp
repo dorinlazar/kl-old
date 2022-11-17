@@ -44,13 +44,13 @@ public:
     while (!_scanner.empty()) {
       _scanner.skipWhitespace();
       if (empty && _scanner.topChar() == ']') {
-        _scanner.readChar();
+        _scanner.read_char();
         _discardAfterValueJunk();
         return value;
       }
       value->add(_scanner.readQuotedString());
       _scanner.skipWhitespace();
-      auto next = _scanner.readChar();
+      auto next = _scanner.read_char();
       if (next.character == ']' && !next.escaped) {
         _discardAfterValueJunk();
         return value;
