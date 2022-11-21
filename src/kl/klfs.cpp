@@ -301,7 +301,7 @@ std::optional<char> FileReader::read_char() {
 bool FileReader::has_data() { return _unreadContent.size(); }
 
 Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
-    : m_parent(parent), m_name(name), _path(path) {}
+    : m_parent(parent), m_name(name), m_path(path) {}
 
 void Folder::add_item(const kl::FileSystemEntryInfo& fi, const kl::Text& full_path) {
   if (fi.path.folder_name().size() == 0) {
@@ -339,7 +339,7 @@ kl::ptr<Folder> Folder::create_folder(const kl::FilePath& fp) {
   return where;
 }
 
-const FilePath& Folder::full_path() const { return _path; }
+const FilePath& Folder::full_path() const { return m_path; }
 const List<FileSystemEntryInfo>& Folder::files() const { return m_files; }
 
 bool Folder::has_file(const kl::Text& file) const {

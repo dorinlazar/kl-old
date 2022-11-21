@@ -77,7 +77,7 @@ private:
 struct Folder {
   const Folder* m_parent = nullptr;
   kl::Text m_name;
-  kl::FilePath _path;
+  kl::FilePath m_path;
   kl::Dict<kl::Text, kl::ptr<Folder>> m_folders;
   kl::List<kl::FileSystemEntryInfo> m_files;
 
