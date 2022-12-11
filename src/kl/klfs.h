@@ -94,4 +94,24 @@ public:
   bool has_file(const kl::Text& file) const;
 };
 
+struct DirectoryEntry {
+  kl::Text name;
+  DateTime last_modified;
+};
+
+class Directory {
+
+public:
+  Directory();
+  Directory(Directory&&) = delete;
+  Directory(const Directory&) = delete;
+  Directory& operator=(Directory&&) = delete;
+  Directory& operator=(const Directory&) = delete;
+  ~Directory() = default;
+
+  kl::Text name() const;
+  const kl::List<kl::DirectoryEntry>& subdirectories() const;
+  const kl::List<kl::DirectoryEntry>& files() const;
+};
+
 } // namespace kl
