@@ -21,13 +21,13 @@ void ModuleItem::_updateModuleType() {
 
 ModuleItem::ModuleItem(const kl::FileSystemEntryInfo& fi) : _timestamp(fi.lastWrite), _extension(fi.path.extension()) {
   if (CMD.Verbose()) {
-    kl::log("Adding module item {}", fi.path.full_path());
+    kl::log("Adding module item {}", fi.path.fullPath());
   }
   _updateModuleType();
 }
 
-ModuleItem::ModuleItem(const kl::FilePath& full_path, kl::DateTime ts)
-    : _timestamp(ts), _extension(full_path.extension()) {
+ModuleItem::ModuleItem(const kl::FilePath& fullPath, kl::DateTime ts)
+    : _timestamp(ts), _extension(fullPath.extension()) {
   _updateModuleType();
 }
 

@@ -24,21 +24,21 @@ void ModuleCollection::discoverModules() {
 }
 
 void ModuleCollection::_scanAllModules() {
-  uint32_t srcDepth = CMD.SourceFolder().folder_depth();
-  uint32_t bldDepth = CMD.BuildFolder().folder_depth();
+  uint32_t srcDepth = CMD.SourceFolder().folderDepth();
+  uint32_t bldDepth = CMD.BuildFolder().folderDepth();
   for (auto folder: _cache->getAllSourceFolders()) {
-    auto path = folder->full_path();
-    auto modFld = path == CMD.SourceFolder() ? ""_t : path.remove_base_folder(srcDepth);
+    auto path = folder->fullPath();
+    auto modFld = path == CMD.SourceFolder() ? ""_t : path.discardBaseFolder(srcDepth);
     for (const auto& file: folder->files()) {
       auto mod = getOrCreateModule(modFld, file.path.stem());
       mod->addFile(file);
     }
   }
   for (auto folder: _cache->getAllBuildFolders()) {
-    auto path = folder->full_path();
-    auto moduleFolder = path == CMD.BuildFolder() ? ""_t : path.remove_base_folder(bldDepth);
+    auto path = folder->fullPath();
+    auto moduleFolder = path == CMD.BuildFolder() ? ""_t : path.discardBaseFolder(bldDepth);
     for (const auto& file: folder->files()) {
-      auto mod = getModule(moduleFolder.full_path(), file.path.stem());
+      auto mod = getModule(moduleFolder.fullPath(), file.path.stem());
       if (mod) {
         mod->addFile(file);
       }
@@ -47,19 +47,19 @@ void ModuleCollection::_scanAllModules() {
 }
 
 kl::ptr<Module> ModuleCollection::getModule(const kl::FilePath& folder, const kl::Text& file) const {
-  kl::Text moduleName = folder.add(file).replace_extension(""_t).full_path();
+  kl::Text moduleName = folder.add(file).replace_extension(""_t).fullPath();
   auto mod = modules.get(moduleName);
   return mod;
 }
 
 kl::ptr<Module> ModuleCollection::getModule(const kl::Text& file) const {
-  kl::Text moduleName = kl::FilePath(file).replace_extension(""_t).full_path();
+  kl::Text moduleName = kl::FilePath(file).replace_extension(""_t).fullPath();
   auto mod = modules.get(moduleName);
   return mod;
 }
 
 kl::ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& folder, const kl::Text& stem) {
-  kl::Text moduleName = folder.add(stem).full_path();
+  kl::Text moduleName = folder.add(stem).fullPath();
   auto val = modules.get(moduleName, nullptr);
   if (!val) {
     val = std::make_shared<Module>(this, moduleName);
@@ -71,11 +71,11 @@ kl::ptr<Module> ModuleCollection::getOrCreateModule(const kl::FilePath& folder, 
 kl::FilePath ModuleCollection::resolvePath(const kl::Text& name, Module* origin) const {
   auto path = CMD.SourceFolder().add(name);
   if (!_cache->fileExists(path)) {
-    path = kl::FilePath(CMD.SourceFolder().add(origin->name()).folder_name()).add(name);
+    path = kl::FilePath(CMD.SourceFolder().add(origin->name()).folderName()).add(name);
     CHECK(_cache->fileExists(path), "Unable to locate dependency {} included in module {}. Tried: {} {}", name,
-          origin->name(), CMD.SourceFolder().add(name).full_path(), path.full_path());
+          origin->name(), CMD.SourceFolder().add(name).fullPath(), path.fullPath());
   }
-  return path.remove_base_folder(CMD.SourceFolder().folder_depth());
+  return path.discardBaseFolder(CMD.SourceFolder().folderDepth());
 }
 
 kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& targets) {
@@ -89,7 +89,7 @@ kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& t
   } else {
     for (const auto& file: targets) {
       kl::FilePath fp(file);
-      kl::Text moduleName = fp.replace_extension(""_t).full_path();
+      kl::Text moduleName = fp.replace_extension(""_t).fullPath();
       auto mod = modules.get(moduleName);
       if (!mod) [[unlikely]] {
         FATAL("Unable to identify target {}", file);

@@ -12,7 +12,7 @@ class ModuleItem {
 
 public:
   ModuleItem(const kl::FileSystemEntryInfo& fi);
-  ModuleItem(const kl::FilePath& full_path, kl::DateTime timestamp);
+  ModuleItem(const kl::FilePath& fullPath, kl::DateTime timestamp);
   kl::Text extension() const;
   ModuleItemType type() const;
 

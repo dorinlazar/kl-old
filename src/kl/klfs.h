@@ -13,20 +13,20 @@ class FilePath {
 public:
   FilePath() = default;
   FilePath(const Text& path);
-  Text folder_name() const;
+  Text folderName() const;
   Text filename() const;
   Text extension() const;
   Text stem() const;
-  Text full_path() const;
+  Text fullPath() const;
 
   FilePath replace_extension(const kl::Text& new_ext) const;
 
-  Text base_folder(uint32_t levels = 1) const;
-  FilePath remove_base_folder(uint32_t levels = 1) const;
-  FilePath replace_base_folder(const kl::Text& new_folder, uint32_t levels = 1) const;
+  Text baseFolder(uint32_t levels = 1) const;
+  FilePath discardBaseFolder(uint32_t levels = 1) const;
+  FilePath replaceBaseFolder(const kl::Text& new_folder, uint32_t levels = 1) const;
 
   uint32_t depth() const;
-  uint32_t folder_depth() const; // depth if path is folder (usually depth()+1).
+  uint32_t folderDepth() const; // depth if path is folder (usually depth()+1).
 
   List<Text> breadcrumbs() const;
   FilePath add(const kl::Text& component) const;
@@ -89,7 +89,7 @@ public:
   kl::ptr<Folder> get_folder(const kl::Text& folder);
   kl::List<kl::ptr<Folder>> get_folders() const;
   kl::ptr<Folder> create_folder(const kl::FilePath& path);
-  const kl::FilePath& full_path() const;
+  const kl::FilePath& fullPath() const;
   const kl::List<kl::FileSystemEntryInfo>& files() const;
   bool has_file(const kl::Text& file) const;
 };

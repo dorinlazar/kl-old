@@ -94,7 +94,7 @@ FilePath::FilePath(const Text& path) : m_full_name(_normalize_path(path)) {
     m_last_dot_pos = {};
   }
 }
-Text FilePath::folder_name() const {
+Text FilePath::folderName() const {
   return m_last_slash_pos.has_value() ? Text(m_full_name, 0, *m_last_slash_pos == 0 ? 1 : *m_last_slash_pos) : Text();
 }
 Text FilePath::filename() const {
@@ -106,7 +106,7 @@ Text FilePath::stem() const {
   uint32_t stem_end = m_last_dot_pos.value_or(m_full_name.size());
   return Text(m_full_name, stem_start, stem_end - stem_start);
 }
-Text FilePath::full_path() const { return m_full_name; }
+Text FilePath::fullPath() const { return m_full_name; }
 
 FilePath FilePath::replace_extension(const kl::Text& new_ext) const {
   if (new_ext.size() > 0) {
@@ -121,7 +121,7 @@ FilePath FilePath::replace_extension(const kl::Text& new_ext) const {
   return *this;
 }
 
-Text FilePath::base_folder(uint32_t levels) const {
+Text FilePath::baseFolder(uint32_t levels) const {
   if (levels == 0 || m_full_name.size() == 0) {
     return {};
   }
@@ -134,10 +134,10 @@ Text FilePath::base_folder(uint32_t levels) const {
       return m_full_name.subpos(0, *pos - 1);
     }
   }
-  return folder_name();
+  return folderName();
 }
 
-FilePath FilePath::remove_base_folder(uint32_t levels) const {
+FilePath FilePath::discardBaseFolder(uint32_t levels) const {
   if (levels == 0 || m_full_name.size() == 0) {
     return *this;
   }
@@ -151,15 +151,15 @@ FilePath FilePath::remove_base_folder(uint32_t levels) const {
   return FilePath(filename());
 }
 
-FilePath FilePath::replace_base_folder(const kl::Text& new_folder, uint32_t levels) const {
-  FilePath fp = remove_base_folder(levels);
+FilePath FilePath::replaceBaseFolder(const kl::Text& new_folder, uint32_t levels) const {
+  FilePath fp = discardBaseFolder(levels);
   return FilePath(new_folder + FOLDER_SEPARATOR + fp.m_full_name);
 }
 
 uint32_t FilePath::depth() const {
   return m_full_name.count(FOLDER_SEPARATOR[0]) - (m_full_name.startsWith(FOLDER_SEPARATOR[0]) ? 1 : 0);
 }
-uint32_t FilePath::folder_depth() const {
+uint32_t FilePath::folderDepth() const {
   if (m_full_name.size() == 0 || (m_full_name.size() == 1 && m_full_name[0] == '.')) {
     return 0;
   }
@@ -191,8 +191,8 @@ std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
       continue;
     }
     if (de->d_type == DT_REG || de->d_type == DT_DIR || de->d_type == DT_LNK) {
-      Text full_path = padded_folder + t;
-      full_path.fill_c_buffer(buffer, 1024);
+      Text fullPath = padded_folder + t;
+      fullPath.fill_c_buffer(buffer, 1024);
       struct stat statbuf;
       FileType ft = FileType::Directory;
       if (0 == stat(buffer, &statbuf)) {
@@ -204,7 +204,7 @@ std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
           continue;
         }
         DateTime lastWrite(statbuf.st_mtim.tv_sec, statbuf.st_mtim.tv_nsec);
-        FileSystemEntryInfo fi{.type = ft, .lastWrite = lastWrite, .path = FilePath(full_path)};
+        FileSystemEntryInfo fi{.type = ft, .lastWrite = lastWrite, .path = FilePath(fullPath)};
         res.emplace_back(fi);
       }
     }
@@ -220,7 +220,7 @@ void FileSystem::navigate_tree(const Text& treeBase,
   while (!to_process.empty()) {
     FileSystemEntryInfo fi = to_process.front();
     to_process.pop();
-    auto entries = _get_directory_entries(fi.path.full_path());
+    auto entries = _get_directory_entries(fi.path.fullPath());
     for (const auto& entry: entries) {
       auto res = processor(entry);
       if (res == NavigateInstructions::Continue && entry.type == FileType::Directory) {
@@ -238,8 +238,8 @@ Text FileSystem::executable_path(const Text& exename) {
     auto folders = Text(getenv("PATH")).splitByChar(':');
     for (const auto& f: folders) {
       FilePath fp(f + "/"_t + exename);
-      if (FileSystem::exists(fp.full_path())) {
-        return fp.full_path();
+      if (FileSystem::exists(fp.fullPath())) {
+        return fp.fullPath();
       }
     }
   }
@@ -303,26 +303,26 @@ bool FileReader::has_data() { return _unreadContent.size(); }
 Folder::Folder(const kl::Text& name, const kl::Text& path, const Folder* parent)
     : m_parent(parent), m_name(name), m_path(path) {}
 
-void Folder::add_item(const kl::FileSystemEntryInfo& fi, const kl::Text& full_path) {
-  if (fi.path.folder_name().size() == 0) {
+void Folder::add_item(const kl::FileSystemEntryInfo& fi, const kl::Text& fullPath) {
+  if (fi.path.folderName().size() == 0) {
     if (fi.type == kl::FileType::Directory) {
-      m_folders.add(fi.path.full_path(), std::make_shared<Folder>(fi.path.full_path(), full_path, this));
+      m_folders.add(fi.path.fullPath(), std::make_shared<Folder>(fi.path.fullPath(), fullPath, this));
     } else {
       m_files.add(fi);
     }
   } else {
     auto fi2 = fi;
-    auto baseFolder = fi.path.base_folder();
+    auto baseFolder = fi.path.baseFolder();
     CHECK(m_folders.has(baseFolder), "Sanity check: File in folder", baseFolder, "added, but folder not recorded");
-    fi2.path = fi2.path.remove_base_folder();
-    m_folders[baseFolder]->add_item(fi2, full_path);
+    fi2.path = fi2.path.discardBaseFolder();
+    m_folders[baseFolder]->add_item(fi2, fullPath);
   }
 }
 
 kl::ptr<Folder> Folder::get_folder(const kl::Text& name) { return m_folders.get(name, nullptr); }
 kl::List<kl::ptr<Folder>> Folder::get_folders() const { return m_folders.values(); }
 kl::ptr<Folder> Folder::create_folder(const kl::FilePath& fp) {
-  if (fp.full_path().size() == 0) {
+  if (fp.fullPath().size() == 0) {
     return nullptr;
   }
   kl::ptr<Folder> where = nullptr;
@@ -339,7 +339,7 @@ kl::ptr<Folder> Folder::create_folder(const kl::FilePath& fp) {
   return where;
 }
 
-const FilePath& Folder::full_path() const { return m_path; }
+const FilePath& Folder::fullPath() const { return m_path; }
 const List<FileSystemEntryInfo>& Folder::files() const { return m_files; }
 
 bool Folder::has_file(const kl::Text& file) const {

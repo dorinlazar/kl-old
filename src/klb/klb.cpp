@@ -22,13 +22,13 @@ int main(int argc, char** argv, char** envp) {
   for (const auto& target: CMD.Targets()) {
     kl::FilePath fp(target);
     // TODO implement a FilePath::startsWith that does this per path component
-    if (target.startsWith(CMD.BuildFolder().full_path())) {
-      fp = fp.remove_base_folder(CMD.BuildFolder().folder_depth());
-    } else if (target.startsWith(CMD.BuildFolder().full_path())) {
-      fp = fp.remove_base_folder(CMD.BuildFolder().folder_depth());
+    if (target.startsWith(CMD.BuildFolder().fullPath())) {
+      fp = fp.discardBaseFolder(CMD.BuildFolder().folderDepth());
+    } else if (target.startsWith(CMD.BuildFolder().fullPath())) {
+      fp = fp.discardBaseFolder(CMD.BuildFolder().folderDepth());
     }
 
-    targets.add(mc->getModuleNames(fp.full_path()));
+    targets.add(mc->getModuleNames(fp.fullPath()));
   }
 
   auto modules = mc->getTargetModules(targets.toList());

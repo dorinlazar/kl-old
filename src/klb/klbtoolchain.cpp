@@ -13,7 +13,7 @@ kl::List<kl::Text> Gcc::buildCmdLine(const kl::Text& source, const kl::Text& des
   command.add(source);
   command.add("-o"_t);
   command.add(destination);
-  command.add("-I"_t + CMD.SourceFolder().full_path());
+  command.add("-I"_t + CMD.SourceFolder().fullPath());
   command.add(include.transform<kl::Text>([](const kl::Text& t) { return "-I"_t + t; }));
   command.add(extraflags);
   command.add(CMD.CxxFlags());
