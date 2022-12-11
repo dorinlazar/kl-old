@@ -24,8 +24,8 @@ TextView TextView::trim_right() const {
   return m_view.substr(0, position + 1);
 }
 
-bool TextView::starts_with(char c) const { return m_view.size() > 0 && m_view.front() == c; }
-bool TextView::starts_with(const TextView& tv) const { return m_view.starts_with(tv.m_view); }
+bool TextView::startsWith(char c) const { return m_view.size() > 0 && m_view.front() == c; }
+bool TextView::startsWith(const TextView& tv) const { return m_view.starts_with(tv.m_view); }
 bool TextView::endsWith(char c) const { return m_view.size() > 0 && m_view.back() == c; }
 bool TextView::endsWith(const TextView& tv) const { return m_view.ends_with(tv.m_view); }
 
@@ -206,7 +206,7 @@ List<TextView> TextView::splitByText(const TextView& t, SplitEmpty onEmpty) cons
 }
 
 std::optional<TextView> TextView::expect(const TextView& t) const {
-  if (starts_with(t)) {
+  if (startsWith(t)) {
     return skip(t.size());
   }
   return {};
@@ -454,14 +454,14 @@ Text Text::trim_right() const {
   return Text(*this, 0, position + 1);
 }
 
-bool Text::starts_with(const Text& tv) const { return toView().starts_with(tv.toView()); }
-bool Text::starts_with(const char* v) const {
+bool Text::startsWith(const Text& tv) const { return toView().starts_with(tv.toView()); }
+bool Text::startsWith(const char* v) const {
   if (v == nullptr) [[unlikely]] {
     return false;
   }
   return toView().starts_with(v);
 }
-bool Text::starts_with(char c) const { return size() > 0 && *begin() == c; }
+bool Text::startsWith(char c) const { return size() > 0 && *begin() == c; }
 
 bool Text::endsWith(const Text& tv) const { return toView().ends_with(tv.toView()); }
 bool Text::endsWith(char c) const {
@@ -591,7 +591,7 @@ Text Text::sublen(size_t start, size_t len) const {
 }
 
 std::optional<Text> Text::expect(const Text& t) const {
-  if (starts_with(t)) {
+  if (startsWith(t)) {
     return skip(t.size());
   }
   return {};

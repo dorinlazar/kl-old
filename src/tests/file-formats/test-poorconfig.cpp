@@ -229,7 +229,7 @@ names: ["name01", "name02"]
 deeper:)");
   value = kl::PoorConfig::parse(scanner);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner.starts_with("deeper:"_t));
+  CHECKST(scanner.startsWith("deeper:"_t));
 
   kl::TextScanner scanner1(R"(---
 url: "https://example.com"
@@ -238,7 +238,7 @@ names: ["name01", "name02"]
 test01:)");
   value = kl::PoorConfig::parse(scanner1);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner1.starts_with("test01:"_t));
+  CHECKST(scanner1.startsWith("test01:"_t));
 
   kl::TextScanner scanner2(R"(---
 url: "https://example.com"
@@ -246,7 +246,7 @@ names: ["name01", "name02"]
 ...test2:)");
   value = kl::PoorConfig::parse(scanner2);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner2.starts_with("test2:"_t));
+  CHECKST(scanner2.startsWith("test2:"_t));
 
   kl::TextScanner scanner3(R"(---
 url: "https://example.com"
@@ -254,7 +254,7 @@ names: ["name01", "name02"]
 ---test3:)");
   value = kl::PoorConfig::parse(scanner3);
   CHECKST((*value)["url"].getValue() == "https://example.com");
-  CHECKST(scanner3.starts_with("test3:"_t));
+  CHECKST(scanner3.startsWith("test3:"_t));
 
   kl::log("POORCONFIG Multicontent partial test [OK]");
 }

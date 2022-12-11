@@ -21,10 +21,10 @@ int main(int argc, char** argv, char** envp) {
 
   for (const auto& target: CMD.Targets()) {
     kl::FilePath fp(target);
-    // TODO implement a FilePath::starts_with that does this per path component
-    if (target.starts_with(CMD.BuildFolder().full_path())) {
+    // TODO implement a FilePath::startsWith that does this per path component
+    if (target.startsWith(CMD.BuildFolder().full_path())) {
       fp = fp.remove_base_folder(CMD.BuildFolder().folder_depth());
-    } else if (target.starts_with(CMD.BuildFolder().full_path())) {
+    } else if (target.startsWith(CMD.BuildFolder().full_path())) {
       fp = fp.remove_base_folder(CMD.BuildFolder().folder_depth());
     }
 

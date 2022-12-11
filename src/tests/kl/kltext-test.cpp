@@ -54,19 +54,19 @@ TEST(kltext, test_trimming) {
 
 TEST(kltext, test_starts_with) {
   Text txt("Hello");
-  EXPECT_TRUE(txt.starts_with(""));
-  EXPECT_TRUE(txt.starts_with("H"));
-  EXPECT_TRUE(txt.starts_with("Hell"));
-  EXPECT_TRUE(txt.starts_with("Hello"));
-  EXPECT_FALSE(txt.starts_with("Hello world"));
-  EXPECT_FALSE(txt.starts_with("world"));
+  EXPECT_TRUE(txt.startsWith(""));
+  EXPECT_TRUE(txt.startsWith("H"));
+  EXPECT_TRUE(txt.startsWith("Hell"));
+  EXPECT_TRUE(txt.startsWith("Hello"));
+  EXPECT_FALSE(txt.startsWith("Hello world"));
+  EXPECT_FALSE(txt.startsWith("world"));
 
-  EXPECT_TRUE(txt.starts_with(""_t));
-  EXPECT_TRUE(txt.starts_with("H"_t));
-  EXPECT_TRUE(txt.starts_with("Hell"_t));
-  EXPECT_TRUE(txt.starts_with("Hello"_t));
-  EXPECT_FALSE(txt.starts_with("Hello world"_t));
-  EXPECT_FALSE(txt.starts_with("world"_t));
+  EXPECT_TRUE(txt.startsWith(""_t));
+  EXPECT_TRUE(txt.startsWith("H"_t));
+  EXPECT_TRUE(txt.startsWith("Hell"_t));
+  EXPECT_TRUE(txt.startsWith("Hello"_t));
+  EXPECT_FALSE(txt.startsWith("Hello world"_t));
+  EXPECT_FALSE(txt.startsWith("world"_t));
 }
 
 TEST(kltext, test_ends_with) {

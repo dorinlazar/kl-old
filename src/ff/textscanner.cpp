@@ -177,7 +177,7 @@ void TextScanner::expectws(char character, NewLineHandling handling) {
   expect(character);
 }
 
-bool TextScanner::starts_with(const Text& what) { return remainder().starts_with(what); }
+bool TextScanner::startsWith(const Text& what) { return remainder().startsWith(what); }
 void TextScanner::skip(uint32_t nChars) {
   if (nChars < 32) {
     for (uint32_t i = 0; i < nChars; i++) {

@@ -17,7 +17,7 @@ Text DISCARDABLE_FOLDERS[] = {"."_t, ".."_t};
 Text FOLDER_SEPARATOR("/");
 
 static Text read_file_impl(const Text& filename) {
-  fs::path p = filename.starts_with(FOLDER_SEPARATOR[0]) ? filename.toView() : fs::current_path() / filename.toView();
+  fs::path p = filename.startsWith(FOLDER_SEPARATOR[0]) ? filename.toView() : fs::current_path() / filename.toView();
   auto size = fs::file_size(p); // throws if error;
 
   if (size > 0x8FFFFFFFULL) [[unlikely]] {
@@ -81,7 +81,7 @@ static Text _normalize_path(const Text& filename) {
   }
   tc.add(filename.skip(last_pos));
   Text res = tc.toText();
-  if (res.starts_with("./") && res.size() > 2) {
+  if (res.startsWith("./") && res.size() > 2) {
     res = res.skip(2);
   }
   return res;
@@ -157,7 +157,7 @@ FilePath FilePath::replace_base_folder(const kl::Text& new_folder, uint32_t leve
 }
 
 uint32_t FilePath::depth() const {
-  return m_full_name.count(FOLDER_SEPARATOR[0]) - (m_full_name.starts_with(FOLDER_SEPARATOR[0]) ? 1 : 0);
+  return m_full_name.count(FOLDER_SEPARATOR[0]) - (m_full_name.startsWith(FOLDER_SEPARATOR[0]) ? 1 : 0);
 }
 uint32_t FilePath::folder_depth() const {
   if (m_full_name.size() == 0 || (m_full_name.size() == 1 && m_full_name[0] == '.')) {

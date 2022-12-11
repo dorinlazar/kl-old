@@ -97,7 +97,7 @@ kl::List<Module*> ModuleCollection::getTargetModules(const kl::List<kl::Text>& t
       auto ext = fp.extension();
       if (ext == "o"_t) {
         requiredModules.add(mod.get());
-      } else if (mod->hasMain() && (ext == "exe"_t || ext == ""_t || ext.starts_with("c"))) {
+      } else if (mod->hasMain() && (ext == "exe"_t || ext == ""_t || ext.startsWith("c"))) {
         requiredModules.add(mod->requiredModules());
       } else {
         FATAL("Don't know how to build {}", file);
@@ -114,7 +114,7 @@ kl::List<kl::Text> ModuleCollection::getModuleNames(const kl::Text& basePath) {
     if (name == path) {
       return {basePath};
     }
-    if (mod->hasMain() && name.starts_with(basePath) && name.skip(basePath.size()).starts_with("/")) {
+    if (mod->hasMain() && name.startsWith(basePath) && name.skip(basePath.size()).startsWith("/")) {
       result.add(name);
     }
   }
