@@ -203,8 +203,8 @@ std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
         } else {
           continue;
         }
-        DateTime lastWrite(statbuf.st_mtim.tv_sec, statbuf.st_mtim.tv_nsec);
-        FileSystemEntryInfo fi{.type = ft, .lastWrite = lastWrite, .path = FilePath(fullPath)};
+        DateTime last_write(statbuf.st_mtim.tv_sec, statbuf.st_mtim.tv_nsec);
+        FileSystemEntryInfo fi{.type = ft, .last_write = last_write, .path = FilePath(fullPath)};
         res.emplace_back(fi);
       }
     }
@@ -216,7 +216,7 @@ std::vector<FileSystemEntryInfo> _get_directory_entries(const Text& folder) {
 void FileSystem::navigate_tree(const Text& treeBase,
                                std::function<NavigateInstructions(const FileSystemEntryInfo& file)> processor) {
   std::queue<FileSystemEntryInfo> to_process;
-  to_process.push({.type = FileType::Directory, .lastWrite = DateTime::UnixEpoch, .path = FilePath(treeBase)});
+  to_process.push({.type = FileType::Directory, .last_write = DateTime::UnixEpoch, .path = FilePath(treeBase)});
   while (!to_process.empty()) {
     FileSystemEntryInfo fi = to_process.front();
     to_process.pop();

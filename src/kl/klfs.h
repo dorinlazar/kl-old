@@ -38,7 +38,7 @@ public:
 enum class FileType { Directory, File };
 struct FileSystemEntryInfo {
   FileType type;
-  DateTime lastWrite;
+  DateTime last_write;
   FilePath path;
 };
 
