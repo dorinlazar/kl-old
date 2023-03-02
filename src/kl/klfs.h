@@ -97,6 +97,7 @@ public:
 struct DirectoryEntry {
   kl::Text name;
   DateTime last_modified;
+  size_t size;
 };
 
 class Directory {
